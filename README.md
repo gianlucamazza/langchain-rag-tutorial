@@ -7,6 +7,35 @@
 
 A practical tutorial for building a **Retrieval-Augmented Generation (RAG)** system using LangChain, with comprehensive comparisons of embeddings and retrieval strategies.
 
+**🎯 NEW**: Now includes **8 advanced RAG architectures** with modular notebook structure!
+
+## 📚 Project Structure
+
+This tutorial is organized into **modular notebooks** for better learning and navigation:
+
+```
+llm_rag/
+├── notebooks/
+│   ├── 00_index.ipynb                    # 🎯 START HERE - Navigation hub
+│   ├── fundamentals/                     # Core RAG concepts
+│   │   ├── 01_setup_and_basics.ipynb
+│   │   ├── 02_embeddings_comparison.ipynb
+│   │   └── 03_simple_rag.ipynb
+│   └── advanced_architectures/           # 8 Advanced patterns
+│       ├── 04_rag_with_memory.ipynb      # Conversational RAG
+│       ├── 05_branched_rag.ipynb         # Multi-query retrieval
+│       ├── 06_hyde.ipynb                 # Hypothetical documents
+│       ├── 07_adaptive_rag.ipynb         # Query routing
+│       ├── 08_corrective_rag.ipynb       # Quality checking + web
+│       ├── 09_self_rag.ipynb             # Self-reflective
+│       ├── 10_agentic_rag.ipynb          # Autonomous agents
+│       └── 11_comparison.ipynb           # Full benchmark
+├── shared/                               # Reusable utilities
+│   ├── config.py, utils.py, loaders.py, prompts.py
+├── data/                                 # Vector stores & cache
+└── README.md                             # This file
+```
+
 ## Quick Start
 
 ```bash
@@ -23,9 +52,14 @@ pip install -r requirements.txt
 # Configure API key
 echo "OPENAI_API_KEY=sk-proj-..." > .env
 
-# Launch notebook
-jupyter notebook langchain_rag_tutorial.ipynb
+# Launch Jupyter and start with navigation hub
+jupyter notebook notebooks/00_index.ipynb
 ```
+
+**Learning Path:**
+1. Start with [00_index.ipynb](notebooks/00_index.ipynb) - Navigation hub
+2. Complete [Fundamentals](notebooks/fundamentals/) (01-03) - ~30 min
+3. Explore [Advanced Architectures](notebooks/advanced_architectures/) (04-11) - Choose based on use case
 
 ## Architecture
 
@@ -48,6 +82,7 @@ graph TD
 
 ## Features
 
+**Core Features:**
 - **Document Loading**: Web, PDF, and text sources with metadata
 - **Text Splitting**: Configurable chunking strategies
 - **Embedding Comparison**: OpenAI vs HuggingFace (local)
@@ -55,6 +90,38 @@ graph TD
 - **Complete RAG Chains**: End-to-end implementation using LCEL
 - **Metadata Filtering**: Advanced querying with source attribution
 - **Best Practices**: Performance optimization and common pitfalls
+
+**Advanced Features:**
+- **8 RAG Architectures**: From simple to agentic, all production-ready
+- **Modular Design**: Reusable `shared` module with utilities
+- **Vector Store Persistence**: No re-embedding across notebooks
+- **Comprehensive Comparison**: Benchmark all architectures
+- **Production Tips**: Error handling, caching, monitoring
+
+## 🏗️ Advanced RAG Architectures
+
+This tutorial implements **8 RAG architectures** with increasing complexity:
+
+| Architecture | Complexity | Use Case | Key Feature |
+|--------------|------------|----------|-------------|
+| **Simple RAG** | ⭐ | General purpose | Query → Retrieve → Generate |
+| **[Memory RAG](notebooks/advanced_architectures/04_rag_with_memory.ipynb)** | ⭐⭐ | Chatbots, Support | Conversation history |
+| **[Branched RAG](notebooks/advanced_architectures/05_branched_rag.ipynb)** | ⭐⭐⭐ | Multi-domain | Parallel sub-queries |
+| **[HyDe](notebooks/advanced_architectures/06_hyde.ipynb)** | ⭐⭐⭐ | Ambiguous queries | Hypothetical docs |
+| **[Adaptive RAG](notebooks/advanced_architectures/07_adaptive_rag.ipynb)** | ⭐⭐⭐⭐ | Mixed workloads | Intelligent routing |
+| **[CRAG](notebooks/advanced_architectures/08_corrective_rag.ipynb)** | ⭐⭐⭐⭐ | High-accuracy | Relevance + web fallback |
+| **[Self-RAG](notebooks/advanced_architectures/09_self_rag.ipynb)** | ⭐⭐⭐⭐⭐ | Quality-critical | Self-critique loop |
+| **[Agentic RAG](notebooks/advanced_architectures/10_agentic_rag.ipynb)** | ⭐⭐⭐⭐⭐ | Complex reasoning | Autonomous agents |
+
+**Quick Selection Guide:**
+- **Need speed?** → Simple RAG
+- **Conversational?** → Memory RAG
+- **Research/exploration?** → Branched RAG or HyDe
+- **Mixed workload?** → Adaptive RAG
+- **High accuracy?** → CRAG or Self-RAG
+- **Complex multi-step?** → Agentic RAG
+
+See [11_comparison.ipynb](notebooks/advanced_architectures/11_comparison.ipynb) for detailed benchmark and decision framework.
 
 ## Technology Comparison
 
