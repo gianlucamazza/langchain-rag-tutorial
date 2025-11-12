@@ -717,6 +717,176 @@ Agentic RAG ReAct agent prompt.
 
 ---
 
+### New Prompts in v1.1.0 ✨
+
+#### `DOCUMENT_SUMMARY_PROMPT`
+
+```python
+DOCUMENT_SUMMARY_PROMPT: ChatPromptTemplate
+```
+
+Contextual RAG document summarization.
+
+**Variables**: `document_content`
+
+---
+
+#### `CONTEXTUAL_CHUNK_PROMPT`
+
+```python
+CONTEXTUAL_CHUNK_PROMPT: ChatPromptTemplate
+```
+
+Contextual RAG chunk contextualization (Anthropic technique).
+
+**Variables**: `document_summary`, `chunk_content`
+
+---
+
+#### `CONTEXTUAL_RAG_ANSWER_PROMPT`
+
+```python
+CONTEXTUAL_RAG_ANSWER_PROMPT: ChatPromptTemplate
+```
+
+Contextual RAG answer generation.
+
+**Variables**: `context`, `input`
+
+---
+
+#### `FUSION_QUERY_GENERATION_PROMPT`
+
+```python
+FUSION_QUERY_GENERATION_PROMPT: ChatPromptTemplate
+```
+
+Fusion RAG multi-perspective query generation.
+
+**Variables**: `question`
+
+---
+
+#### `FUSION_RAG_ANSWER_PROMPT`
+
+```python
+FUSION_RAG_ANSWER_PROMPT: ChatPromptTemplate
+```
+
+Fusion RAG answer generation with RRF context.
+
+**Variables**: `context`, `input`
+
+---
+
+#### `SQL_SCHEMA_SUMMARY_PROMPT`
+
+```python
+SQL_SCHEMA_SUMMARY_PROMPT: ChatPromptTemplate
+```
+
+SQL RAG schema summarization.
+
+**Variables**: `schema_info`
+
+---
+
+#### `TEXT_TO_SQL_PROMPT`
+
+```python
+TEXT_TO_SQL_PROMPT: ChatPromptTemplate
+```
+
+SQL RAG natural language to SQL conversion.
+
+**Variables**: `schema`, `question`
+
+---
+
+#### `SQL_RESULTS_INTERPRETATION_PROMPT`
+
+```python
+SQL_RESULTS_INTERPRETATION_PROMPT: ChatPromptTemplate
+```
+
+SQL RAG results interpretation.
+
+**Variables**: `question`, `sql_query`, `results`
+
+---
+
+#### `SQL_ERROR_RECOVERY_PROMPT`
+
+```python
+SQL_ERROR_RECOVERY_PROMPT: ChatPromptTemplate
+```
+
+SQL RAG error recovery and query correction.
+
+**Variables**: `question`, `failed_query`, `error_message`
+
+---
+
+#### `ENTITY_EXTRACTION_PROMPT`
+
+```python
+ENTITY_EXTRACTION_PROMPT: ChatPromptTemplate
+```
+
+GraphRAG entity extraction.
+
+**Variables**: `text`
+
+---
+
+#### `RELATIONSHIP_EXTRACTION_PROMPT`
+
+```python
+RELATIONSHIP_EXTRACTION_PROMPT: ChatPromptTemplate
+```
+
+GraphRAG relationship extraction between entities.
+
+**Variables**: `text`, `entities`
+
+---
+
+#### `ENTITY_DISAMBIGUATION_PROMPT`
+
+```python
+ENTITY_DISAMBIGUATION_PROMPT: ChatPromptTemplate
+```
+
+GraphRAG entity disambiguation and normalization.
+
+**Variables**: `entities`
+
+---
+
+#### `GRAPH_SUMMARIZATION_PROMPT`
+
+```python
+GRAPH_SUMMARIZATION_PROMPT: ChatPromptTemplate
+```
+
+GraphRAG subgraph summarization.
+
+**Variables**: `subgraph_info`
+
+---
+
+#### `GRAPHRAG_ANSWER_PROMPT`
+
+```python
+GRAPHRAG_ANSWER_PROMPT: ChatPromptTemplate
+```
+
+GraphRAG final answer generation with graph context.
+
+**Variables**: `graph_context`, `input`
+
+---
+
 ### Utility Functions
 
 #### `get_prompt_by_name()`
@@ -800,6 +970,15 @@ retriever = vectorstore.as_retriever()
 ---
 
 ## Version History
+
+- **v1.1.0** (2025-11-12): Major expansion
+  - 18 new prompt templates (30+ total) ✨
+  - Contextual RAG prompts (3 prompts)
+  - Fusion RAG prompts (2 prompts)
+  - SQL RAG prompts (4 prompts)
+  - GraphRAG prompts (5 prompts)
+  - Shared module expanded to 1500+ lines
+  - New dependencies: NetworkX, SQLAlchemy, RAGAS, Spacy
 
 - **v1.0.0** (2024-11-12): Initial release
   - Core utilities (config, utils, loaders, prompts)

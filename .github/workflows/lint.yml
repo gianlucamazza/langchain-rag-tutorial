@@ -1,0 +1,36 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        pip install black flake8 mypy isort
+
+    - name: Run black
+      run: black --check shared/ tests/
+
+    - name: Run flake8
+      run: flake8 shared/ tests/ --max-line-length=100
+
+    - name: Run isort
+      run: isort --check-only shared/ tests/
+
+    - name: Run mypy
+      run: mypy shared/ --ignore-missing-imports
+      continue-on-error: true

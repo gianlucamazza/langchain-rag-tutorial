@@ -18,9 +18,14 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 | 08_corrective_rag | 10-15 min | 3 min | Relevance grading + web search |
 | 09_self_rag | 10-20 min | 4 min | Multiple iterations + self-critique |
 | 10_agentic_rag | 20-40 min | 8 min | Agent loop with multiple tool calls |
-| 11_comparison | 5-8 min | 2 min | Benchmark execution across architectures |
+| 11_comparison | 5-8 min | 2 min | Benchmark execution across 12 architectures |
+| 12_contextual_rag ✨ | 8-12 min | 2 min | Context generation (one-time) + retrieval |
+| 13_fusion_rag ✨ | 5-8 min | 2 min | Multiple query perspectives + RRF ranking |
+| 14_sql_rag ✨ | 5-8 min | 1.5 min | Chinook DB setup + SQL generation |
+| 15_graphrag ✨ | 10-15 min | 3 min | Entity extraction + graph construction |
+| 16_evaluation_ragas ✨ | 15-20 min | 5 min | Evaluation dataset + metrics computation |
 
-**Key Insight:** First run includes model downloads and vector store creation. Subsequent runs use cached data.
+**Key Insight:** First run includes model downloads, vector store creation, and database setup. Subsequent runs use cached data.
 
 ## Query Latency
 
@@ -32,9 +37,13 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 | Memory RAG | 2-3s | 1 LLM call | ~2,000 tokens (+ history) |
 | Branched RAG | 5-8s | 4 LLM calls | ~6,000 tokens |
 | HyDe | 4-6s | 2 LLM calls | ~3,000 tokens |
+| Contextual RAG ✨ | 2-3s | 1 LLM call (+ upfront context) | ~1,800 tokens |
+| Fusion RAG ✨ | 5-8s | 5-6 LLM calls | ~7,000 tokens |
 | Adaptive RAG | Variable | 2-3 LLM calls | 2,000-6,000 tokens (depends on route) |
+| SQL RAG ✨ | 2-5s | 2-3 LLM calls | ~2,500 tokens |
 | CRAG | 10-15s | 5-6 LLM calls | ~8,000 tokens |
 | Self-RAG | 10-20s | 4-6 LLM calls | ~10,000 tokens |
+| GraphRAG ✨ | 3-8s | 3-4 LLM calls + graph ops | ~4,500 tokens |
 | Agentic RAG | 20-40s | 5-10 LLM calls | ~15,000 tokens |
 
 **Factors Affecting Latency:**
@@ -61,9 +70,13 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 | Memory RAG | 1,800 | 400 | $0.00051 |
 | Branched RAG | 4,800 | 1,200 | $0.00144 |
 | HyDe | 2,400 | 600 | $0.00072 |
+| Contextual RAG ✨ | 1,500 | 350 | $0.00043 |
+| Fusion RAG ✨ | 5,500 | 1,400 | $0.00167 |
 | Adaptive RAG | 2,000-5,000 | 500-1,000 | $0.00045-$0.00135 |
+| SQL RAG ✨ | 2,000 | 500 | $0.00060 |
 | CRAG | 6,500 | 1,500 | $0.00188 |
 | Self-RAG | 8,000 | 2,000 | $0.00240 |
+| GraphRAG ✨ | 3,500 | 1,000 | $0.00113 |
 | Agentic RAG | 12,000 | 3,000 | $0.00360 |
 
 **Monthly Cost Estimates (1000 queries/month):**
@@ -103,9 +116,11 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 venv/                 892 MB    (Python dependencies)
 vector_stores/        1-5 MB    (FAISS indexes)
 .cache/huggingface/   90 MB     (Sentence transformers model)
-notebooks/            500 KB    (Jupyter notebooks)
-shared/               100 KB    (Python modules)
-Total:                ~1 GB
+data/chinook.db       984 KB    (Chinook SQL database) ✨
+data/en_core_web_sm/  15 MB     (Spacy NLP model) ✨
+notebooks/            600 KB    (16 Jupyter notebooks) ✨
+shared/               150 KB    (Python modules - 1500+ lines) ✨
+Total:                ~1.1 GB
 ```
 
 ## Optimization Strategies
@@ -121,7 +136,7 @@ Total:                ~1 GB
 vectorstore = FAISS.from_documents(chunks, embeddings)
 save_vector_store(vectorstore, "data/vector_stores/openai")
 
-# Reuse everywhere (notebooks 03-11)
+# Reuse everywhere (notebooks 03-16)
 vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 ```
 
@@ -255,17 +270,23 @@ print(f"LLM: ${llm_cost:.6f} (per query)")
 ```
 Quality (1-10)  |                    * Agentic RAG (9.5, 30s)
                 |                  * Self-RAG (9.0, 15s)
+                |                * GraphRAG ✨ (8.8, 6s)
                 |                * CRAG (8.5, 12s)
+                |              * Fusion RAG ✨ (8.2, 7s)
+                |            * SQL RAG ✨ (8.0*, 4s)
                 |            * HyDe (7.5, 5s)
                 |          * Branched RAG (7.5, 6s)
                 |       * Adaptive RAG (7.0, variable)
+                |       * Contextual RAG ✨ (7.2, 2.5s)
                 |     * Memory RAG (6.5, 2.5s)
                 |   * Simple RAG (6.0, 2s)
                 |_________________________________
                          Latency (seconds)
 ```
 
-**Key Insight:** 3x quality improvement costs 15x latency increase.
+**Legend:** *SQL RAG quality is "Perfect" for structured data queries, "N/A" for unstructured
+
+**Key Insight:** 3x quality improvement costs 15x latency increase. New architectures (✨) offer better quality-speed trade-offs for specific use cases.
 
 ## Performance Tips
 

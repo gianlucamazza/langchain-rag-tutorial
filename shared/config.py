@@ -37,6 +37,11 @@ HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 if HUGGINGFACE_API_KEY:
     os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACE_API_KEY
 
+# Optional: Tavily API Key (for premium web search in CRAG)
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+if TAVILY_API_KEY:
+    os.environ["TAVILY_API_KEY"] = TAVILY_API_KEY
+
 # Optional: LangSmith API Key (for tracing and monitoring)
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 if LANGSMITH_API_KEY:
@@ -93,7 +98,7 @@ DEFAULT_TEMPERATURE = float(os.getenv("DEFAULT_TEMPERATURE", "0"))  # Determinis
 
 # Embeddings
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-HF_EMBEDDING_MODEL = os.getenv("HF_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+HF_EMBEDDING_MODEL = os.getenv("HF_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 
 # Document loading
 DEFAULT_LANGCHAIN_URLS = [
@@ -153,6 +158,7 @@ def get_project_info() -> dict:
         # API Keys
         "openai_api_key_loaded": bool(OPENAI_API_KEY),
         "huggingface_api_key_loaded": bool(HUGGINGFACE_API_KEY),
+        "tavily_api_key_loaded": bool(TAVILY_API_KEY),
         "langsmith_api_key_loaded": bool(LANGSMITH_API_KEY),
         # LLM Configuration
         "default_model": DEFAULT_MODEL,

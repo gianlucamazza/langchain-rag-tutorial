@@ -5,6 +5,222 @@ All notable changes to LangChain RAG Tutorial will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-11-13
+
+### Added
+
+- **2 New Advanced Notebooks** (17-18):
+  - **17_multimodal_rag.ipynb** - Multimodal RAG with Images + Text (⭐⭐⭐⭐)
+    - GPT-4 Vision API integration for image understanding
+    - OCR support with Tesseract for text extraction
+    - PDF image extraction capabilities
+    - Combined text + image retrieval system
+    - Production optimization strategies (caching, batch processing)
+    - Cost-benefit analysis for vision vs OCR approaches
+  - **18_finetuning_embeddings.ipynb** - Domain-Specific Fine-tuning Guide (⭐⭐⭐⭐)
+    - Complete guide to fine-tuning sentence-transformers
+    - Contrastive learning with MultipleNegativesRankingLoss
+    - Dataset preparation and auto-generation strategies
+    - Baseline vs fine-tuned performance comparison
+    - Production best practices and hyperparameter tuning
+    - Cost-benefit analysis and ROI calculations
+
+- **Docker Support** (Production Infrastructure):
+  - Multi-stage Dockerfile with security best practices
+  - docker-compose.yml with full stack (app + Redis + monitoring)
+  - .dockerignore for optimized builds
+  - Non-root user configuration
+  - Health checks and monitoring setup
+  - Prometheus + Grafana integration (optional profiles)
+
+- **Production Templates** (templates/ directory):
+  - **FastAPI Template** (templates/fastapi/):
+    - Complete REST API with automatic documentation
+    - Request validation with Pydantic models
+    - Error handling and logging
+    - CORS configuration
+    - Health check endpoints
+    - Rate limiting ready
+    - Async support
+  - **Streamlit Template** (templates/streamlit/):
+    - Interactive web UI for RAG queries
+    - Real-time query processing
+    - Source document display
+    - Architecture selection
+    - Performance metrics visualization
+    - Sample queries and responsive design
+  - **AWS Lambda Template** (templates/lambda/):
+    - Serverless deployment ready
+    - S3 vector store integration
+    - Cold start optimization
+    - API Gateway integration
+    - Cost-optimized configuration
+
+- **Testing Infrastructure** (tests/ directory):
+  - pytest configuration (pytest.ini)
+  - Comprehensive test suite:
+    - test_config.py - Configuration tests
+    - test_utils.py - Utility function tests
+    - conftest.py - Shared fixtures
+  - Test coverage reporting (HTML + XML)
+  - CI/CD integration ready
+
+- **CI/CD Pipelines** (.github/workflows/):
+  - Automated testing workflow (Python 3.9, 3.10, 3.11)
+  - Code linting workflow (black, flake8, isort, mypy)
+  - Coverage reporting to Codecov
+  - Matrix testing across Python versions
+
+- **Development Tools**:
+  - **Makefile** with common commands:
+    - `make install` - Install dependencies
+    - `make test` - Run test suite
+    - `make lint` - Run linters
+    - `make format` - Format code
+    - `make docker-build` - Build Docker image
+    - `make docker-run` - Run containers
+    - `make clean` - Clean cache files
+  - **pre-commit hooks** (.pre-commit-config.yaml):
+    - Automatic code formatting (black, isort)
+    - Linting checks (flake8)
+    - Security checks (detect-private-key)
+    - YAML/JSON validation
+  - **requirements-dev.txt** - Development dependencies:
+    - pytest + pytest-cov
+    - black, flake8, mypy, isort
+    - pre-commit
+    - mkdocs + mkdocs-material
+
+- **Documentation**:
+  - **SECURITY.md** - Security policy and vulnerability reporting
+  - Comprehensive README files for each template
+  - Docker deployment documentation
+  - CI/CD setup guides
+
+- **New Dependencies**:
+  - `pillow>=10.0.0` - Image processing
+  - `pytesseract>=0.3.10` - OCR text extraction
+  - `pdf2image>=1.16.0` - PDF image extraction
+  - `fastapi>=0.109.0` - REST API framework
+  - `streamlit>=1.31.0` - Web UI framework
+  - `uvicorn>=0.27.0` - ASGI server
+  - `boto3>=1.34.0` - AWS SDK (Lambda deployment)
+
+### Changed
+
+- **requirements.txt**: Updated with all multimodal dependencies
+- **Project Structure**: Now includes templates/, tests/, .github/ directories
+- **README.md**: Updated to mention Docker support and production templates
+- **Total Notebooks**: 16 → 18 (+2)
+- **Project Completeness**: Development → Production-ready
+
+### Improved
+
+- **Deployment Options**: Docs only → 3 production templates (FastAPI, Streamlit, Lambda)
+- **Docker Support**: None → Full container support with monitoring
+- **Testing**: 0% coverage → Infrastructure for 70%+ coverage
+- **CI/CD**: None → Full GitHub Actions pipeline
+- **Developer Experience**: Added Makefile, pre-commit hooks, comprehensive dev tools
+
+### Fixed
+
+- requirements.txt: Consolidated all dependencies with proper version constraints
+- Documentation: Added missing SECURITY.md referenced in other docs
+
+---
+
+## [1.1.0] - 2025-11-12
+
+### Added
+
+- **4 New Advanced RAG Architectures** (notebooks 12-15):
+  - **12_contextual_rag.ipynb** - Context-Augmented Retrieval (⭐⭐⭐)
+    - Anthropic's technique for chunk augmentation
+    - Document-level summarization with chunk-specific context
+    - Improves precision with minimal query overhead
+    - ~15-30% better retrieval quality with same query cost
+  - **13_fusion_rag.ipynb** - Reciprocal Rank Fusion (⭐⭐⭐)
+    - RAG-Fusion implementation with RRF algorithm
+    - Multiple query generation + sophisticated ranking
+    - Best-in-class ranking quality
+    - Outperforms simple multi-query deduplication
+  - **14_sql_rag.ipynb** - Natural Language to SQL (⭐⭐⭐⭐)
+    - Complete text-to-SQL pipeline
+    - Chinook database integration (music store sample DB)
+    - Schema retrieval with semantic search
+    - Safe SQL execution with validation
+    - Error recovery and query correction
+    - Perfect for analytics and structured data queries
+  - **15_graphrag.ipynb** - Graph-Based Knowledge Retrieval (⭐⭐⭐⭐⭐)
+    - Microsoft Research's GraphRAG approach
+    - Entity extraction + relationship mapping
+    - NetworkX graph construction and traversal
+    - Multi-hop reasoning capability
+    - Community detection (Louvain algorithm)
+    - Graph visualization with matplotlib
+    - Best for relationship queries and knowledge exploration
+
+- **RAGAS Evaluation Framework** (notebook 16):
+  - **16_evaluation_ragas.ipynb** - Comprehensive RAG Assessment
+    - 6 evaluation metrics (faithfulness, relevancy, precision, recall, similarity, correctness)
+    - Test dataset creation and ground truth management
+    - Per-architecture quality comparison
+    - Cost-quality trade-off analysis
+    - Production readiness scoring
+    - Visualization and reporting
+
+- **Enhanced Shared Module**:
+  - **prompts.py**: 18 new prompt templates (13 → 30+ total)
+    - Contextual RAG: DOCUMENT_SUMMARY, CONTEXTUAL_CHUNK, CONTEXTUAL_RAG_ANSWER
+    - Fusion RAG: FUSION_QUERY_GENERATION, FUSION_RAG_ANSWER
+    - SQL RAG: SQL_SCHEMA_SUMMARY, TEXT_TO_SQL, SQL_RESULTS_INTERPRETATION, SQL_ERROR_RECOVERY
+    - GraphRAG: ENTITY_EXTRACTION, RELATIONSHIP_EXTRACTION, ENTITY_DISAMBIGUATION, GRAPH_SUMMARIZATION, GRAPHRAG_ANSWER
+  - **utils.py**: Expanded from 983 to 1500+ lines
+  - **config.py**: New configuration options for SQL and Graph databases
+
+- **New Dependencies**:
+  - `networkx>=3.2` - Graph algorithms and analysis
+  - `matplotlib>=3.8.0` - Graph visualization
+  - `plotly>=5.18.0` - Interactive visualizations
+  - `sqlalchemy>=2.0.25` - Database ORM and SQL toolkit
+  - `pandas>=2.2.0` - Data manipulation and SQL results
+  - `spacy>=3.7.0` - NLP and entity extraction
+  - `ragas>=0.1.7` - RAG evaluation framework
+  - `datasets>=2.16.0` - Evaluation dataset management
+
+- **Data Assets**:
+  - Chinook SQLite database (984KB) for SQL RAG demonstrations
+  - Sample evaluation datasets for RAGAS metrics
+
+### Changed
+
+- **Comparison notebook** (11_comparison.ipynb):
+  - Extended from 8 to 12 architectures
+  - Updated all comparison tables and matrices
+  - Added hybrid architecture recommendations
+  - New decision framework for 12 architectures
+  - Enhanced trade-offs analysis
+
+- **README.md**:
+  - Updated feature count: "8 architectures" → "12 architectures"
+  - Added RAGAS evaluation mention
+  - Updated technical stack (NetworkX, SQLAlchemy, RAGAS)
+  - New architecture selection guide with 12 entries
+  - Performance table now includes new architectures
+
+- **Project Statistics**:
+  - Total notebooks: 12 → 16
+  - Advanced architectures: 8 → 13 (including comparison + evaluation)
+  - Prompt templates: 13 → 30+
+  - Shared module: 983 → 1500+ lines
+  - Dependencies: 12 → 20+ packages
+
+### Fixed
+
+- requirements.txt: Added all new dependencies with version constraints
+- Prompt templates: Improved JSON parsing error handling
+- Vector store: Better caching and persistence patterns
+
 ## [1.0.0] - 2024-11-12
 
 ### Added
@@ -91,16 +307,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Upcoming
 
-### Planned for v1.1.0
+### Planned for v1.2.0
 
-- [ ] Graph RAG notebook
-- [ ] Multimodal RAG (images)
+- [ ] Multimodal RAG (images + text)
 - [ ] Fine-tuning embeddings guide
-- [ ] Advanced evaluation metrics (RAGAS)
 - [ ] Docker support
 - [ ] CI/CD pipeline for notebook testing
 
-### Planned for v1.2.0
+### Planned for v1.3.0
 
 - [ ] Production deployment templates (FastAPI, Streamlit)
 - [ ] Monitoring and observability (LangSmith integration)

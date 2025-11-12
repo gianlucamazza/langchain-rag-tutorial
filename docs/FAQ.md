@@ -23,14 +23,19 @@ Common questions about LangChain RAG Tutorial.
 |---|---|
 | Fast, simple Q&A | Simple RAG |
 | Chatbot with memory | Memory RAG |
-| Comprehensive research | Branched RAG |
+| Comprehensive research | Fusion RAG ✨ |
 | Handle ambiguous queries | HyDe |
+| Technical documentation | Contextual RAG ✨ |
+| Best ranking quality | Fusion RAG ✨ |
 | Mixed workload optimization | Adaptive RAG |
 | High accuracy + web fallback | Corrective RAG (CRAG) |
 | Self-correcting system | Self-RAG |
 | Complex multi-step reasoning | Agentic RAG |
+| Analytics/BI queries | SQL RAG ✨ |
+| Knowledge graphs | GraphRAG ✨ |
+| Quality evaluation | RAGAS ✨ |
 
-**Rule of thumb:** Start with Simple RAG, upgrade only if needed.
+**Rule of thumb:** Start with Simple RAG → Add Contextual for quality → Use specialized for specific needs.
 
 ### Do I need an OpenAI account?
 
@@ -120,11 +125,12 @@ See [PERFORMANCE.md](PERFORMANCE.md) for detailed breakdown.
 |---|---|
 | Setup | 10 min |
 | Fundamentals (01-03) | 30-40 min |
-| One advanced architecture | 15-30 min |
-| All architectures | 2-3 hours |
-| **Total** | **3-4 hours** |
+| One advanced architecture | 12-30 min |
+| All 12 architectures | 3-4 hours |
+| With evaluation (RAGAS) | +20 min |
+| **Total** | **4-6 hours** |
 
-**First run is slower** (model downloads, vector store creation).
+**First run is slower** (model downloads, vector store creation, Chinook DB).
 
 ### Why is the first run so slow?
 
@@ -209,6 +215,81 @@ chunks = split_documents(docs)
 Then create vector store as usual.
 
 ## Architecture-Specific
+
+### When should I use Contextual RAG? ✨
+
+**Use Contextual RAG when:**
+
+- Working with technical documentation
+- Code documentation needs context
+- Legal/policy documents where context matters
+- Chunks need document-level understanding
+
+**How it works:**
+
+```
+Original: "The function returns a list of tokens."
+Contextualized: "Document: LangChain API | Section: Text Splitting | The function returns a list of tokens."
+→ Better semantic matching with 15-30% quality improvement
+```
+
+**Benefits:** ~15-30% better retrieval quality with minimal cost overhead.
+
+### When should I use Fusion RAG? ✨
+
+**Use Fusion RAG when:**
+
+- Ranking quality is critical
+- Research and literature review
+- Complex multi-aspect queries
+- Need best-in-class result aggregation
+
+**How it works:**
+
+1. Generate 3-5 query perspectives
+2. Retrieve documents for each query
+3. Combine results using Reciprocal Rank Fusion (RRF)
+4. Documents appearing in multiple result sets rank higher
+
+**Trade-off:** ~3x slower than Simple RAG, but best ranking quality.
+
+### When should I use SQL RAG? ✨
+
+**Use SQL RAG when:**
+
+- Querying structured databases (SQL)
+- Business intelligence and analytics
+- Data exploration tools
+- Natural language to SQL conversion
+
+**How it works:**
+
+1. User asks: "Show top customers by revenue"
+2. Retrieve relevant database schema
+3. Generate SQL with validation
+4. Execute safely (read-only)
+5. Interpret results with LLM
+
+**Benefits:** Perfect accuracy for structured data queries. Includes Chinook sample database.
+
+### When should I use GraphRAG? ✨
+
+**Use GraphRAG when:**
+
+- Building knowledge graphs
+- Relationship-centric queries ("Who works with whom?")
+- Multi-hop reasoning ("Friend of a friend")
+- Network analysis and community detection
+
+**How it works:**
+
+1. Extract entities from documents
+2. Extract relationships between entities
+3. Build NetworkX graph
+4. Query graph with traversal algorithms
+5. Visualize with matplotlib
+
+**Trade-off:** More complex setup, but excellent for relationship queries.
 
 ### When should I use HyDe?
 
@@ -315,11 +396,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Yes!** Follow this process:
 
-1. Create notebook: `notebooks/advanced_architectures/12_your_architecture.ipynb`
+1. Create notebook: `notebooks/advanced_architectures/17_your_architecture.ipynb`
 2. Add prompts to `shared/prompts.py`
 3. Update comparison in `11_comparison.ipynb`
 4. Document in `notebooks/advanced_architectures/README.md`
-5. Submit pull request
+5. Update CHANGELOG.md with your addition
+6. Submit pull request
 
 ## Licensing
 

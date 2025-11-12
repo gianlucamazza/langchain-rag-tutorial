@@ -30,15 +30,15 @@ llm_rag/
 ├── shared/                    # Reusable utilities (DRY principle)
 ├── notebooks/
 │   ├── fundamentals/         # Core concepts (01-03)
-│   └── advanced_architectures/ # Advanced patterns (04-11)
-├── data/                     # Generated artifacts (gitignored)
+│   └── advanced_architectures/ # Advanced patterns (04-16)
+├── data/                     # Generated artifacts, Chinook DB (gitignored)
 └── docs/                     # Modular documentation
 ```
 
 **Design Rationale:**
 
 - **Modularity**: Each architecture in separate notebook
-- **Reusability**: Shared module eliminates code duplication (983 lines shared)
+- **Reusability**: Shared module eliminates code duplication (1500+ lines shared, 30+ prompts)
 - **Persistence**: Vector stores saved to avoid re-embedding
 - **Progressive Learning**: Simple → Advanced complexity gradient
 
@@ -88,10 +88,38 @@ llm_rag/
 
 ### 8. Agentic RAG (⭐⭐⭐⭐⭐)
 
-**Pattern**: Query → Agent Loop (Think → Select Tool → Execute → Observe) → Final Answer  
-**Use Case**: Complex multi-step reasoning, BI dashboards  
-**Tools**: Retriever, Calculator, Web Search  
+**Pattern**: Query → Agent Loop (Think → Select Tool → Execute → Observe) → Final Answer
+**Use Case**: Complex multi-step reasoning, BI dashboards
+**Tools**: Retriever, Calculator, Web Search
 **Key Component**: ReAct agent pattern
+
+### 9. Contextual RAG ✨ (⭐⭐⭐)
+
+**Pattern**: Documents → Summarize → Context-Augment Chunks → Embed → Query → Retrieve → Generate
+**Use Case**: Technical docs, code documentation
+**Innovation**: Anthropic's technique - prepend document context to each chunk
+**Benefits**: 15-30% better retrieval quality with minimal overhead
+
+### 10. Fusion RAG ✨ (⭐⭐⭐)
+
+**Pattern**: Query → Generate Multi-Perspectives → Parallel Retrieve → RRF Ranking → Generate
+**Use Case**: Research, best ranking quality
+**Key Component**: Reciprocal Rank Fusion (RRF) algorithm
+**Innovation**: Documents appearing in multiple result sets rank higher
+
+### 11. SQL RAG ✨ (⭐⭐⭐⭐)
+
+**Pattern**: Query → Retrieve Schema → Generate SQL → Validate → Execute → Interpret Results
+**Use Case**: Analytics, BI, structured data queries
+**Key Components**: Schema retrieval, safe SQL execution (read-only, SELECT only)
+**Database**: Chinook sample database (music store)
+
+### 12. GraphRAG ✨ (⭐⭐⭐⭐⭐)
+
+**Pattern**: Documents → Extract Entities → Extract Relationships → Build Graph → Query → Traverse → Generate
+**Use Case**: Knowledge graphs, relationship queries, multi-hop reasoning
+**Key Components**: Entity extraction, NetworkX graph, community detection (Louvain)
+**Innovation**: Microsoft Research's approach to graph-based knowledge retrieval
 
 ## Technology Stack
 
@@ -102,6 +130,15 @@ llm_rag/
 - **FAISS**: v1.7.4+ (vector similarity search)
 - **HuggingFace Transformers**: Local embeddings
 - **Python**: 3.9+ (type hints, pathlib)
+
+### New Dependencies ✨
+
+- **NetworkX**: v3.2+ (graph algorithms, GraphRAG)
+- **SQLAlchemy**: v2.0.25+ (database abstraction, SQL RAG)
+- **Pandas**: v2.2.0+ (data manipulation, SQL results)
+- **RAGAS**: v0.1.7+ (RAG evaluation framework)
+- **Spacy**: v3.7.0+ (NLP, entity extraction)
+- **Matplotlib**: v3.8.0+ (graph visualization)
 
 ### Architecture Decisions
 
@@ -151,7 +188,7 @@ from shared import format_docs, load_vector_store, RAG_PROMPT_TEMPLATE
 vectorstore = FAISS.from_documents(chunks, embeddings)
 save_vector_store(vectorstore, "data/vector_stores/openai")
 
-# Notebooks 03-11: Load existing
+# Notebooks 03-16: Load existing
 vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 ```
 
@@ -166,7 +203,7 @@ vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 ```
 00_index.ipynb → Overview + Navigation
 01-03 → Fundamentals (required)
-04-11 → Advanced (pick based on use case)
+04-16 → Advanced (12 architectures + evaluation, pick based on use case)
 ```
 
 **Benefits:**
@@ -185,9 +222,13 @@ vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 | Memory RAG | ~2-3s | 1 LLM | Low-Med |
 | Branched RAG | ~5-8s | 4 LLM (3 sub-queries + 1 gen) | Medium |
 | HyDe | ~4-6s | 2 LLM (hypo + gen) | Medium |
+| Contextual RAG ✨ | ~2-3s | 1 LLM + upfront context generation | Low |
+| Fusion RAG ✨ | ~5-8s | 5-6 LLM (4-5 queries + gen) | Medium |
 | Adaptive RAG | Variable | 2-3 LLM (classify + gen) | Optimized |
+| SQL RAG ✨ | ~2-5s | 2-3 LLM (schema + SQL + interpret) | Low-Med |
 | CRAG | ~10-15s | 5-6 LLM (grade x4 + gen + optional web) | High |
 | Self-RAG | ~10-20s | 4-6 LLM (2-3 iterations) | High |
+| GraphRAG ✨ | ~3-8s | 3-4 LLM + graph traversal | Medium-High |
 | Agentic RAG | ~20-40s | 5-10 LLM (agent loop) | Very High |
 
 ### Optimization Strategies
@@ -225,10 +266,11 @@ __pycache__/            # Python cache
 
 ### Adding New Architecture
 
-1. Create notebook: `notebooks/advanced_architectures/12_new_pattern.ipynb`
+1. Create notebook: `notebooks/advanced_architectures/17_new_pattern.ipynb`
 2. Add prompts to `shared/prompts.py`
 3. Update `11_comparison.ipynb` with new benchmark
 4. Document in `notebooks/advanced_architectures/README.md`
+5. Update CHANGELOG.md with the addition
 
 ### Adding New Utility
 
@@ -239,20 +281,44 @@ __pycache__/            # Python cache
 
 ## Future Enhancements
 
-- [ ] Graph RAG integration
-- [ ] Multimodal RAG (images, audio)
-- [ ] Fine-tuning embeddings
-- [ ] Advanced evaluation metrics
-- [ ] Production deployment templates
+### Completed in v1.1.0 ✨
+
+- [x] Graph RAG integration (notebook 15)
+- [x] Advanced evaluation metrics (RAGAS framework, notebook 16)
+- [x] SQL RAG for structured data (notebook 14)
+- [x] Context-augmented retrieval (notebook 12)
+- [x] Reciprocal Rank Fusion (notebook 13)
+
+### Planned for v1.2.0+
+
+- [ ] Multimodal RAG (images, audio, video)
+- [ ] Fine-tuning embeddings guide
+- [ ] Production deployment templates (FastAPI, Streamlit)
 - [ ] Docker containerization
-- [ ] CI/CD pipeline
+- [ ] CI/CD pipeline for notebook testing
+- [ ] Monitoring and observability (LangSmith integration)
+- [ ] Cost optimization strategies
+- [ ] Batch processing patterns
 
 ## References
 
+**Core RAG:**
 - [LangChain Docs](https://python.langchain.com/)
 - [FAISS Documentation](https://faiss.ai/)
-- [RAG Paper](https://arxiv.org/abs/2005.11401)
+- [RAG Paper (Lewis et al.)](https://arxiv.org/abs/2005.11401)
+
+**Advanced Architectures:**
 - [Self-RAG Paper](https://arxiv.org/abs/2310.11511)
+- [CRAG Paper](https://arxiv.org/abs/2401.15884)
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+
+**New Architectures ✨:**
+- [Contextual Retrieval (Anthropic)](https://www.anthropic.com/news/contextual-retrieval) - Context-augmented chunking
+- [RAG-Fusion Paper](https://arxiv.org/abs/2402.03367) - Reciprocal Rank Fusion
+- [GraphRAG (Microsoft Research)](https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/)
+- [RAGAS Framework](https://docs.ragas.io/) - RAG evaluation metrics
+- [Text-to-SQL Survey](https://arxiv.org/abs/2208.13629) - Natural language to SQL
+- [NetworkX Documentation](https://networkx.org/) - Graph algorithms
 
 ## See Also
 

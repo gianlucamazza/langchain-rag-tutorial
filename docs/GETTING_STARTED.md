@@ -45,6 +45,10 @@ This will install:
 - FAISS for vector storage
 - Jupyter notebook support
 - HuggingFace transformers (local embeddings)
+- NetworkX (graph algorithms) ✨
+- SQLAlchemy (SQL RAG) ✨
+- RAGAS (evaluation framework) ✨
+- Spacy (entity extraction) ✨
 
 ### 4. Configure API Key
 
@@ -90,16 +94,30 @@ Complete these in order:
 
 ### **Step 3: Advanced Architectures** (Pick based on use case)
 
-Explore advanced patterns:
+Explore **12 advanced patterns**:
 
+**Foundation (⭐⭐-⭐⭐⭐):**
 - **Chatbots?** → [04_rag_with_memory.ipynb](../notebooks/advanced_architectures/04_rag_with_memory.ipynb)
 - **Research tool?** → [05_branched_rag.ipynb](../notebooks/advanced_architectures/05_branched_rag.ipynb)
 - **Ambiguous queries?** → [06_hyde.ipynb](../notebooks/advanced_architectures/06_hyde.ipynb)
+
+**Enhanced (⭐⭐⭐⭐):**
 - **Mixed workload?** → [07_adaptive_rag.ipynb](../notebooks/advanced_architectures/07_adaptive_rag.ipynb)
 - **High accuracy?** → [08_corrective_rag.ipynb](../notebooks/advanced_architectures/08_corrective_rag.ipynb)
+
+**Self-Improving (⭐⭐⭐⭐⭐):**
 - **Self-correcting?** → [09_self_rag.ipynb](../notebooks/advanced_architectures/09_self_rag.ipynb)
 - **Complex reasoning?** → [10_agentic_rag.ipynb](../notebooks/advanced_architectures/10_agentic_rag.ipynb)
-- **Benchmark all?** → [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
+
+**Cutting-Edge ✨ (⭐⭐⭐-⭐⭐⭐⭐⭐):**
+- **Technical docs?** → [12_contextual_rag.ipynb](../notebooks/advanced_architectures/12_contextual_rag.ipynb) - Context-augmented chunks
+- **Best ranking?** → [13_fusion_rag.ipynb](../notebooks/advanced_architectures/13_fusion_rag.ipynb) - Reciprocal Rank Fusion
+- **Analytics/BI?** → [14_sql_rag.ipynb](../notebooks/advanced_architectures/14_sql_rag.ipynb) - Natural Language to SQL
+- **Knowledge graphs?** → [15_graphrag.ipynb](../notebooks/advanced_architectures/15_graphrag.ipynb) - Graph-based reasoning
+
+**Analysis:**
+- **Benchmark all 12?** → [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
+- **Quality metrics?** → [16_evaluation_ragas.ipynb](../notebooks/advanced_architectures/16_evaluation_ragas.ipynb) ✨
 
 ## First Run Checklist
 

@@ -3,9 +3,30 @@ Shared utilities for LangChain RAG Tutorial
 Provides reusable functions, configurations, and prompts across all notebooks.
 """
 
+# ============================================================================
+# EARLY WARNING SUPPRESSION
+# Must run BEFORE any langchain/pydantic imports to prevent warnings
+# ============================================================================
+import warnings
+import logging
+
+# Suppress Pydantic V1 compatibility warnings (preventive, in case of Python 3.14+)
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic.v1")
+warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
+
+# Suppress USER_AGENT warning from langchain_community (loads before .env)
+logging.getLogger("langchain_community.utils.user_agent").setLevel(logging.ERROR)
+
+# Suppress other common deprecation warnings for cleaner output
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# ============================================================================
+# MODULE EXPORTS
+# ============================================================================
+
 __version__ = "1.0.0"
 
-from .config import (
+from .config import (  # noqa: E402
     OPENAI_API_KEY,
     VECTOR_STORE_DIR,
     CACHE_DIR,
@@ -14,7 +35,7 @@ from .config import (
     DEFAULT_K,
 )
 
-from .utils import (
+from .utils import (  # noqa: E402
     format_docs,
     load_vector_store,
     save_vector_store,
@@ -22,12 +43,12 @@ from .utils import (
     print_results,
 )
 
-from .loaders import (
+from .loaders import (  # noqa: E402
     load_langchain_docs,
     split_documents,
 )
 
-from .prompts import (
+from .prompts import (  # noqa: E402
     RAG_PROMPT_TEMPLATE,
     RAG_WITH_METADATA_PROMPT,
     RELEVANCE_GRADER_PROMPT,

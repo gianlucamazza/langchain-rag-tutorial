@@ -1,44 +1,39 @@
-# LangChain RAG - Dipendenze Python
-# Progetto di Retrieval-Augmented Generation con LangChain
-# Aggiornato: 2025-11-12 - Versioni stabili e testate
+# Core dependencies
+langchain>=0.1.0
+langchain-openai>=0.0.2
+langchain-community>=0.0.10
+langchain-huggingface>=0.0.1
+langgraph>=0.0.20
 
-# Core LangChain Framework
-# Versioni 1.0.x - API moderne senza dipendenze legacy
-langchain==1.0.5
-langchain-community==0.4.1
-langchain-openai==1.0.2
-langchain-core==1.0.4
-langchain-text-splitters==1.0.0
+# Vector stores
+faiss-cpu>=1.7.4
 
-# OpenAI API
-# Versione 2.x con supporto GPT-4o, GPT-4o-mini, o1, o3
-openai==2.7.2
-
-# Vector Store e Similarity Search
-# FAISS per vector similarity search efficiente
-faiss-cpu==1.12.0
-
-# Embeddings e NLP
-# Sentence Transformers per embeddings locali
-sentence-transformers==5.1.2
-tiktoken==0.12.0
-numexpr>=2.10.0
-
-# Document Loading
-beautifulsoup4==4.14.2
-
-# Configuration Management
-python-dotenv==1.2.1
-
-# Jupyter Notebook Support
-jupyter==1.1.1
-ipykernel==6.30.1
+# Document processing
+beautifulsoup4>=4.12.0
+pypdf>=3.17.0
 
 # Utilities
-# NumPy 2.3+ - Risolve conflitti con numpy-typing-compat
-numpy==2.3.4
+python-dotenv>=1.0.0
+tiktoken>=0.5.0
 
-# Advanced RAG Architectures
-duckduckgo-search==8.1.1   # CRAG - Web search fallback
-langgraph==1.0.3           # Agentic RAG - Production stable, backward compatible
-tavily-python==0.7.12      # CRAG - Premium web search (richiede TAVILY_API_KEY)
+# Web search
+duckduckgo-search>=4.0.0
+
+# Additional dependencies for v1.1.0
+networkx>=3.2
+matplotlib>=3.8.0
+plotly>=5.18.0
+sqlalchemy>=2.0.25
+pandas>=2.2.0
+spacy>=3.7.0
+ragas>=0.1.7
+datasets>=2.16.0
+
+# New dependencies for v1.2.0 (Multimodal RAG)
+pillow>=10.0.0
+pytesseract>=0.3.10
+pdf2image>=1.16.0
+
+# Jupyter
+jupyter>=1.0.0
+ipykernel>=6.27.0

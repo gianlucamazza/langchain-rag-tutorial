@@ -1,6 +1,6 @@
 # Advanced RAG Architectures
 
-This directory contains implementations of 8 advanced RAG architectures, each optimized for different use cases and requirements.
+This directory contains implementations of **12 advanced RAG architectures**, each optimized for different use cases and requirements, plus a comprehensive evaluation framework.
 
 ## Prerequisites
 
@@ -26,6 +26,11 @@ These provide the baseline components (vector stores, embeddings, retrievers) us
 | **09** | Self-RAG | ⭐⭐⭐⭐⭐ | Exploratory research, Dynamic Q&A | Self-critique and refinement |
 | **10** | Agentic RAG | ⭐⭐⭐⭐⭐ | Multi-step reasoning, BI dashboards | Autonomous agents with tools |
 | **11** | Comparison | - | Benchmarking | Side-by-side performance analysis |
+| **12** ✨ | Contextual RAG | ⭐⭐⭐ | Technical docs, Code documentation | Context-augmented chunking (Anthropic) |
+| **13** ✨ | Fusion RAG | ⭐⭐⭐ | Research, Best ranking quality | Reciprocal Rank Fusion algorithm |
+| **14** ✨ | SQL RAG | ⭐⭐⭐⭐ | Analytics, BI, Structured data | Natural Language to SQL with safety |
+| **15** ✨ | GraphRAG | ⭐⭐⭐⭐⭐ | Knowledge graphs, Relationships | Entity extraction + multi-hop reasoning |
+| **16** ✨ | RAGAS Evaluation | - | Quality assessment | Comprehensive RAG metrics framework |
 
 ---
 
@@ -277,7 +282,7 @@ Agent reasoning:
 
 **Comprehensive Benchmark**
 
-Side-by-side comparison of all 8 architectures across various query types and metrics.
+Side-by-side comparison of all 12 architectures across various query types and metrics.
 
 **Metrics Evaluated:**
 
@@ -299,6 +304,210 @@ Side-by-side comparison of all 8 architectures across various query types and me
 
 ---
 
+### 12_contextual_rag.ipynb ✨
+
+**Context-Augmented Chunking (Anthropic Technique)**
+
+Enhances document chunks by prepending them with document-level context, improving retrieval precision with minimal query overhead.
+
+**When to Use:**
+
+- Technical documentation
+- Code documentation
+- Legal/policy documents
+- Any domain where chunks need broader context
+
+**Key Components:**
+
+- Document summarization with LLM
+- Chunk-specific contextualization
+- Context-augmented embeddings
+- ~15-30% better retrieval quality
+
+**Example:**
+
+```
+Original chunk: "The function returns a list of tokens."
+
+Contextualized chunk:
+"Document: LangChain Text Splitting API
+Section: RecursiveCharacterTextSplitter methods
+The function returns a list of tokens."
+
+→ Embedding this contextualized version improves semantic matching
+```
+
+**Duration:** ~12 minutes
+
+---
+
+### 13_fusion_rag.ipynb ✨
+
+**RAG-Fusion with Reciprocal Rank Fusion**
+
+Generates multiple query perspectives and combines results using the RRF algorithm for superior ranking quality.
+
+**When to Use:**
+
+- Research and literature review
+- Complex multi-aspect queries
+- When ranking quality is critical
+- Exploratory information gathering
+
+**Key Components:**
+
+- Multi-query generation (3-5 perspectives)
+- Parallel retrieval for each query
+- Reciprocal Rank Fusion (RRF) algorithm
+- De-duplication with score aggregation
+
+**Example:**
+
+```
+Query: "How do I optimize RAG performance?"
+
+Generated queries:
+1. "RAG performance optimization techniques"
+2. "Reduce latency in retrieval augmented generation"
+3. "Improve RAG accuracy and speed"
+4. "RAG caching and indexing strategies"
+
+RRF Score Calculation:
+For each document: score = sum(1 / (k + rank_i)) across all queries
+→ Documents appearing in multiple result sets get higher scores
+```
+
+**Duration:** ~15 minutes
+
+---
+
+### 14_sql_rag.ipynb ✨
+
+**Natural Language to SQL**
+
+Converts natural language questions into SQL queries, executes them safely, and interprets results.
+
+**When to Use:**
+
+- Business intelligence and analytics
+- Data exploration tools
+- Reporting dashboards
+- Any structured database queries
+
+**Key Components:**
+
+- Schema retrieval with semantic search
+- Text-to-SQL generation with validation
+- Safe SQL execution (read-only, SELECT only)
+- SQL error recovery
+- Result interpretation with LLM
+- Chinook sample database (music store)
+
+**Example:**
+
+```
+Query: "Show me the top 5 customers by total purchase amount"
+
+Pipeline:
+1. Retrieve relevant schema (Customer, Invoice, InvoiceLine tables)
+2. Generate SQL:
+   SELECT c.FirstName, c.LastName, SUM(i.Total) as TotalSpent
+   FROM Customer c JOIN Invoice i ON c.CustomerId = i.CustomerId
+   GROUP BY c.CustomerId ORDER BY TotalSpent DESC LIMIT 5
+3. Execute safely (read-only connection)
+4. Interpret results: "The top customer is Frank Harris who spent $144..."
+```
+
+**Duration:** ~18 minutes
+
+---
+
+### 15_graphrag.ipynb ✨
+
+**Graph-Based Knowledge Retrieval (Microsoft Research)**
+
+Extracts entities and relationships from documents, constructs a knowledge graph, and performs multi-hop reasoning.
+
+**When to Use:**
+
+- Knowledge graphs and ontologies
+- Relationship-centric queries
+- Multi-hop reasoning ("friend of a friend")
+- Network analysis and community detection
+- Exploratory knowledge discovery
+
+**Key Components:**
+
+- Entity extraction with LLM
+- Relationship extraction and typing
+- NetworkX graph construction
+- Graph traversal algorithms
+- Community detection (Louvain algorithm)
+- Graph visualization
+
+**Example:**
+
+```
+Documents: "Alice works at OpenAI. Bob works at Anthropic. Alice and Bob are friends."
+
+Graph Construction:
+Nodes: [Alice, Bob, OpenAI, Anthropic]
+Edges: [Alice --WORKS_AT--> OpenAI,
+        Bob --WORKS_AT--> Anthropic,
+        Alice --FRIEND--> Bob]
+
+Query: "Who are Alice's colleagues' friends?"
+Multi-hop: Alice → OpenAI → [employees] → [their friends]
+```
+
+**Duration:** ~25 minutes
+
+---
+
+### 16_evaluation_ragas.ipynb ✨
+
+**RAGAS Evaluation Framework**
+
+Comprehensive quality assessment for RAG systems using 6 evaluation metrics.
+
+**When to Use:**
+
+- Benchmarking multiple architectures
+- Quality assurance before production
+- A/B testing RAG improvements
+- Cost-quality trade-off analysis
+
+**Key Metrics:**
+
+1. **Faithfulness**: Answer grounded in context?
+2. **Answer Relevancy**: Response addresses the question?
+3. **Context Precision**: Relevant chunks ranked high?
+4. **Context Recall**: All needed info retrieved?
+5. **Answer Similarity**: Semantic match with ground truth?
+6. **Answer Correctness**: Factual accuracy score
+
+**Example Evaluation:**
+
+```
+Test Dataset:
+- Question: "What is RAG?"
+- Ground Truth: "RAG is Retrieval-Augmented Generation..."
+- Context: [retrieved chunks]
+- Answer: [generated response]
+
+Scores:
+- Faithfulness: 0.95 (well-grounded)
+- Relevancy: 0.92 (on-topic)
+- Precision: 0.88 (good retrieval)
+- Recall: 0.85 (mostly complete)
+- Similarity: 0.90 (semantically close)
+- Correctness: 0.93 (factually accurate)
+```
+
+**Duration:** ~20 minutes
+
+---
+
 ## Comparison Matrix
 
 | Architecture | Latency | Cost | Accuracy | Complexity | Best For |
@@ -307,10 +516,16 @@ Side-by-side comparison of all 8 architectures across various query types and me
 | Memory RAG | Fast (2-3s) | Low-Med | Good | ⭐⭐ | Conversations |
 | Branched RAG | Medium (5-8s) | Medium | Very Good | ⭐⭐⭐ | Multi-intent |
 | HyDe | Medium (4-6s) | Medium | Very Good | ⭐⭐⭐ | Ambiguous queries |
+| Contextual RAG ✨ | Fast (2-3s) | Low | Very Good | ⭐⭐⭐ | Technical docs |
+| Fusion RAG ✨ | Medium (5-8s) | Medium | Excellent | ⭐⭐⭐ | Research |
 | Adaptive RAG | Variable | Optimized | Very Good | ⭐⭐⭐⭐ | Mixed workloads |
+| SQL RAG ✨ | Fast (2-5s) | Low-Med | Perfect* | ⭐⭐⭐⭐ | Analytics |
 | CRAG | Slow (10-15s) | High | Excellent | ⭐⭐⭐⭐ | High-accuracy |
 | Self-RAG | Slow (10-20s) | High | Excellent | ⭐⭐⭐⭐⭐ | Quality-critical |
+| GraphRAG ✨ | Medium (3-8s) | High | Excellent** | ⭐⭐⭐⭐⭐ | Knowledge graphs |
 | Agentic RAG | Very Slow (20-40s) | Very High | Excellent | ⭐⭐⭐⭐⭐ | Complex reasoning |
+
+*Perfect for structured data queries | **Excellent for relationship queries
 
 ---
 
@@ -347,6 +562,20 @@ pip install duckduckgo-search>=4.0.0
 # For Agentic RAG (agent orchestration)
 pip install langgraph>=0.0.20
 
+# For GraphRAG (graph algorithms) ✨
+pip install networkx>=3.2 matplotlib>=3.8.0
+
+# For SQL RAG (database operations) ✨
+pip install sqlalchemy>=2.0.25 pandas>=2.2.0
+
+# For RAGAS Evaluation ✨
+pip install ragas>=0.1.7 datasets>=2.16.0
+
+# For advanced NLP (entity extraction) ✨
+pip install spacy>=3.7.0
+# Download spaCy model:
+python -m spacy download en_core_web_sm
+
 # Optional: Premium web search for CRAG
 pip install tavily-python>=0.3.0
 ```
@@ -364,15 +593,26 @@ These are already included in `requirements.txt`.
 3. 06_hyde.ipynb
 
 **Intermediate Path**:
-4. 07_adaptive_rag.ipynb
-5. 08_corrective_rag.ipynb
+
+4. 12_contextual_rag.ipynb ✨ ← Context-augmented chunks
+5. 13_fusion_rag.ipynb ✨ ← Best ranking quality
+6. 07_adaptive_rag.ipynb
+7. 08_corrective_rag.ipynb
 
 **Advanced Path**:
-6. 09_self_rag.ipynb
-7. 10_agentic_rag.ipynb
 
-**Final Step**:
-8. 11_comparison.ipynb ← Benchmark everything
+8. 14_sql_rag.ipynb ✨ ← Natural language to SQL
+9. 09_self_rag.ipynb
+10. 10_agentic_rag.ipynb
+
+**Expert Path** ✨:
+
+11. 15_graphrag.ipynb ✨ ← Graph-based reasoning
+
+**Analysis & Evaluation**:
+
+12. 11_comparison.ipynb ← Benchmark all 12 architectures
+13. 16_evaluation_ragas.ipynb ✨ ← Comprehensive quality metrics
 
 ---
 
@@ -407,11 +647,21 @@ For comprehensive guides, see:
 
 ## Resources
 
+**Core RAG:**
 - [LangChain Documentation](https://python.langchain.com/)
 - [RAG Paper (Lewis et al.)](https://arxiv.org/abs/2005.11401)
+
+**Advanced Architectures:**
 - [Self-RAG Paper](https://arxiv.org/abs/2310.11511)
 - [CRAG Paper](https://arxiv.org/abs/2401.15884)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+
+**New Architectures ✨:**
+- [Contextual Retrieval (Anthropic)](https://www.anthropic.com/news/contextual-retrieval) - Context-augmented chunking
+- [RAG-Fusion Paper](https://arxiv.org/abs/2402.03367) - Reciprocal Rank Fusion
+- [GraphRAG (Microsoft Research)](https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/) - Graph-based RAG
+- [RAGAS Framework](https://docs.ragas.io/) - RAG evaluation metrics
+- [Text-to-SQL Survey](https://arxiv.org/abs/2208.13629) - Natural language to SQL
 
 ---
 

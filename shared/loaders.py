@@ -94,7 +94,7 @@ def split_documents(
         >>> print(f"Created {len(chunks)} chunks")
     """
     if verbose:
-        print(f"Splitting documents...")
+        print("Splitting documents...")
         print(f"  - Chunk size: {chunk_size}")
         print(f"  - Chunk overlap: {chunk_overlap}")
 
@@ -112,7 +112,7 @@ def split_documents(
             # Show sample chunk info
             if chunks:
                 sample_chunk = chunks[0]
-                print(f"\n  Sample chunk:")
+                print("\n  Sample chunk:")
                 print(f"    - Length: {len(sample_chunk.page_content)} chars")
                 print(f"    - Source: {sample_chunk.metadata.get('source', 'N/A')}")
                 print(f"    - Preview: {sample_chunk.page_content[:150]}...")

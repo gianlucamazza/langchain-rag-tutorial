@@ -184,16 +184,13 @@ Properly cited:"""),
 # MULTI-QUERY PROMPTS (BRANCHED RAG)
 # ============================================================================
 
-MULTI_QUERY_PROMPT = PromptTemplate(
-    input_variables=["question"],
-    template="""You are an AI assistant. Generate 3 different versions of the user question
+MULTI_QUERY_PROMPT = PromptTemplate.from_template("""You are an AI assistant. Generate 3 different versions of the user question
 to retrieve relevant documents from a vector database. Provide these alternative questions
 separated by newlines.
 
 Original question: {question}
 
-Alternative questions:""",
-)
+Alternative questions:""")
 
 
 # ============================================================================
@@ -223,6 +220,278 @@ Thought: {agent_scratchpad}""")
 
 
 # ============================================================================
+# CONTEXTUAL RAG PROMPTS
+# ============================================================================
+
+DOCUMENT_SUMMARY_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Generate a concise summary of this document
+that captures its main topics, purpose, and key information. This summary will be used to provide
+context for individual chunks of the document.
+
+Keep the summary to 2-3 sentences, focusing on what the document is about and its scope."""),
+    ("user", """Document:
+{document}
+
+Summary:"""),
+])
+
+
+CONTEXTUAL_CHUNK_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Given a document summary and a chunk of text,
+create a brief contextual description that explains how this chunk relates to the overall document.
+
+This context will be prepended to the chunk to improve retrieval. Keep it concise (1-2 sentences)."""),
+    ("user", """Document Summary:
+{doc_summary}
+
+Chunk:
+{chunk}
+
+Contextual description:"""),
+])
+
+
+CONTEXTUAL_RAG_ANSWER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Answer the user's question based on the
+contextually-enriched documents provided below.
+
+Each document has been augmented with contextual information to help you understand its
+role within the larger document structure.
+
+If the context doesn't contain enough information to answer the question, say so clearly.
+
+Context:
+{context}"""),
+    ("user", "{input}"),
+])
+
+
+# ============================================================================
+# FUSION RAG PROMPTS
+# ============================================================================
+
+FUSION_QUERY_GENERATION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are an AI assistant helping to improve search results. Generate {num_queries}
+different versions of the user question to retrieve relevant documents from a vector database.
+
+Create variations that:
+1. Rephrase the question using different words
+2. Break down complex questions into sub-questions
+3. Add relevant context or expand abbreviations
+4. Approach the question from different angles
+
+Provide these alternative questions, one per line, numbered."""),
+    ("user", """Original question: {question}
+
+Alternative questions:"""),
+])
+
+
+FUSION_RAG_ANSWER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Answer based on the documents retrieved
+using RAG-Fusion, which combines results from multiple query variations.
+
+The documents have been ranked using Reciprocal Rank Fusion for optimal relevance.
+
+Metadata:
+- Original query: {original_query}
+- Alternative queries generated: {num_queries}
+- Unique documents retrieved: {num_docs}
+
+Context:
+{context}"""),
+    ("user", "{input}"),
+])
+
+
+# ============================================================================
+# SQL RAG PROMPTS
+# ============================================================================
+
+SQL_SCHEMA_SUMMARY_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a database expert. Provide a clear, concise summary of this database
+table that describes:
+1. What data it contains
+2. Key columns and their purposes
+3. What kinds of questions it can answer
+
+Keep it brief (2-3 sentences) and focus on the semantic meaning, not just technical details."""),
+    ("user", """Table: {table_name}
+
+Schema:
+{schema}
+
+Summary:"""),
+])
+
+
+TEXT_TO_SQL_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a SQL expert. Given a natural language question and database schema,
+generate a valid SQL query to answer the question.
+
+Rules:
+1. Only use SELECT statements (no INSERT, UPDATE, DELETE, DROP)
+2. Only query tables that exist in the schema
+3. Use proper SQL syntax for the database type
+4. Include LIMIT clause if appropriate
+5. Use JOINs when needed to combine tables
+6. Return ONLY the SQL query, no explanations
+
+Available schema:
+{schema}"""),
+    ("user", """Question: {question}
+
+SQL Query:"""),
+])
+
+
+SQL_RESULTS_INTERPRETATION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Given a natural language question, the SQL query
+that was executed, and its results, provide a clear, natural language answer.
+
+Format the answer to be user-friendly and easy to understand. If the results are empty,
+explain that no matching data was found."""),
+    ("user", """Question: {question}
+
+SQL Query:
+{sql_query}
+
+Results:
+{results}
+
+Answer:"""),
+])
+
+
+SQL_ERROR_RECOVERY_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a SQL expert. A SQL query failed with an error. Analyze the error
+and generate a corrected query.
+
+Common issues:
+- Table/column names not matching schema
+- Syntax errors
+- Invalid JOIN conditions
+- Type mismatches
+
+Return ONLY the corrected SQL query."""),
+    ("user", """Original Question: {question}
+
+Failed Query:
+{failed_query}
+
+Error:
+{error}
+
+Schema:
+{schema}
+
+Corrected Query:"""),
+])
+
+
+# ============================================================================
+# GRAPHRAG PROMPTS
+# ============================================================================
+
+ENTITY_EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are an AI assistant specialized in information extraction. Extract all
+important entities from the text.
+
+For each entity, provide:
+- name: The entity name
+- type: Entity type (PERSON, ORGANIZATION, LOCATION, CONCEPT, TECHNOLOGY, EVENT, etc.)
+- description: Brief description (1 sentence)
+
+Return ONLY valid JSON array format:
+[
+  {{"name": "...", "type": "...", "description": "..."}},
+  ...
+]"""),
+    ("user", """Text:
+{text}
+
+Entities (JSON):"""),
+])
+
+
+RELATIONSHIP_EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are an AI assistant specialized in relationship extraction. Given text and
+a list of entities, identify relationships between them.
+
+For each relationship, provide:
+- source: Source entity name (must match entity list)
+- relation: Relationship type (e.g., "created_by", "part_of", "used_in", "related_to")
+- target: Target entity name (must match entity list)
+- description: Brief description (1 sentence)
+
+Return ONLY valid JSON array format:
+[
+  {{"source": "...", "relation": "...", "target": "...", "description": "..."}},
+  ...
+]
+
+Entities:
+{entities}"""),
+    ("user", """Text:
+{text}
+
+Relationships (JSON):"""),
+])
+
+
+ENTITY_DISAMBIGUATION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are an AI assistant helping with entity disambiguation. Given a query
+and a list of entities from a knowledge graph, identify which entities are most relevant
+to the query.
+
+Return the entity names that match or relate to the query, one per line."""),
+    ("user", """Query: {query}
+
+Available entities:
+{entities}
+
+Relevant entities:"""),
+])
+
+
+GRAPH_SUMMARIZATION_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are an AI assistant. Summarize the information from this knowledge graph
+subgraph in a clear, structured way.
+
+Focus on:
+1. Key entities and their relationships
+2. Important connections and patterns
+3. Relevant facts for answering questions
+
+Present the information in a natural, readable format."""),
+    ("user", """Subgraph:
+{subgraph}
+
+Summary:"""),
+])
+
+
+GRAPHRAG_ANSWER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful AI assistant. Answer the question using information from
+the knowledge graph.
+
+The context includes:
+- Entities and their descriptions
+- Relationships between entities
+- Multi-hop connections
+
+Metadata:
+- Query entities: {query_entities}
+- Graph hops explored: {num_hops}
+- Nodes in subgraph: {num_nodes}
+
+Context:
+{context}"""),
+    ("user", "{input}"),
+])
+
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 
@@ -239,7 +508,7 @@ def get_prompt_by_name(name: str) -> ChatPromptTemplate | PromptTemplate:
     Example:
         >>> prompt = get_prompt_by_name("RAG_PROMPT_TEMPLATE")
     """
-    prompts = {
+    prompts: dict[str, ChatPromptTemplate | PromptTemplate] = {
         "rag": RAG_PROMPT_TEMPLATE,
         "rag_metadata": RAG_WITH_METADATA_PROMPT,
         "memory": MEMORY_RAG_PROMPT,
@@ -253,6 +522,24 @@ def get_prompt_by_name(name: str) -> ChatPromptTemplate | PromptTemplate:
         "citation": CITATION_CHECK_PROMPT,
         "multi_query": MULTI_QUERY_PROMPT,
         "react": REACT_AGENT_PROMPT,
+        # Contextual RAG
+        "document_summary": DOCUMENT_SUMMARY_PROMPT,
+        "contextual_chunk": CONTEXTUAL_CHUNK_PROMPT,
+        "contextual_rag": CONTEXTUAL_RAG_ANSWER_PROMPT,
+        # Fusion RAG
+        "fusion_query": FUSION_QUERY_GENERATION_PROMPT,
+        "fusion_rag": FUSION_RAG_ANSWER_PROMPT,
+        # SQL RAG
+        "sql_schema": SQL_SCHEMA_SUMMARY_PROMPT,
+        "text_to_sql": TEXT_TO_SQL_PROMPT,
+        "sql_results": SQL_RESULTS_INTERPRETATION_PROMPT,
+        "sql_error": SQL_ERROR_RECOVERY_PROMPT,
+        # GraphRAG
+        "entity_extraction": ENTITY_EXTRACTION_PROMPT,
+        "relationship_extraction": RELATIONSHIP_EXTRACTION_PROMPT,
+        "entity_disambiguation": ENTITY_DISAMBIGUATION_PROMPT,
+        "graph_summarization": GRAPH_SUMMARIZATION_PROMPT,
+        "graphrag": GRAPHRAG_ANSWER_PROMPT,
     }
 
     if name.lower() not in prompts:
