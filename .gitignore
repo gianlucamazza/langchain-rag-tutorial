@@ -55,6 +55,7 @@ sentence-transformers/
 *.faiss
 *.pkl
 vectorstore/
+vector_stores/
 
 # Logs
 *.log
