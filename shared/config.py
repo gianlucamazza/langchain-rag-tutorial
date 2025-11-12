@@ -11,12 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Suppress HuggingFace tokenizers parallelism warning
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TOKENIZERS_PARALLELISM"] = os.getenv("TOKENIZERS_PARALLELISM", "false")
 
 # ============================================================================
 # API KEYS
 # ============================================================================
 
+# Required: OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not OPENAI_API_KEY:
@@ -26,6 +27,28 @@ if not OPENAI_API_KEY:
 # Set in environment for LangChain
 if OPENAI_API_KEY:
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+
+# Optional: HuggingFace API Key (not needed for local embeddings)
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+if HUGGINGFACE_API_KEY:
+    os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACE_API_KEY
+
+# Optional: LangSmith API Key (for tracing and monitoring)
+LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
+if LANGSMITH_API_KEY:
+    os.environ["LANGCHAIN_API_KEY"] = LANGSMITH_API_KEY
+    # Enable tracing if LANGSMITH_TRACING is set to true
+    if os.getenv("LANGSMITH_TRACING", "").lower() == "true":
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGSMITH_PROJECT", "langchain-rag-tutorial")
+
+# ============================================================================
+# ENVIRONMENT SETTINGS
+# ============================================================================
+
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # ============================================================================
 # PATHS
@@ -52,21 +75,21 @@ HF_VECTOR_STORE_PATH = VECTOR_STORE_DIR / "huggingface_embeddings"
 # ============================================================================
 
 # Text splitting
-DEFAULT_CHUNK_SIZE = 1000
-DEFAULT_CHUNK_OVERLAP = 200
+DEFAULT_CHUNK_SIZE = int(os.getenv("DEFAULT_CHUNK_SIZE", "1000"))
+DEFAULT_CHUNK_OVERLAP = int(os.getenv("DEFAULT_CHUNK_OVERLAP", "200"))
 
 # Retrieval
-DEFAULT_K = 4  # Number of documents to retrieve
-DEFAULT_MMR_FETCH_K = 20  # Documents to fetch before MMR filtering
-DEFAULT_MMR_LAMBDA = 0.5  # Balance between relevance (1.0) and diversity (0.0)
+DEFAULT_K = int(os.getenv("DEFAULT_K", "4"))  # Number of documents to retrieve
+DEFAULT_MMR_FETCH_K = int(os.getenv("DEFAULT_MMR_FETCH_K", "20"))  # Documents to fetch before MMR filtering
+DEFAULT_MMR_LAMBDA = float(os.getenv("DEFAULT_MMR_LAMBDA", "0.5"))  # Balance between relevance (1.0) and diversity (0.0)
 
 # LLM
-DEFAULT_MODEL = "gpt-4o-mini"
-DEFAULT_TEMPERATURE = 0  # Deterministic responses
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o-mini")
+DEFAULT_TEMPERATURE = float(os.getenv("DEFAULT_TEMPERATURE", "0"))  # Deterministic responses
 
 # Embeddings
-OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
-HF_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+HF_EMBEDDING_MODEL = os.getenv("HF_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 
 # Document loading
 DEFAULT_LANGCHAIN_URLS = [
@@ -80,8 +103,8 @@ DEFAULT_LANGCHAIN_URLS = [
 # DISPLAY SETTINGS
 # ============================================================================
 
-SECTION_WIDTH = 80
-PREVIEW_LENGTH = 300  # Characters to show in document previews
+SECTION_WIDTH = int(os.getenv("SECTION_WIDTH", "80"))
+PREVIEW_LENGTH = int(os.getenv("PREVIEW_LENGTH", "300"))  # Characters to show in document previews
 
 # ============================================================================
 # UTILITY FUNCTIONS
@@ -115,13 +138,33 @@ def get_project_info() -> dict:
         dict: Project configuration details
     """
     return {
+        # Environment
+        "environment": ENVIRONMENT,
+        "debug_mode": DEBUG_MODE,
+        "log_level": LOG_LEVEL,
+        # Paths
         "project_root": str(PROJECT_ROOT),
         "vector_store_dir": str(VECTOR_STORE_DIR),
         "cache_dir": str(CACHE_DIR),
-        "api_key_loaded": bool(OPENAI_API_KEY),
+        # API Keys
+        "openai_api_key_loaded": bool(OPENAI_API_KEY),
+        "huggingface_api_key_loaded": bool(HUGGINGFACE_API_KEY),
+        "langsmith_api_key_loaded": bool(LANGSMITH_API_KEY),
+        # LLM Configuration
         "default_model": DEFAULT_MODEL,
+        "default_temperature": DEFAULT_TEMPERATURE,
+        "openai_embedding_model": OPENAI_EMBEDDING_MODEL,
+        "hf_embedding_model": HF_EMBEDDING_MODEL,
+        # Text Processing
         "chunk_size": DEFAULT_CHUNK_SIZE,
         "chunk_overlap": DEFAULT_CHUNK_OVERLAP,
+        # Retrieval
+        "k": DEFAULT_K,
+        "mmr_fetch_k": DEFAULT_MMR_FETCH_K,
+        "mmr_lambda": DEFAULT_MMR_LAMBDA,
+        # Display
+        "section_width": SECTION_WIDTH,
+        "preview_length": PREVIEW_LENGTH,
     }
 
 if __name__ == "__main__":

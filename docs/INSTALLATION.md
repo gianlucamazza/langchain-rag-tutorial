@@ -237,6 +237,150 @@ Add to `.env`:
 TOKENIZERS_PARALLELISM=false
 ```
 
+### Complete Configuration Reference
+
+Your `.env` file supports many configuration options beyond just API keys. Here's a comprehensive guide:
+
+#### Environment & Debug Settings
+
+```bash
+# Environment type: dev, test, prod
+ENVIRONMENT=dev
+
+# Enable debug mode (verbose logging)
+DEBUG_MODE=false
+
+# Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_LEVEL=INFO
+```
+
+**When to adjust:**
+- Use `ENVIRONMENT=prod` and `LOG_LEVEL=WARNING` in production
+- Set `DEBUG_MODE=true` when troubleshooting issues
+
+#### LLM Configuration
+
+```bash
+# OpenAI model to use
+DEFAULT_MODEL=gpt-4o-mini
+
+# Temperature (0.0 = deterministic, 1.0 = creative)
+DEFAULT_TEMPERATURE=0
+
+# Embeddings model
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+```
+
+**Model options:**
+- `gpt-4o-mini` - Fast, cost-effective (recommended)
+- `gpt-4o` - Most capable, slower, expensive
+- `gpt-4-turbo` - Balanced performance
+- `gpt-3.5-turbo` - Fastest, least capable
+
+**Embedding options:**
+- `text-embedding-3-small` - 1536 dimensions, faster, cheaper
+- `text-embedding-3-large` - 3072 dimensions, more accurate
+
+#### Retrieval Configuration
+
+```bash
+# Number of documents to retrieve
+DEFAULT_K=4
+
+# Documents to fetch before MMR filtering
+DEFAULT_MMR_FETCH_K=20
+
+# MMR Lambda: balance relevance vs diversity
+DEFAULT_MMR_LAMBDA=0.5
+```
+
+**Tuning guidelines:**
+- **DEFAULT_K**: Higher = more context but slower (3-5 recommended)
+- **DEFAULT_MMR_FETCH_K**: Should be 4-5x DEFAULT_K
+- **DEFAULT_MMR_LAMBDA**:
+  - `1.0` = maximum relevance (may be redundant)
+  - `0.5` = balanced (recommended)
+  - `0.0` = maximum diversity (may lose relevance)
+
+#### Text Processing
+
+```bash
+# Chunk size (characters)
+DEFAULT_CHUNK_SIZE=1000
+
+# Overlap between chunks
+DEFAULT_CHUNK_OVERLAP=200
+```
+
+**Optimization tips:**
+- Larger chunks (1500+) = more context, less granular
+- Smaller chunks (500-) = more precise, may lose context
+- Overlap should be 10-20% of chunk size
+
+#### Display Settings
+
+```bash
+# Console output width
+SECTION_WIDTH=80
+
+# Document preview length
+PREVIEW_LENGTH=300
+```
+
+#### Advanced Settings
+
+```bash
+# HuggingFace model for local embeddings
+HF_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+
+# Suppress tokenizer warnings
+TOKENIZERS_PARALLELISM=false
+
+# LangSmith tracing (requires LANGSMITH_API_KEY)
+# LANGSMITH_TRACING=true
+```
+
+#### Configuration Profiles
+
+**Development Profile (default):**
+```bash
+ENVIRONMENT=dev
+DEBUG_MODE=false
+LOG_LEVEL=INFO
+DEFAULT_MODEL=gpt-4o-mini
+DEFAULT_TEMPERATURE=0
+DEFAULT_K=4
+```
+
+**Production Profile:**
+```bash
+ENVIRONMENT=prod
+DEBUG_MODE=false
+LOG_LEVEL=WARNING
+DEFAULT_MODEL=gpt-4o-mini
+DEFAULT_TEMPERATURE=0
+DEFAULT_K=3  # Reduce for cost savings
+```
+
+**High-Accuracy Profile:**
+```bash
+ENVIRONMENT=prod
+LOG_LEVEL=INFO
+DEFAULT_MODEL=gpt-4o
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
+DEFAULT_K=5
+DEFAULT_MMR_LAMBDA=0.7  # Favor relevance
+```
+
+**Experimentation Profile:**
+```bash
+ENVIRONMENT=dev
+DEBUG_MODE=true
+LOG_LEVEL=DEBUG
+DEFAULT_TEMPERATURE=0.7  # More creative responses
+DEFAULT_K=10  # Maximum context
+```
+
 ## Validation
 
 ### Validate OpenAI API Key
