@@ -5,7 +5,9 @@ This directory contains foundational notebooks for understanding and building ba
 ## Notebooks
 
 ### 01_setup_and_basics.ipynb
+
 **Topics Covered:**
+
 - Environment setup and API key configuration
 - Document loading from web sources
 - Text splitting strategies and comparison
@@ -14,6 +16,7 @@ This directory contains foundational notebooks for understanding and building ba
 **Prerequisites:** None (start here!)
 
 **Outputs:**
+
 - Loaded documents from LangChain documentation
 - Document chunks with configurable strategies
 
@@ -22,7 +25,9 @@ This directory contains foundational notebooks for understanding and building ba
 ---
 
 ### 02_embeddings_comparison.ipynb
+
 **Topics Covered:**
+
 - OpenAI embeddings (text-embedding-3-small)
 - HuggingFace embeddings (sentence-transformers)
 - FAISS vector store creation
@@ -30,10 +35,12 @@ This directory contains foundational notebooks for understanding and building ba
 - Performance comparison
 
 **Prerequisites:**
+
 - 01_setup_and_basics.ipynb (for documents and chunks)
 - OpenAI API key configured
 
 **Outputs:**
+
 - Vector stores saved to `data/vector_stores/`
 - Performance metrics for both embedding types
 
@@ -42,7 +49,9 @@ This directory contains foundational notebooks for understanding and building ba
 ---
 
 ### 03_simple_rag.ipynb
+
 **Topics Covered:**
+
 - Retrieval strategies (Similarity vs MMR)
 - RAG chain construction with LCEL
 - Complete end-to-end RAG workflow
@@ -50,11 +59,13 @@ This directory contains foundational notebooks for understanding and building ba
 - Best practices and optimization tips
 
 **Prerequisites:**
+
 - 01_setup_and_basics.ipynb
 - 02_embeddings_comparison.ipynb
 - Vector stores created
 
 **Outputs:**
+
 - Working RAG chains for similarity and MMR retrieval
 - Baseline performance metrics for comparison with advanced architectures
 

@@ -3,6 +3,7 @@ Utility functions for LangChain RAG Tutorial
 Provides reusable functions for document formatting, vector store management, and display.
 """
 
+import warnings
 from typing import List, Optional
 from pathlib import Path
 from langchain_core.documents import Document
@@ -10,6 +11,30 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.embeddings import Embeddings
 
 from .config import SECTION_WIDTH, PREVIEW_LENGTH
+
+
+# ============================================================================
+# WARNING FILTERS
+# ============================================================================
+
+def suppress_warnings():
+    """
+    Suppress common non-critical warnings for cleaner notebook output.
+
+    Following modern best practices:
+    - Suppress deprecation warnings from dependencies (Pydantic V1)
+    - Keep critical warnings visible for debugging
+    """
+    # Suppress Pydantic V1 deprecation warnings (from langchain_core)
+    warnings.filterwarnings("ignore", category=UserWarning, module="langchain_core._api.deprecation")
+    warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
+
+    # Suppress other common non-critical warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
+# Auto-suppress warnings on import
+suppress_warnings()
 
 
 def format_docs(docs: List[Document]) -> str:

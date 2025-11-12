@@ -13,6 +13,10 @@ load_dotenv()
 # Suppress HuggingFace tokenizers parallelism warning
 os.environ["TOKENIZERS_PARALLELISM"] = os.getenv("TOKENIZERS_PARALLELISM", "false")
 
+# Set User Agent for HTTP requests
+USER_AGENT = os.getenv("USER_AGENT", "LangChain-RAG-Tutorial/1.0")
+os.environ["USER_AGENT"] = USER_AGENT
+
 # ============================================================================
 # API KEYS
 # ============================================================================

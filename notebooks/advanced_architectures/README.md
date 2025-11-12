@@ -32,21 +32,25 @@ These provide the baseline components (vector stores, embeddings, retrievers) us
 ## Detailed Descriptions
 
 ### 04_rag_with_memory.ipynb
+
 **RAG with Conversational Memory**
 
 Extends Simple RAG with conversation history to handle follow-up questions and anaphoric references.
 
 **When to Use:**
+
 - Chatbots and conversational interfaces
 - Customer support systems
 - Interactive Q&A sessions
 
 **Key Components:**
+
 - `ConversationBufferMemory` or `ConversationBufferWindowMemory`
 - `RunnableWithMessageHistory` for LCEL integration
 - Modified prompts with `MessagesPlaceholder`
 
 **Example Query Flow:**
+
 ```
 User: "What is RAG?"
 Bot: "RAG is Retrieval-Augmented Generation..."
@@ -59,21 +63,25 @@ Bot: "The main components of RAG are..." ← Understands reference
 ---
 
 ### 05_branched_rag.ipynb
+
 **Multi-Query Parallel Retrieval**
 
 Generates multiple sub-queries from a single user question and retrieves documents in parallel for better coverage.
 
 **When to Use:**
+
 - Multi-intent queries
 - Cross-domain research
 - Comprehensive topic exploration
 
 **Key Components:**
+
 - `MultiQueryRetriever` (LangChain built-in)
 - Query generation prompts
 - Document deduplication
 
 **Example:**
+
 ```
 Query: "Compare OpenAI and HuggingFace embeddings for cost and performance"
 
@@ -90,21 +98,25 @@ Generated sub-queries:
 ---
 
 ### 06_hyde.ipynb
+
 **Hypothetical Document Embeddings**
 
 Generates a hypothetical "perfect answer" document, embeds it, and uses it for retrieval instead of the raw query.
 
 **When to Use:**
+
 - Ambiguous or vague queries
 - Domain-specific jargon
 - Queries with abbreviations or shorthand
 
 **Key Components:**
+
 - HyDe prompt for document generation
 - Two-step process: generate → embed → search
 - Semantic similarity improvement
 
 **Example:**
+
 ```
 Query: "How does MMR work?"
 
@@ -122,21 +134,25 @@ relevant to the query and dissimilar to already selected documents..."
 ---
 
 ### 07_adaptive_rag.ipynb
+
 **Query Complexity-Based Routing**
 
 Analyzes query complexity and routes to the optimal retrieval strategy (simple, MMR, or HyDe).
 
 **When to Use:**
+
 - Mixed workload systems
 - Cost optimization (use simple retrieval when possible)
 - Performance/quality balance
 
 **Key Components:**
+
 - LLM-based complexity classifier
 - Router logic (SIMPLE → similarity, MEDIUM → MMR, COMPLEX → HyDe)
 - Performance monitoring
 
 **Example:**
+
 ```
 "What is FAISS?" → SIMPLE → Fast similarity search
 "Compare vector databases" → MEDIUM → MMR for diversity
@@ -148,21 +164,25 @@ Analyzes query complexity and routes to the optimal retrieval strategy (simple, 
 ---
 
 ### 08_corrective_rag.ipynb
+
 **CRAG - Relevance Grading with Web Fallback**
 
 Grades retrieved documents for relevance and triggers web search if quality is low.
 
 **When to Use:**
+
 - High-accuracy requirements (legal, medical)
 - Out-of-domain queries
 - Fact-checking applications
 
 **Key Components:**
+
 - Relevance grader (LLM-based)
 - DuckDuckGo web search tool
 - Quality threshold logic
 
 **Example:**
+
 ```
 Query: "What is the latest LangChain version released in 2025?"
 
@@ -176,22 +196,26 @@ Vector DB retrieval → Low relevance (outdated docs)
 ---
 
 ### 09_self_rag.ipynb
+
 **Self-Reflective RAG with Auto-Critique**
 
 LLM decides autonomously when to retrieve, evaluates its own responses, and retries if quality is low.
 
 **When to Use:**
+
 - Exploratory research
 - High-quality requirements
 - Systems requiring self-correction
 
 **Key Components:**
+
 - Retrieval need classifier
 - Response self-critique
 - Iterative refinement loop
 - Citation validation
 
 **Example:**
+
 ```
 Query: "What is 5 + 7?"
 
@@ -212,22 +236,26 @@ Retrieval need: YES (specific info needed)
 ---
 
 ### 10_agentic_rag.ipynb
+
 **Autonomous Agent with Tools**
 
 Combines RAG with ReAct agents that can reason, plan, and use multiple tools (retriever, calculator, web search).
 
 **When to Use:**
+
 - Multi-step reasoning tasks
 - BI dashboards and analytics
 - Complex decision-making workflows
 
 **Key Components:**
+
 - ReAct agent (Reasoning + Acting)
 - Tool suite (retriever, calculator, web search)
 - Agent memory for conversation
 - LangGraph orchestration
 
 **Example:**
+
 ```
 Query: "If I have 10,000 documents and process 1M tokens/day,
         should I use OpenAI or HuggingFace embeddings?"
@@ -246,17 +274,20 @@ Agent reasoning:
 ---
 
 ### 11_comparison.ipynb
+
 **Comprehensive Benchmark**
 
 Side-by-side comparison of all 8 architectures across various query types and metrics.
 
 **Metrics Evaluated:**
+
 - Response time (latency)
 - Token usage (cost)
 - Success rate per query type
 - Qualitative response quality
 
 **Query Types Tested:**
+
 - Simple factual
 - Follow-up questions
 - Multi-concept queries
@@ -327,6 +358,7 @@ These are already included in `requirements.txt`.
 ## Progression Recommendations
 
 **Beginner Path** (Start here):
+
 1. 04_rag_with_memory.ipynb ← Easiest extension
 2. 05_branched_rag.ipynb
 3. 06_hyde.ipynb
@@ -386,15 +418,19 @@ For comprehensive guides, see:
 ## Troubleshooting
 
 **Issue**: "Vector store not found"
+
 - **Solution**: Run `fundamentals/02_embeddings_comparison.ipynb` first
 
 **Issue**: "Module 'shared' not found"
+
 - **Solution**: Ensure you're in the project root or adjust `sys.path`
 
 **Issue**: "Rate limit exceeded"
+
 - **Solution**: Add delays between API calls or use batch processing
 
 **Issue**: "DuckDuckGo search fails"
+
 - **Solution**: Check internet connection or use Tavily as alternative
 
 See main `README.md` for full troubleshooting guide.
