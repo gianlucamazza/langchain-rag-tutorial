@@ -119,6 +119,16 @@ After running these notebooks, you'll have:
 
 These artifacts are reused in advanced architecture notebooks to avoid redundant computation.
 
+## 📖 Documentation
+
+For detailed guidance, see:
+
+- 🚀 **[Getting Started](../../docs/GETTING_STARTED.md)** - Quick start guide
+- 🛠️ **[Installation](../../docs/INSTALLATION.md)** - Detailed setup
+- 📚 **[API Reference](../../docs/API_REFERENCE.md)** - Shared module docs
+- 🐛 **[Troubleshooting](../../docs/TROUBLESHOOTING.md)** - Common issues
+- ❓ **[FAQ](../../docs/FAQ.md)** - Frequently asked questions
+
 ## Next Steps
 
 Once you've completed the fundamentals:

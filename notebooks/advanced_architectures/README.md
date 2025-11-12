@@ -359,6 +359,20 @@ See each notebook's "Production Optimizations" section for specific guidance.
 
 ---
 
+## 📖 Documentation
+
+For comprehensive guides, see:
+
+- 🚀 **[Getting Started](../../docs/GETTING_STARTED.md)** - Quick start (5 min)
+- 🏗️ **[Architecture](../../docs/ARCHITECTURE.md)** - Design decisions
+- ⚡ **[Performance](../../docs/PERFORMANCE.md)** - Benchmarks & optimization
+- 🚀 **[Deployment](../../docs/DEPLOYMENT.md)** - Production setup
+- 📝 **[Examples](../../docs/EXAMPLES.md)** - Usage patterns
+- 🐛 **[Troubleshooting](../../docs/TROUBLESHOOTING.md)** - Detailed troubleshooting
+- ❓ **[FAQ](../../docs/FAQ.md)** - Common questions
+
+---
+
 ## Resources
 
 - [LangChain Documentation](https://python.langchain.com/)
