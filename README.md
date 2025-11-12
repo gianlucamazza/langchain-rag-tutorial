@@ -39,7 +39,7 @@ graph TD
        F --> G[Response]
        
        A1[Web, PDF, Text] --> A
-       B1[Chunks: 500-1000 chars] --> B
+       B1[Chunks: 1000 chars, 200 overlap] --> B
        C1[OpenAI 1536d / HuggingFace 384d] --> C
        D1[FAISS Index] --> D
        E1[Similarity/MMR] --> E
@@ -250,7 +250,9 @@ for source in sources:
 
 ## Requirements
 
-- **Python**: 3.10+ (tested on 3.10, 3.11, 3.12)
+- **Python**: 3.10-3.12 recommended
+  - **Note**: Python 3.13+ may show Pydantic v1 compatibility warnings (non-breaking)
+  - Tested successfully on 3.10, 3.11, 3.12, 3.14
 - **RAM**: 4GB+ (for sentence-transformers models)
 - **API**: OpenAI API key (required)
 
@@ -271,10 +273,13 @@ for source in sources:
 
 | Operation | OpenAI Embeddings | HuggingFace Embeddings |
 |-----------|-------------------|------------------------|
-| **Vector Store Creation** (120 docs) | ~1.0s | ~0.5s |
-| **Single Query Embedding** | ~0.2s | ~0.05s |
+| **Vector Store Creation** (120 docs) | ~1.0s | ~2.0s (first run) / ~0.5s (cached) |
+| **Single Query Embedding** | ~0.2s | ~0.05s (after model cached) |
+| **First Run** (with model download) | ~0.2s | ~2-3s (one-time) |
 | **Retrieval (k=4)** | ~0.1s | ~0.1s |
 | **Full RAG Query** (retrieval + LLM) | ~1-2s | ~1-2s |
+
+**Note**: HuggingFace first run includes one-time model download (~90MB). Subsequent runs are 4-5x faster once model is cached locally at `~/.cache/huggingface/`.
 
 ### Resource Requirements
 
@@ -521,6 +526,13 @@ for doc in docs:
    - Consider vector DB instead of FAISS (Pinecone, Weaviate, Chroma)
    - Implement load balancing
    - Batch document processing
+
+6. **Error Handling:**
+   - Wrap model initialization in try-except blocks
+   - Provide actionable troubleshooting messages
+   - Example: HuggingFace embeddings initialization (see Cell 15 in notebook)
+   - Gracefully handle API failures with retry logic
+   - Log errors with context for debugging
 
 ## License
 
