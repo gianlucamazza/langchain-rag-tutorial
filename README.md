@@ -1,318 +1,223 @@
 # LangChain RAG Tutorial
 
-A comprehensive educational tutorial for building a **RAG (Retrieval-Augmented Generation)** system using LangChain, with comparisons between different technologies and retrieval strategies.
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![LangChain](https://img.shields.io/badge/langchain-%3E%3D0.1.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-orange.svg)
 
-## 📋 Indice
+A practical tutorial for building a **Retrieval-Augmented Generation (RAG)** system using LangChain, with comprehensive comparisons of embeddings and retrieval strategies.
 
-- [Cos'è RAG?](#cosè-rag)
-- [Caratteristiche](#caratteristiche)
-- [Prerequisiti](#prerequisiti)
-- [Installazione](#installazione)
-- [Configurazione](#configurazione)
-- [Utilizzo](#utilizzo)
-- [Contenuto del Notebook](#contenuto-del-notebook)
-- [Confronti Tecnologici](#confronti-tecnologici)
-- [Troubleshooting](#troubleshooting)
-- [Risorse](#risorse)
-
-## 🤔 Cos'è RAG?
-
-**RAG (Retrieval-Augmented Generation)** è una tecnica potente che combina i punti di forza dei Large Language Models (LLM) con il recupero di informazioni da una base di conoscenza esterna.
-
-### Funzionamento
-
-```
-Query Utente → Embedding → Vector Search → Documenti Recuperati → LLM → Risposta
-                 ↓                           ↓
-          Vector Store ← Embeddings ← Chunks ← Documenti
-```
-
-RAG migliora le risposte degli LLM in tre passi:
-1. **Recupero**: trova documenti rilevanti da una knowledge base
-2. **Augmentation**: arricchisce il prompt con il contesto recuperato
-3. **Generazione**: produce risposte informate basate su LLM + documenti
-
-## ✨ Caratteristiche
-
-- 📚 **Caricamento documenti** da web, PDF, testi
-- ✂️ **Strategie di chunking** configurabili
-- 🔄 **Confronto embeddings**: OpenAI vs HuggingFace
-- 🔍 **Confronto retrieval**: Similarity Search vs MMR
-- 🤖 **Chain RAG complete** end-to-end
-- 🏷️ **Metadata filtering** per ricerche avanzate
-- 📊 **Source attribution** per trasparenza
-- 💡 **Best practices** e pitfalls comuni
-
-## 🔧 Prerequisiti
-
-- **Python 3.8+** (testato con Python 3.14)
-- **API Key OpenAI** (obbligatoria) - [Ottienila qui](https://platform.openai.com/api-keys)
-- **API Key HuggingFace** (opzionale) - Per embeddings locali non serve
-- **4GB+ RAM** - Per i modelli sentence-transformers
-
-## 🚀 Installazione
-
-### 1. Clona o scarica il progetto
+## Quick Start
 
 ```bash
-cd /percorso/della/cartella
-```
+# Clone and navigate to project
+cd llm_rag
 
-### 2. Crea un ambiente virtuale Python
-
-```bash
-# Crea l'ambiente virtuale
+# Create virtual environment
 python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Attiva l'ambiente virtuale
-# Su macOS/Linux:
-source venv/bin/activate
-
-# Su Windows:
-# venv\Scripts\activate
-```
-
-### 3. Installa le dipendenze
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Configure API key
+echo "OPENAI_API_KEY=sk-proj-..." > .env
+
+# Launch notebook
+jupyter notebook langchain_rag_tutorial.ipynb
 ```
 
-Questo installerà tutte le librerie necessarie:
-- **LangChain** e moduli correlati
-- **OpenAI** client API
-- **FAISS** per similarity search
-- **Sentence Transformers** per embeddings locali
-- **Jupyter** per eseguire il notebook
+## Architecture
 
-### 4. Verifica l'installazione
+```mermaid
+graph TD
+       A[Documents] --> B[Text Splitter]
+       B --> C[Embeddings]
+       C --> D[Vector Store]
+       D --> E[Retriever]
+       E --> F[LLM]
+       F --> G[Response]
+       
+       A1[Web, PDF, Text] --> A
+       B1[Chunks: 500-1000 chars] --> B
+       C1[OpenAI 1536d / HuggingFace 384d] --> C
+       D1[FAISS Index] --> D
+       E1[Similarity/MMR] --> E
+       F1[GPT-4o-mini] --> F
+```
+
+## Features
+
+- **Document Loading**: Web, PDF, and text sources with metadata
+- **Text Splitting**: Configurable chunking strategies
+- **Embedding Comparison**: OpenAI vs HuggingFace (local)
+- **Retrieval Strategies**: Similarity Search vs MMR (Maximal Marginal Relevance)
+- **Complete RAG Chains**: End-to-end implementation using LCEL
+- **Metadata Filtering**: Advanced querying with source attribution
+- **Best Practices**: Performance optimization and common pitfalls
+
+## Technology Comparison
+
+### Embeddings: OpenAI vs HuggingFace
+
+| Feature        | OpenAI           | HuggingFace (all-MiniLM-L6-v2) |
+| -------------- | ---------------- | ------------------------------ |
+| **Quality**    | Excellent        | Very Good                      |
+| **Dimensions** | 1536             | 384                            |
+| **Speed**      | Fast (API ~0.2s) | Faster (local ~0.05s)          |
+| **Cost**       | Pay-per-use      | Free                           |
+| **Privacy**    | Cloud-based      | Local                          |
+| **Setup**      | API key only     | Model download (~90MB)         |
+| **Internet**   | Required         | Not required (after download)  |
+
+**Recommendation**: OpenAI for production quality, HuggingFace for development/privacy/offline use.
+
+### Retrieval: Similarity Search vs MMR
+
+| Feature        | Similarity Search | MMR               |
+| -------------- | ----------------- | ----------------- |
+| **Relevance**  | Maximum           | High              |
+| **Diversity**  | Low               | Maximum           |
+| **Speed**      | Fast              | Slower            |
+| **Redundancy** | Possible          | Minimized         |
+| **Best For**   | Specific queries  | Topic exploration |
+
+**Recommendation**: Similarity for precise queries, MMR for diverse perspectives.
+
+## Project Structure
+
+```text
+llm_rag/
+├── langchain_rag_tutorial.ipynb  # Main tutorial notebook (10 sections)
+├── requirements.txt              # Python dependencies
+├── .env                          # API keys (create this)
+├── .gitignore                   # Excludes secrets and models
+└── README.md                    # This file
+```
+
+## Configuration
+
+### Required: OpenAI API Key
+
+1. Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+1. Create `.env` file in project root:
 
 ```bash
-python -c "import langchain; import openai; import faiss; print('✓ Installazione completata!')"
+OPENAI_API_KEY=sk-proj-your-key-here
 ```
 
-## ⚙️ Configurazione
+### Optional: HuggingFace Embeddings
 
-### 1. Configura le API Keys
+**Local embeddings** (no API key needed):
 
-Crea un file `.env` nella directory del progetto:
+```python
+from langchain_huggingface import HuggingFaceEmbeddings
+
+hf_embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+```
+
+**Note**: Model downloads automatically on first run (~90MB). Set `TOKENIZERS_PARALLELISM=false` in `.env` to suppress warnings.
+
+## Usage
+
+### Run Complete Notebook
 
 ```bash
-# Crea il file .env
-touch .env
-```
-
-Aggiungi le tue chiavi API:
-
-```env
-# Obbligatorio - Ottieni da https://platform.openai.com/api-keys
-OPENAI_API_KEY=sk-proj-...
-
-# Opzionale - Solo se vuoi usare API HuggingFace (non necessario per embeddings locali)
-HUGGINGFACE_API_KEY=hf_...
-```
-
-⚠️ **IMPORTANTE**: Non condividere mai il file `.env` o le tue API keys! Il file è già escluso da git tramite `.gitignore`.
-
-### 2. Verifica la configurazione
-
-Esegui il notebook e verifica la cella di test API key - vedrai:
-```
-✓ API key is VALID! Connection successful.
-```
-
-## 📓 Utilizzo
-
-### Avvia Jupyter Notebook
-
-```bash
-# Assicurati che l'ambiente virtuale sia attivo
+# Ensure virtual environment is active
 source venv/bin/activate
 
-# Avvia Jupyter
+# Start Jupyter
 jupyter notebook
+
+# Open langchain_rag_tutorial.ipynb
+# Execute: Kernel → Restart & Run All
 ```
 
-Il browser si aprirà automaticamente. Apri `langchain_rag_tutorial.ipynb` and follow the notebook cell by cell.
+### Notebook Sections
 
-### Esecuzione Rapida
+1. **Setup & Installation** - Dependencies and API validation
+1. **Document Loading** - WebBaseLoader with metadata
+1. **Text Splitting** - RecursiveCharacterTextSplitter strategies
+1. **Embeddings** - OpenAI vs HuggingFace comparison
+1. **Vector Stores** - FAISS indexing and search
+1. **Retrieval Strategies** - Similarity vs MMR testing
+1. **RAG Chains** - Complete chain construction with LCEL
+1. **Evaluation** - Multi-query testing and comparison
+1. **Advanced Features** - Metadata filtering, custom retrievers
+1. **Best Practices** - Pitfalls, optimization, security
 
-1. **Run All**: Kernel → Restart & Run All
-2. Attendi il completamento (2-5 minuti al primo avvio)
-3. Esplora i risultati e sperimenta con le query
+## Requirements
 
-## 📚 Contenuto del Notebook
+- **Python**: 3.8+ (tested on 3.14)
+- **RAM**: 4GB+ (for sentence-transformers models)
+- **API**: OpenAI API key (required)
 
-Il notebook è organizzato in sezioni progressive:
+## Technologies
 
-### 1. Setup e Installazione
-- Installazione dipendenze
-- Configurazione API keys
-- Test connessione OpenAI
+- **LangChain** (≥0.1.0) - Orchestration framework
+- **OpenAI** - GPT-4o-mini LLM and embeddings
+- **FAISS** - Vector similarity search
+- **Sentence Transformers** - Local embeddings
+- **BeautifulSoup4** - Web document parsing
+- **Python-dotenv** - Environment configuration
 
-### 2. Document Loading
-- WebBaseLoader per documentazione online
-- Metadata personalizzati
-- Gestione multi-source
+## Troubleshooting
 
-### 3. Text Splitting
-- RecursiveCharacterTextSplitter
-- Confronto strategie (1000/200 vs 500/100)
-- Best practices per chunk size
-
-### 4. Embeddings
-**Confronto completo OpenAI vs HuggingFace:**
-- Dimensioni vettori (1536 vs 384)
-- Performance (tempo, qualità)
-- Costi e privacy
-
-### 5. Vector Stores
-- Creazione FAISS vector stores
-- Indexing e similarity search
-- Testing con entrambi gli embeddings
-
-### 6. Retrieval Strategies
-**Confronto Similarity vs MMR:**
-- Similarity: massima rilevanza
-- MMR: bilanciamento rilevanza/diversità
-- Parametri e configurazione
-
-### 7. RAG Chains
-- Costruzione chain completa
-- LLM initialization (GPT-4o-mini)
-- Prompt engineering
-- Document combination
-
-### 8. Evaluation
-- Test query multiple
-- Confronto risultati tra strategie
-- Source attribution
-
-### 9. Advanced Features
-- Metadata filtering
-- Custom retrievers
-- Production tips
-
-### 10. Best Practices
-- Common pitfalls da evitare
-- Performance optimization
-- Security considerations
-
-## 🔄 Confronti Tecnologici
-
-### OpenAI vs HuggingFace Embeddings
-
-| Caratteristica | OpenAI | HuggingFace |
-|----------------|--------|-------------|
-| **Qualità** | ⭐⭐⭐⭐⭐ Eccellente | ⭐⭐⭐⭐ Molto buona |
-| **Costo** | 💰 Pay-per-use | 🆓 Gratis |
-| **Velocità** | ⚡ Veloce (API) | 🐢 Più lento (locale) |
-| **Privacy** | ☁️ Dati su cloud | 🔒 Dati locali |
-| **Dimensione** | 1536d | 384d |
-| **Setup** | API key | Download modello |
-
-**Raccomandazione:**
-- **Produzione/Qualità**: OpenAI
-- **Sviluppo/Privacy**: HuggingFace
-
-### Similarity Search vs MMR
-
-| Caratteristica | Similarity | MMR |
-|----------------|------------|-----|
-| **Rilevanza** | ⭐⭐⭐⭐⭐ Massima | ⭐⭐⭐⭐ Alta |
-| **Diversità** | ⭐⭐ Bassa | ⭐⭐⭐⭐⭐ Alta |
-| **Velocità** | ⚡ Veloce | 🐢 Più lento |
-| **Ridondanza** | 📝 Possibile | ✅ Minimizzata |
-| **Use case** | Query specifiche | Esplorazione topic |
-
-**Raccomandazione:**
-- **Query precise**: Similarity
-- **Overview/Diversità**: MMR
-
-## 🐛 Troubleshooting
-
-### Errore: "API key is INVALID"
+### Invalid API Key
 
 ```bash
-# Verifica che la chiave sia corretta nel file .env
+# Verify .env file
 cat .env | grep OPENAI_API_KEY
 
-# Ricarica il kernel Jupyter dopo aver modificato .env
-# Kernel → Restart
+# Restart Jupyter kernel after .env changes
 ```
 
-### Errore: "ipykernel not found"
+### Module Not Found
 
 ```bash
-pip install ipykernel
-python -m ipykernel install --user --name=venv
-```
-
-### ModuleNotFoundError
-
-```bash
-# Reinstalla le dipendenze
 pip install -r requirements.txt --upgrade
 ```
 
-### Download lento HuggingFace models
-
-Il primo download del modello `sentence-transformers/all-MiniLM-L6-v2` può richiedere 1-2 minuti. È normale e avviene solo la prima volta.
-
-### FAISS import error
+### FAISS Import Error (Mac Apple Silicon)
 
 ```bash
-# Su Mac con Apple Silicon, potrebbe servire:
 pip uninstall faiss-cpu
 pip install faiss-cpu --no-cache-dir
 ```
 
-### Memory errors
+### Memory Issues
 
-Se hai meno di 4GB RAM disponibili:
-- Riduci `chunk_size` a 500
-- Usa meno documenti in `urls`
-- Riduci `k` nei retriever a 2-3
+- Reduce `chunk_size` to 500
+- Decrease `k` parameter in retrievers to 2-3
+- Use fewer source documents
 
-## 📖 Risorse
+### HuggingFace Warnings
 
-### Documentazione Ufficiale
-- [LangChain Docs](https://python.langchain.com/)
+**Tokenizers parallelism warning:**
+
+```bash
+# Add to .env file
+TOKENIZERS_PARALLELISM=false
+```
+
+**Model download slow/fails:**
+
+- First run downloads ~90MB from HuggingFace Hub
+- Requires internet connection initially
+- Models cached in `~/.cache/huggingface/`
+- Check disk space and network connectivity
+
+## License
+
+MIT License - Free for educational and commercial use
+
+## Resources
+
+- [LangChain Documentation](https://python.langchain.com/)
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
-- [FAISS GitHub](https://github.com/facebookresearch/faiss)
+- [HuggingFace Model Hub](https://huggingface.co/models)
 - [Sentence Transformers](https://www.sbert.net/)
-
-### Tutorial e Guide
-- [LangChain RAG Tutorial](https://python.langchain.com/docs/use_cases/question_answering/)
-- [OpenAI Embeddings Guide](https://platform.openai.com/docs/guides/embeddings)
-- [RAG Best Practices](https://python.langchain.com/docs/use_cases/question_answering/sources)
-
-### Paper e Research
+- [FAISS GitHub](https://github.com/facebookresearch/faiss)
 - [RAG Paper (Lewis et al.)](https://arxiv.org/abs/2005.11401)
-- [Sentence-BERT](https://arxiv.org/abs/1908.10084)
-
-## 🤝 Contributi
-
-Suggerimenti per migliorare questo progetto:
-1. Testare con diversi tipi di documenti (PDF, CSV, etc.)
-2. Aggiungere metriche di valutazione automatiche
-3. Implementare conversational memory
-4. Confrontare altri modelli di embeddings
-5. Ottimizzare per dataset più grandi
-
-## 📝 Licenza
-
-Progetto educativo - libero utilizzo per scopi di apprendimento.
-
-## 🙏 Ringraziamenti
-
-- **LangChain** per il framework eccellente
-- **OpenAI** per GPT e embeddings API
-- **HuggingFace** per modelli open source
-- **FAISS** per similarity search efficiente
-
----
-
-**Buon apprendimento! 🚀**
-
-Per domande o problemi, consulta la sezione [Troubleshooting](#troubleshooting) o la documentazione ufficiale.

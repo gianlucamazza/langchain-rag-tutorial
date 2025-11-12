@@ -1,0 +1,5 @@
+# Wrap lines (keep = keep original wrapping)
+wrap = "keep"
+
+# End of line character
+end_of_line = "lf"
