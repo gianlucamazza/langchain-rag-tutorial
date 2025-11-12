@@ -29,3 +29,8 @@ ipykernel>=6.29.0
 
 # Utilities
 numpy>=1.24.0
+
+# Advanced RAG Architectures
+duckduckgo-search>=4.0.0  # CRAG - Web search fallback
+langgraph>=0.0.20         # Agentic RAG - Agent orchestration
+tavily-python>=0.3.0      # CRAG - Premium web search (optional)

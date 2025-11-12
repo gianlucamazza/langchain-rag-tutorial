@@ -57,6 +57,10 @@ sentence-transformers/
 vectorstore/
 vector_stores/
 
+# Data Directory (artifacts and cache)
+data/vector_stores/
+data/cache/
+
 # Logs
 *.log
 logs/
