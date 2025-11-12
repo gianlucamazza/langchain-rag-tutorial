@@ -1,6 +1,6 @@
-# LangChain RAG - Guida Completa
+# LangChain RAG Tutorial
 
-Un progetto educativo completo per costruire un sistema **RAG (Retrieval-Augmented Generation)** utilizzando LangChain, con confronti tra diverse tecnologie e strategie.
+A comprehensive educational tutorial for building a **RAG (Retrieval-Augmented Generation)** system using LangChain, with comparisons between different technologies and retrieval strategies.
 
 ## 📋 Indice
 
@@ -133,7 +133,7 @@ source venv/bin/activate
 jupyter notebook
 ```
 
-Il browser si aprirà automaticamente. Apri `langchain_rag_complete.ipynb` e segui il notebook cella per cella.
+Il browser si aprirà automaticamente. Apri `langchain_rag_tutorial.ipynb` and follow the notebook cell by cell.
 
 ### Esecuzione Rapida
 
