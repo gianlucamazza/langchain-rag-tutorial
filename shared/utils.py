@@ -54,7 +54,7 @@ def load_vector_store(
     path: str | Path,
     embeddings: Embeddings,
     verbose: bool = True
-) -> FAISS:
+) -> Optional[FAISS]:
     """
     Load a FAISS vector store from disk.
 
@@ -64,7 +64,7 @@ def load_vector_store(
         verbose: Whether to print status messages
 
     Returns:
-        FAISS: Loaded vector store
+        Optional[FAISS]: Loaded vector store, or None if loading fails
 
     Example:
         >>> from langchain_openai import OpenAIEmbeddings
@@ -83,7 +83,7 @@ def load_vector_store(
     except Exception as e:
         if verbose:
             print(f"✗ Error loading vector store from {path}: {e}")
-        raise
+        return None
 
 
 def save_vector_store(

@@ -13,8 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed incorrect config imports in notebooks 12-18: `LLM_MODEL` → `DEFAULT_MODEL`, `LLM_TEMPERATURE` → `DEFAULT_TEMPERATURE`, `EMBEDDINGS_MODEL` → `OPENAI_EMBEDDING_MODEL`, `VECTOR_STORE_PATH` → `VECTOR_STORE_DIR`
 - Fixed deprecated LangChain imports: `langchain.schema.Document` → `langchain_core.documents.Document` (notebooks 17-18)
 - Fixed `load_and_split()` tuple unpacking in notebooks 12, 13, 15, 16 (was causing AttributeError)
+- Fixed `load_vector_store()` exception handling in `shared/utils.py` (now returns `None` instead of raising, fixing RuntimeError in notebooks 12-13)
 - Removed unused import `RAG_PROMPT_TEMPLATE` from notebook 09 (code cleanup)
-- All notebooks now execute without ImportError, ModuleNotFoundError, or AttributeError
+- All notebooks now execute without ImportError, ModuleNotFoundError, AttributeError, or RuntimeError
 
 **Dependencies:**
 - Added missing dependencies to requirements.txt:
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All 18 notebooks now use consistent, correct config constant names
 - Better dependency management with clear categorization and comments
 - Improved code portability and maintainability
+- Enhanced `load_vector_store()` error handling with proper Optional[FAISS] return type
 
 ---
 
