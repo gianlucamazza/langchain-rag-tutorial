@@ -1,12 +1,17 @@
-"""
+"""  
 Streamlit Production Template for LangChain RAG
 Interactive UI for querying the RAG system
+
+Note: This template requires Streamlit dependencies.
+Install with: pip install -r requirements.txt
 """
 
 import streamlit as st
 import sys
 from pathlib import Path
 import time
+
+from typing import Tuple, Optional, Any
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -47,7 +52,7 @@ st.markdown("""
 
 
 @st.cache_resource
-def initialize_rag():
+def initialize_rag() -> Tuple[Optional[Any], Optional[Any]]:
     """Initialize RAG components (cached)"""
     try:
         # Load embeddings and vector store
@@ -67,7 +72,7 @@ def initialize_rag():
         return None, None
 
 
-def main():
+def main() -> None:
     """Main Streamlit application"""
 
     # Header
