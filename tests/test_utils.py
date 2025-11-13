@@ -4,7 +4,7 @@ Tests for shared/utils.py
 
 import pytest
 from shared.utils import format_docs, estimate_tokens
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 
 def test_format_docs():
