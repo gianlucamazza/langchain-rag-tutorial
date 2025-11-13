@@ -1,13 +1,16 @@
 """
 FastAPI Production Template for LangChain RAG
 Production-ready with error handling, logging, monitoring, and rate limiting
+
+Note: This template requires FastAPI dependencies.
+Install with: pip install -r requirements.txt
 """
 
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import logging
 import time
 from pathlib import Path
@@ -87,14 +90,14 @@ class HealthResponse(BaseModel):
 # Global state
 class AppState:
     """Application state management"""
-    def __init__(self):
-        self.vectorstore = None
-        self.retriever = None
-        self.llm = None
-        self.chain = None
-        self.initialized = False
+    def __init__(self) -> None:
+        self.vectorstore: Optional[Any] = None
+        self.retriever: Optional[Any] = None
+        self.llm: Optional[Any] = None
+        self.chain: Optional[Any] = None
+        self.initialized: bool = False
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize RAG components"""
         if self.initialized:
             return
@@ -110,6 +113,9 @@ class AppState:
             )
 
             # Create retriever
+            if self.vectorstore is None:
+                raise RuntimeError("Vector store not loaded")
+            
             self.retriever = self.vectorstore.as_retriever(
                 search_kwargs={"k": 4}
             )
@@ -118,6 +124,9 @@ class AppState:
             self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
             # Build RAG chain
+            if self.retriever is None or self.llm is None:
+                raise RuntimeError("Components not properly initialized")
+                
             self.chain = (
                 {"context": self.retriever | format_docs, "input": RunnablePassthrough()}
                 | RAG_PROMPT_TEMPLATE
@@ -138,7 +147,7 @@ state = AppState()
 
 
 # Dependency
-async def get_app_state():
+async def get_app_state() -> AppState:
     """Dependency to get application state"""
     if not state.initialized:
         state.initialize()
@@ -146,7 +155,7 @@ async def get_app_state():
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize on startup"""
     logger.info("Starting LangChain RAG API...")
     state.initialize()
@@ -180,6 +189,10 @@ async def query_rag(
 
     try:
         logger.info(f"Processing query: {request.query[:50]}...")
+
+        # Ensure components are initialized
+        if app_state.vectorstore is None or app_state.llm is None:
+            raise HTTPException(status_code=503, detail="RAG components not initialized")
 
         # Update retriever with custom k
         retriever = app_state.vectorstore.as_retriever(
@@ -219,7 +232,7 @@ async def query_rag(
 
 
 @app.get("/architectures")
-async def list_architectures():
+async def list_architectures() -> Dict[str, List[Dict[str, str]]]:
     """List available RAG architectures"""
     return {
         "architectures": [
@@ -246,7 +259,7 @@ async def list_architectures():
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Global exception handler"""
     logger.error(f"Unhandled exception: {exc}")
     return JSONResponse(

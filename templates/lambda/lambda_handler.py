@@ -25,6 +25,7 @@ VECTOR_STORE_KEY = os.environ.get('VECTOR_STORE_KEY', 'vector_stores/openai_embe
 vectorstore = None
 llm = None
 chain = None
+RAG_PROMPT = None
 
 
 def format_docs(docs):
@@ -34,7 +35,7 @@ def format_docs(docs):
 
 def initialize():
     """Initialize RAG components (cold start)"""
-    global vectorstore, llm, chain
+    global vectorstore, llm, chain, RAG_PROMPT
 
     if chain is not None:
         return  # Already initialized
@@ -48,7 +49,7 @@ def initialize():
         # Load vector store from S3 or local
         if VECTOR_STORE_BUCKET:
             # Load from S3
-            import boto3
+            import boto3  # type: ignore
             s3 = boto3.client('s3')
 
             # Download vector store files
@@ -110,6 +111,7 @@ def lambda_handler(event, context):
         "k": 4  # optional
     }
     """
+    global chain, vectorstore, llm, RAG_PROMPT
 
     # Initialize (only on cold start)
     initialize()
@@ -136,9 +138,12 @@ def lambda_handler(event, context):
 
         print(f"Processing query: {query}")
 
+        # Ensure initialization completed
+        if chain is None or vectorstore is None or RAG_PROMPT is None or llm is None:
+            raise RuntimeError("RAG components not initialized")
+
         # Update retriever if k is custom
         if k != 4:
-            global chain
             retriever = vectorstore.as_retriever(search_kwargs={"k": k})
             chain = (
                 {"context": retriever | format_docs, "input": RunnablePassthrough()}
