@@ -14,8 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed deprecated LangChain imports: `langchain.schema.Document` → `langchain_core.documents.Document` (notebooks 17-18)
 - Fixed `load_and_split()` tuple unpacking in notebooks 12, 13, 15, 16 (was causing AttributeError)
 - Fixed `load_vector_store()` exception handling in `shared/utils.py` (now returns `None` instead of raising, fixing RuntimeError in notebooks 12-13)
+- Fixed Python 3.9 compatibility: Updated type hints from lowercase `tuple`/`dict` to `Tuple`/`Dict` in:
+  - `shared/loaders.py`: Lines 130, 132, 188 (functions `compare_splitting_strategies`, `load_and_split`)
+  - `notebooks/14_sql_rag.ipynb`: Cell 12 (function `execute_sql_safely`)
+  - `notebooks/14_sql_rag.ipynb`: Cell 2 (added `Tuple` import), Cell 4 (use `PROJECT_ROOT` for database path)
 - Removed unused import `RAG_PROMPT_TEMPLATE` from notebook 09 (code cleanup)
-- All notebooks now execute without ImportError, ModuleNotFoundError, AttributeError, or RuntimeError
+- All notebooks now execute without ImportError, ModuleNotFoundError, AttributeError, RuntimeError, or TypeError (Python 3.9+)
 
 **Dependencies:**
 - Added missing dependencies to requirements.txt:
@@ -40,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better dependency management with clear categorization and comments
 - Improved code portability and maintainability
 - Enhanced `load_vector_store()` error handling with proper Optional[FAISS] return type
+- Full Python 3.9+ compatibility with proper type hints (Tuple, Dict imports)
+- Notebook 14: More robust database path construction using PROJECT_ROOT
 
 ---
 

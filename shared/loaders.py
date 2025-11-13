@@ -4,7 +4,7 @@ Provides functions for loading and splitting documents from various sources.
 """
 
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict
 from langchain_core.documents import Document
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -127,9 +127,9 @@ def split_documents(
 
 def compare_splitting_strategies(
     docs: List[Document],
-    strategies: List[tuple[int, int]],
+    strategies: List[Tuple[int, int]],
     verbose: bool = True
-) -> dict:
+) -> Dict:
     """
     Compare different text splitting strategies.
 
@@ -185,7 +185,7 @@ def load_and_split(
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
     verbose: bool = True
-) -> tuple[List[Document], List[Document]]:
+) -> Tuple[List[Document], List[Document]]:
     """
     Convenience function to load and split documents in one call.
 
