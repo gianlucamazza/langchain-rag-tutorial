@@ -95,6 +95,7 @@ DEFAULT_MMR_LAMBDA = float(os.getenv("DEFAULT_MMR_LAMBDA", "0.5"))  # Balance be
 # LLM
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "gpt-4o-mini")
 DEFAULT_TEMPERATURE = float(os.getenv("DEFAULT_TEMPERATURE", "0"))  # Deterministic responses
+DEFAULT_VISION_MODEL = os.getenv("DEFAULT_VISION_MODEL", "gpt-4o")  # For multimodal RAG (notebook 17)
 
 # Embeddings
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")

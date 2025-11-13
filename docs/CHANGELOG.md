@@ -5,6 +5,42 @@ All notable changes to LangChain RAG Tutorial will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-11-13
+
+### Fixed
+
+**Critical Fixes (Notebook Import Errors):**
+- Fixed incorrect config imports in notebooks 12-18: `LLM_MODEL` → `DEFAULT_MODEL`, `LLM_TEMPERATURE` → `DEFAULT_TEMPERATURE`, `EMBEDDINGS_MODEL` → `OPENAI_EMBEDDING_MODEL`, `VECTOR_STORE_PATH` → `VECTOR_STORE_DIR`
+- Fixed deprecated LangChain imports: `langchain.schema.Document` → `langchain_core.documents.Document` (notebooks 17-18)
+- Fixed `load_and_split()` tuple unpacking in notebooks 12, 13, 15, 16 (was causing AttributeError)
+- Removed unused import `RAG_PROMPT_TEMPLATE` from notebook 09 (code cleanup)
+- All notebooks now execute without ImportError, ModuleNotFoundError, or AttributeError
+
+**Dependencies:**
+- Added missing dependencies to requirements.txt:
+  - `langchain-core>=0.1.0` (required for updated imports)
+  - `sentence-transformers>=2.2.0` (fine-tuning embeddings, notebook 18)
+  - `python-louvain>=0.16` (community detection in GraphRAG, notebook 15)
+  - `fastapi>=0.109.0`, `streamlit>=1.31.0`, `uvicorn>=0.27.0`, `boto3>=1.34.0` (production templates)
+- Reorganized requirements.txt with clear categories and inline documentation
+
+**Configuration:**
+- Added `DEFAULT_VISION_MODEL` constant to `shared/config.py` for multimodal RAG (defaults to "gpt-4o")
+- Improved configuration consistency across all notebooks
+
+### Changed
+
+- **requirements.txt**: Complete reorganization with categories (Core LangChain, Vector Stores, Data Analysis, Graph & Knowledge, Multimodal, Production Deployment, etc.)
+- **requirements.txt**: Updated header with v1.2.1 version and installation instructions
+
+### Improved
+
+- All 18 notebooks now use consistent, correct config constant names
+- Better dependency management with clear categorization and comments
+- Improved code portability and maintainability
+
+---
+
 ## [1.2.0] - 2025-11-13
 
 ### Added

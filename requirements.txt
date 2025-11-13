@@ -1,39 +1,105 @@
-# Core dependencies
+# ============================================================================
+# LANGCHAIN RAG TUTORIAL - Production Dependencies
+# ============================================================================
+# Project: LangChain RAG Tutorial (v1.2.1)
+# Python: 3.9+
+# Last updated: 2025-11-13
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Core LangChain Ecosystem
+# ----------------------------------------------------------------------------
 langchain>=0.1.0
+langchain-core>=0.1.0              # Required for updated imports
 langchain-openai>=0.0.2
 langchain-community>=0.0.10
 langchain-huggingface>=0.0.1
 langgraph>=0.0.20
 
-# Vector stores
+# ----------------------------------------------------------------------------
+# Vector Stores & Embeddings
+# ----------------------------------------------------------------------------
 faiss-cpu>=1.7.4
+sentence-transformers>=2.2.0        # For fine-tuning embeddings (notebook 18)
 
-# Document processing
+# ----------------------------------------------------------------------------
+# Document Processing
+# ----------------------------------------------------------------------------
 beautifulsoup4>=4.12.0
 pypdf>=3.17.0
-
-# Utilities
-python-dotenv>=1.0.0
 tiktoken>=0.5.0
 
-# Web search
-duckduckgo-search>=4.0.0
+# ----------------------------------------------------------------------------
+# Data Analysis & Visualization
+# ----------------------------------------------------------------------------
+pandas>=2.2.0                      # SQL RAG, RAGAS evaluation
+matplotlib>=3.8.0                  # GraphRAG visualization
+plotly>=5.18.0                     # Interactive charts
 
-# Additional dependencies for v1.1.0
-networkx>=3.2
-matplotlib>=3.8.0
-plotly>=5.18.0
-sqlalchemy>=2.0.25
-pandas>=2.2.0
-spacy>=3.7.0
-ragas>=0.1.7
-datasets>=2.16.0
+# ----------------------------------------------------------------------------
+# Graph & Knowledge Management
+# ----------------------------------------------------------------------------
+networkx>=3.2                      # GraphRAG (notebook 15)
+python-louvain>=0.16               # Community detection in GraphRAG
 
-# New dependencies for v1.2.0 (Multimodal RAG)
-pillow>=10.0.0
-pytesseract>=0.3.10
-pdf2image>=1.16.0
+# ----------------------------------------------------------------------------
+# Database & SQL
+# ----------------------------------------------------------------------------
+sqlalchemy>=2.0.25                 # SQL RAG (notebook 14)
 
-# Jupyter
+# ----------------------------------------------------------------------------
+# Multimodal & Image Processing (v1.2.0)
+# ----------------------------------------------------------------------------
+pillow>=10.0.0                     # Image processing (notebook 17)
+pytesseract>=0.3.10                # OCR text extraction (notebook 17)
+pdf2image>=1.16.0                  # PDF image extraction (notebook 17)
+
+# ----------------------------------------------------------------------------
+# NLP & Advanced Processing
+# ----------------------------------------------------------------------------
+spacy>=3.7.0                       # Entity extraction for GraphRAG
+
+# ----------------------------------------------------------------------------
+# Evaluation & Testing
+# ----------------------------------------------------------------------------
+ragas>=0.1.7                       # RAG evaluation framework (notebook 16)
+datasets>=2.16.0                   # Dataset management for RAGAS
+
+# ----------------------------------------------------------------------------
+# Web Search
+# ----------------------------------------------------------------------------
+duckduckgo-search>=4.0.0           # Corrective RAG fallback
+
+# ----------------------------------------------------------------------------
+# Production Deployment Templates (v1.2.0)
+# ----------------------------------------------------------------------------
+fastapi>=0.109.0                   # REST API template
+streamlit>=1.31.0                  # Web UI template
+uvicorn>=0.27.0                    # ASGI server for FastAPI
+boto3>=1.34.0                      # AWS SDK for Lambda template
+
+# ----------------------------------------------------------------------------
+# Environment & Configuration
+# ----------------------------------------------------------------------------
+python-dotenv>=1.0.0
+
+# ----------------------------------------------------------------------------
+# Jupyter Notebooks
+# ----------------------------------------------------------------------------
 jupyter>=1.0.0
 ipykernel>=6.27.0
+
+# ============================================================================
+# Installation Instructions
+# ============================================================================
+# Install all dependencies:
+#   pip install -r requirements.txt
+#
+# Development dependencies (testing, linting):
+#   pip install -r requirements-dev.txt
+#
+# System dependencies (for multimodal features):
+#   macOS:   brew install tesseract poppler
+#   Ubuntu:  apt-get install tesseract-ocr poppler-utils
+#   Windows: See docs/INSTALLATION.md
+# ============================================================================
