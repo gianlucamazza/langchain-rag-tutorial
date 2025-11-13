@@ -13,10 +13,11 @@
 
 We take security vulnerabilities seriously. If you discover a security issue, please report it by:
 
-1. **Email**: security@yourdomain.com (replace with actual email)
+1. **Email**: <security@yourdomain.com> (replace with actual email)
 2. **GitHub Security Advisories**: Use the "Security" tab in this repository
 
 **Please do NOT**:
+
 - Open a public issue
 - Disclose the vulnerability publicly before it's fixed
 
@@ -66,6 +67,7 @@ None at this time.
 ## Security Updates
 
 Security updates will be announced via:
+
 - GitHub Security Advisories
 - Release notes in CHANGELOG.md
 - Git tags

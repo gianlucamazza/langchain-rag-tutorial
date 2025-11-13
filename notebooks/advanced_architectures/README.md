@@ -38,7 +38,7 @@ These provide the baseline components (vector stores, embeddings, retrievers) us
 
 ### 04_rag_with_memory.ipynb
 
-**RAG with Conversational Memory**
+#### RAG with Conversational Memory
 
 Extends Simple RAG with conversation history to handle follow-up questions and anaphoric references.
 
@@ -56,20 +56,20 @@ Extends Simple RAG with conversation history to handle follow-up questions and a
 
 **Example Query Flow:**
 
-```
+```text
 User: "What is RAG?"
 Bot: "RAG is Retrieval-Augmented Generation..."
 User: "What are its main components?" ← References "RAG" from context
 Bot: "The main components of RAG are..." ← Understands reference
 ```
 
-**Duration:** ~10 minutes
+Duration: ~10 minutes
 
 ---
 
 ### 05_branched_rag.ipynb
 
-**Multi-Query Parallel Retrieval**
+#### Multi-Query Parallel Retrieval
 
 Generates multiple sub-queries from a single user question and retrieves documents in parallel for better coverage.
 
@@ -87,7 +87,7 @@ Generates multiple sub-queries from a single user question and retrieves documen
 
 **Example:**
 
-```
+```text
 Query: "Compare OpenAI and HuggingFace embeddings for cost and performance"
 
 Generated sub-queries:
@@ -98,13 +98,13 @@ Generated sub-queries:
 → Retrieves diverse documents covering all aspects
 ```
 
-**Duration:** ~8 minutes
+Duration: ~8 minutes
 
 ---
 
 ### 06_hyde.ipynb
 
-**Hypothetical Document Embeddings**
+#### Hypothetical Document Embeddings
 
 Generates a hypothetical "perfect answer" document, embeds it, and uses it for retrieval instead of the raw query.
 
@@ -122,7 +122,7 @@ Generates a hypothetical "perfect answer" document, embeds it, and uses it for r
 
 **Example:**
 
-```
+```text
 Query: "How does MMR work?"
 
 Hypothetical Doc (generated):
@@ -134,13 +134,13 @@ relevant to the query and dissimilar to already selected documents..."
 → Embedding this detailed description finds better matches
 ```
 
-**Duration:** ~10 minutes
+Duration: ~10 minutes
 
 ---
 
 ### 07_adaptive_rag.ipynb
 
-**Query Complexity-Based Routing**
+#### Query Complexity-Based Routing
 
 Analyzes query complexity and routes to the optimal retrieval strategy (simple, MMR, or HyDe).
 
@@ -158,19 +158,19 @@ Analyzes query complexity and routes to the optimal retrieval strategy (simple, 
 
 **Example:**
 
-```
+```text
 "What is FAISS?" → SIMPLE → Fast similarity search
 "Compare vector databases" → MEDIUM → MMR for diversity
 "How to architect production RAG with privacy constraints?" → COMPLEX → HyDe
 ```
 
-**Duration:** ~12 minutes
+Duration: ~12 minutes
 
 ---
 
 ### 08_corrective_rag.ipynb
 
-**CRAG - Relevance Grading with Web Fallback**
+#### CRAG - Relevance Grading with Web Fallback
 
 Grades retrieved documents for relevance and triggers web search if quality is low.
 
@@ -188,7 +188,7 @@ Grades retrieved documents for relevance and triggers web search if quality is l
 
 **Example:**
 
-```
+```text
 Query: "What is the latest LangChain version released in 2025?"
 
 Vector DB retrieval → Low relevance (outdated docs)
@@ -196,13 +196,13 @@ Vector DB retrieval → Low relevance (outdated docs)
 → Combine sources → High-quality answer
 ```
 
-**Duration:** ~15 minutes
+Duration: ~15 minutes
 
 ---
 
 ### 09_self_rag.ipynb
 
-**Self-Reflective RAG with Auto-Critique**
+#### Self-Reflective RAG with Auto-Critique
 
 LLM decides autonomously when to retrieve, evaluates its own responses, and retries if quality is low.
 
@@ -221,7 +221,7 @@ LLM decides autonomously when to retrieve, evaluates its own responses, and retr
 
 **Example:**
 
-```
+```text
 Query: "What is 5 + 7?"
 
 Retrieval need: NO (general knowledge)
@@ -236,13 +236,13 @@ Retrieval need: YES (specific info needed)
 → Improved answer → SCORE 5 → Approved
 ```
 
-**Duration:** ~20 minutes
+Duration: ~20 minutes
 
 ---
 
 ### 10_agentic_rag.ipynb
 
-**Autonomous Agent with Tools**
+#### Autonomous Agent with Tools
 
 Combines RAG with ReAct agents that can reason, plan, and use multiple tools (retriever, calculator, web search).
 
@@ -261,7 +261,7 @@ Combines RAG with ReAct agents that can reason, plan, and use multiple tools (re
 
 **Example:**
 
-```
+```text
 Query: "If I have 10,000 documents and process 1M tokens/day,
         should I use OpenAI or HuggingFace embeddings?"
 
@@ -274,24 +274,24 @@ Agent reasoning:
    Final Answer: "HuggingFace is better for your use case because..."
 ```
 
-**Duration:** ~25 minutes
+Duration: ~25 minutes
 
 ---
 
 ### 11_comparison.ipynb
 
-**Comprehensive Benchmark**
+#### Comprehensive Benchmark
 
 Side-by-side comparison of all 12 architectures across various query types and metrics.
 
-**Metrics Evaluated:**
+#### Metrics Evaluated
 
 - Response time (latency)
 - Token usage (cost)
 - Success rate per query type
 - Qualitative response quality
 
-**Query Types Tested:**
+#### Query Types Tested
 
 - Simple factual
 - Follow-up questions
@@ -300,13 +300,13 @@ Side-by-side comparison of all 12 architectures across various query types and m
 - Out-of-domain queries
 - Complex reasoning
 
-**Duration:** ~30 minutes (runs all architectures)
+Duration: ~30 minutes (runs all architectures)
 
 ---
 
 ### 12_contextual_rag.ipynb ✨
 
-**Context-Augmented Chunking (Anthropic Technique)**
+#### Context-Augmented Chunking (Anthropic Technique)
 
 Enhances document chunks by prepending them with document-level context, improving retrieval precision with minimal query overhead.
 
@@ -326,7 +326,7 @@ Enhances document chunks by prepending them with document-level context, improvi
 
 **Example:**
 
-```
+```text
 Original chunk: "The function returns a list of tokens."
 
 Contextualized chunk:
@@ -337,13 +337,13 @@ The function returns a list of tokens."
 → Embedding this contextualized version improves semantic matching
 ```
 
-**Duration:** ~12 minutes
+Duration: ~12 minutes
 
 ---
 
 ### 13_fusion_rag.ipynb ✨
 
-**RAG-Fusion with Reciprocal Rank Fusion**
+#### RAG-Fusion with Reciprocal Rank Fusion
 
 Generates multiple query perspectives and combines results using the RRF algorithm for superior ranking quality.
 
@@ -363,7 +363,7 @@ Generates multiple query perspectives and combines results using the RRF algorit
 
 **Example:**
 
-```
+```text
 Query: "How do I optimize RAG performance?"
 
 Generated queries:
@@ -377,13 +377,13 @@ For each document: score = sum(1 / (k + rank_i)) across all queries
 → Documents appearing in multiple result sets get higher scores
 ```
 
-**Duration:** ~15 minutes
+Duration: ~15 minutes
 
 ---
 
 ### 14_sql_rag.ipynb ✨
 
-**Natural Language to SQL**
+#### Natural Language to SQL
 
 Converts natural language questions into SQL queries, executes them safely, and interprets results.
 
@@ -405,26 +405,29 @@ Converts natural language questions into SQL queries, executes them safely, and 
 
 **Example:**
 
-```
 Query: "Show me the top 5 customers by total purchase amount"
 
 Pipeline:
+
 1. Retrieve relevant schema (Customer, Invoice, InvoiceLine tables)
 2. Generate SQL:
+
+   ```sql
    SELECT c.FirstName, c.LastName, SUM(i.Total) as TotalSpent
    FROM Customer c JOIN Invoice i ON c.CustomerId = i.CustomerId
    GROUP BY c.CustomerId ORDER BY TotalSpent DESC LIMIT 5
+   ```
+
 3. Execute safely (read-only connection)
 4. Interpret results: "The top customer is Frank Harris who spent $144..."
-```
 
-**Duration:** ~18 minutes
+Duration: ~18 minutes
 
 ---
 
 ### 15_graphrag.ipynb ✨
 
-**Graph-Based Knowledge Retrieval (Microsoft Research)**
+#### Graph-Based Knowledge Retrieval (Microsoft Research)
 
 Extracts entities and relationships from documents, constructs a knowledge graph, and performs multi-hop reasoning.
 
@@ -447,7 +450,7 @@ Extracts entities and relationships from documents, constructs a knowledge graph
 
 **Example:**
 
-```
+```text
 Documents: "Alice works at OpenAI. Bob works at Anthropic. Alice and Bob are friends."
 
 Graph Construction:
@@ -460,13 +463,13 @@ Query: "Who are Alice's colleagues' friends?"
 Multi-hop: Alice → OpenAI → [employees] → [their friends]
 ```
 
-**Duration:** ~25 minutes
+Duration: ~25 minutes
 
 ---
 
 ### 16_evaluation_ragas.ipynb ✨
 
-**RAGAS Evaluation Framework**
+#### RAGAS Evaluation Framework
 
 Comprehensive quality assessment for RAG systems using 6 evaluation metrics.
 
@@ -477,7 +480,7 @@ Comprehensive quality assessment for RAG systems using 6 evaluation metrics.
 - A/B testing RAG improvements
 - Cost-quality trade-off analysis
 
-**Key Metrics:**
+#### Key Metrics
 
 1. **Faithfulness**: Answer grounded in context?
 2. **Answer Relevancy**: Response addresses the question?
@@ -486,9 +489,9 @@ Comprehensive quality assessment for RAG systems using 6 evaluation metrics.
 5. **Answer Similarity**: Semantic match with ground truth?
 6. **Answer Correctness**: Factual accuracy score
 
-**Example Evaluation:**
+#### Example Evaluation
 
-```
+```text
 Test Dataset:
 - Question: "What is RAG?"
 - Ground Truth: "RAG is Retrieval-Augmented Generation..."
@@ -504,7 +507,7 @@ Scores:
 - Correctness: 0.93 (factually accurate)
 ```
 
-**Duration:** ~20 minutes
+Duration: ~20 minutes
 
 ---
 
@@ -594,25 +597,25 @@ These are already included in `requirements.txt`.
 
 **Intermediate Path**:
 
-4. 12_contextual_rag.ipynb ✨ ← Context-augmented chunks
-5. 13_fusion_rag.ipynb ✨ ← Best ranking quality
-6. 07_adaptive_rag.ipynb
-7. 08_corrective_rag.ipynb
+1. 12_contextual_rag.ipynb ✨ ← Context-augmented chunks
+2. 13_fusion_rag.ipynb ✨ ← Best ranking quality
+3. 07_adaptive_rag.ipynb
+4. 08_corrective_rag.ipynb
 
 **Advanced Path**:
 
-8. 14_sql_rag.ipynb ✨ ← Natural language to SQL
-9. 09_self_rag.ipynb
-10. 10_agentic_rag.ipynb
+1. 14_sql_rag.ipynb ✨ ← Natural language to SQL
+2. 09_self_rag.ipynb
+3. 10_agentic_rag.ipynb
 
 **Expert Path** ✨:
 
-11. 15_graphrag.ipynb ✨ ← Graph-based reasoning
+1. 15_graphrag.ipynb ✨ ← Graph-based reasoning
 
 **Analysis & Evaluation**:
 
-12. 11_comparison.ipynb ← Benchmark all 12 architectures
-13. 16_evaluation_ragas.ipynb ✨ ← Comprehensive quality metrics
+1. 11_comparison.ipynb ← Benchmark all 12 architectures
+2. 16_evaluation_ragas.ipynb ✨ ← Comprehensive quality metrics
 
 ---
 
@@ -647,16 +650,19 @@ For comprehensive guides, see:
 
 ## Resources
 
-**Core RAG:**
+### Core RAG
+
 - [LangChain Documentation](https://python.langchain.com/)
 - [RAG Paper (Lewis et al.)](https://arxiv.org/abs/2005.11401)
 
-**Advanced Architectures:**
+### Advanced Architectures
+
 - [Self-RAG Paper](https://arxiv.org/abs/2310.11511)
 - [CRAG Paper](https://arxiv.org/abs/2401.15884)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 
-**New Architectures ✨:**
+### New Architectures ✨
+
 - [Contextual Retrieval (Anthropic)](https://www.anthropic.com/news/contextual-retrieval) - Context-augmented chunking
 - [RAG-Fusion Paper](https://arxiv.org/abs/2402.03367) - Reciprocal Rank Fusion
 - [GraphRAG (Microsoft Research)](https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/) - Graph-based RAG
@@ -669,18 +675,18 @@ For comprehensive guides, see:
 
 **Issue**: "Vector store not found"
 
-- **Solution**: Run `fundamentals/02_embeddings_comparison.ipynb` first
+- Solution: Run `fundamentals/02_embeddings_comparison.ipynb` first
 
 **Issue**: "Module 'shared' not found"
 
-- **Solution**: Ensure you're in the project root or adjust `sys.path`
+- Solution: Ensure you're in the project root or adjust `sys.path`
 
 **Issue**: "Rate limit exceeded"
 
-- **Solution**: Add delays between API calls or use batch processing
+- Solution: Add delays between API calls or use batch processing
 
 **Issue**: "DuckDuckGo search fails"
 
-- **Solution**: Check internet connection or use Tavily as alternative
+- Solution: Check internet connection or use Tavily as alternative
 
 See main `README.md` for full troubleshooting guide.

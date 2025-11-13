@@ -77,7 +77,7 @@ This directory contains foundational notebooks for understanding and building ba
 
 Follow the notebooks in order:
 
-```
+```text
 01_setup_and_basics.ipynb
          ↓
 02_embeddings_comparison.ipynb
