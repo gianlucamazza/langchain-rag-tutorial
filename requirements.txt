@@ -21,6 +21,7 @@ langgraph>=0.0.20
 # ----------------------------------------------------------------------------
 faiss-cpu>=1.7.4
 sentence-transformers>=2.2.0        # For fine-tuning embeddings (notebook 18)
+accelerate>=0.26.0                  # Required for fine-tuning with Trainer
 
 # ----------------------------------------------------------------------------
 # Document Processing

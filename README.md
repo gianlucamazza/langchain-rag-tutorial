@@ -9,7 +9,7 @@
 
 A comprehensive, production-ready tutorial for building **Retrieval-Augmented Generation (RAG)** systems using LangChain.
 
-**🎯 Features:** **12 advanced RAG architectures** | Multimodal RAG (images + text) | RAGAS evaluation | SQL & Graph support | Docker & production templates | Complete testing & CI/CD
+**🎯 Features:** **15 advanced RAG architectures** | Multimodal RAG (images + text) | Fine-tuning embeddings | RAGAS evaluation | SQL & Graph support | Docker & production templates | Complete testing & CI/CD
 
 ## 🚀 Quick Start
 
@@ -46,7 +46,7 @@ Master the core concepts of RAG:
 
 ### Advanced Architectures (4-5 hours)
 
-Explore **14 production-ready patterns**:
+Explore **15 production-ready patterns**:
 
 | Architecture              | Complexity | Use Case            | Key Feature                      |
 | ------------------------- | ---------- | ------------------- | -------------------------------- |
@@ -166,9 +166,11 @@ llm_rag/
 - **LangChain** v1.0+ - Framework & LCEL
 - **OpenAI** GPT-4o-mini + GPT-4 Vision - Fast LLM + multimodal
 - **FAISS** - Vector similarity search
+- **Sentence Transformers** + **Accelerate** - Fine-tuning embeddings
 - **NetworkX** - Graph algorithms
 - **SQLAlchemy** - Database abstraction
 - **RAGAS** - RAG evaluation framework
+- **Tesseract OCR** + **Pillow** - Image processing
 - **FastAPI** + **Streamlit** - Production deployment
 - **Docker** + **Docker Compose** - Containerization
 - **pytest** + **GitHub Actions** - Testing & CI/CD
@@ -197,6 +199,8 @@ llm_rag/
 | 📈 **Quality evaluation**      | RAGAS             | [16_evaluation_ragas.ipynb](notebooks/advanced_architectures/16_evaluation_ragas.ipynb) ✨       |
 
 **Rule of thumb:** Start with Simple RAG → Add Contextual for quality → Use specialized for specific needs.
+
+**Performance tip:** For domain-specific content with <75% accuracy, consider fine-tuning embeddings (notebook 18) for +15-25% improvement.
 
 [❓ Need help choosing? See FAQ →](docs/FAQ.md#which-architecture-should-i-choose)
 
@@ -276,8 +280,9 @@ aws lambda create-function --function-name rag-api --zip-file fileb://function.z
 
 - **Python** 3.9+ (3.10+ recommended)
 - **OpenAI API Key** ([Get one here](https://platform.openai.com/api-keys))
-- **~2GB RAM** (4GB+ recommended)
-- **~1.5GB disk space** (dependencies + models)
+- **~2GB RAM** (4GB+ recommended for fine-tuning)
+- **~2GB disk space** (dependencies + models)
+- **System packages** (for multimodal): Tesseract OCR, Poppler (see [INSTALLATION.md](docs/INSTALLATION.md))
 
 [📖 Detailed requirements →](docs/INSTALLATION.md#prerequisites)
 
@@ -377,4 +382,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 **⭐ If this helps you, please star the repo!**
 
-**Latest:** v1.2.0 - Multimodal RAG, Docker, Production Templates | Made with ❤️ using Claude Code | [View Changelog](docs/CHANGELOG.md)
+**Latest:** v1.2.1 - Critical import fixes, Python 3.9 compatibility, accelerate support | Made with ❤️ using Claude Code | [View Changelog](docs/CHANGELOG.md)
