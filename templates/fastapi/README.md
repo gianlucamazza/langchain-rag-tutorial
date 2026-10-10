@@ -1,15 +1,15 @@
-# FastAPI starter template
+# FastAPI Template
 
 Educational FastAPI wrapper around the tutorial RAG chain. Useful for local demos; not a hardened production service (no auth, rate limits, or SLO testing).
 
 ## Features
 
-- RESTful API with automatic documentation
-- Basic error handling and logging
+- REST API with automatic OpenAPI documentation
+- Request validation with Pydantic
+- Error handling and logging
 - CORS configuration
 - Health check endpoint
-- Request validation with Pydantic
-- Async request handlers
+- Async request handling
 
 ## Quick Start
 
@@ -21,30 +21,40 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
+The template imports the project's `shared` module, which loads `.env` from the project root:
+
 ```bash
-cp .env.example .env
-# Edit .env with your OpenAI API key
+cp ../../.env.example ../../.env
+# Set OPENAI_API_KEY; optionally set DEFAULT_MODEL (default: gpt-4o-mini)
 ```
 
-### 3. Run Development Server
+The template loads the OpenAI vector store from `OPENAI_VECTOR_STORE_PATH`
+(`data/vector_stores/openai__<OPENAI_EMBEDDING_MODEL>`, default
+`openai__text-embedding-3-small`) using `OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)`. Build it first with notebook 02 or `make vector-stores` from the project root.
+
+### 3. Run the Server
 
 ```bash
 python app.py
+# or, with auto-reload
+uvicorn app:app --reload
 ```
 
-The API will be available at: http://localhost:8000
+The API is served at http://localhost:8000.
 
 ## API Documentation
 
-Interactive API docs: http://localhost:8000/docs
-ReDoc: http://localhost:8000/redoc
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ## Endpoints
 
 ### POST /query
-Query the RAG system
+
+Query the RAG system.
 
 **Request:**
+
 ```json
 {
   "query": "What is RAG?",
@@ -54,6 +64,7 @@ Query the RAG system
 ```
 
 **Response:**
+
 ```json
 {
   "answer": "RAG is Retrieval-Augmented Generation...",
@@ -64,29 +75,35 @@ Query the RAG system
 ```
 
 ### GET /health
-Health check
 
-**Response:**
+Health check. Returns the service status, the application version and whether the vector store is
+loaded:
+
 ```json
 {
   "status": "healthy",
-  "version": "1.2.0",
+  "version": "<app version>",
   "vector_store_loaded": true
 }
 ```
 
 ### GET /architectures
-List available architectures
 
-## Running the template
+Lists the available architectures.
 
-### Docker
+## Configuration
 
-```bash
-docker build -t rag-api .
-docker run -p 8000:8000 --env-file .env rag-api
-```
+| Variable         | Default       | Description                     |
+| ---------------- | ------------- | ------------------------------- |
+| `OPENAI_API_KEY` | (required)    | OpenAI API key                  |
+| `DEFAULT_MODEL`  | `gpt-4o-mini` | Chat model used for answers     |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model; selects the vector store |
 
-### Cloud Deployment
+## Compose / further deployment
 
-See main documentation for AWS, GCP, Azure deployment guides.
+The Compose `api` service runs this template from the main image (`docker compose up -d api`,
+port 8000, health check `GET /health`); see
+[docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md#docker-compose). No template-specific Dockerfile is
+included. See
+[docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md#custom-fastapi-image) for a container recipe and
+notes on auth, rate limiting, and monitoring if you take the template beyond a local demo.

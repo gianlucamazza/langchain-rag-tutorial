@@ -1,95 +1,31 @@
-version: '3.8'
-
 services:
-  # Main RAG application
-  rag-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: langchain-rag-app
+  # Jupyter notebooks
+  notebooks:
+    build: .
+    container_name: langchain-rag-notebooks
     ports:
-      - "8888:8888"  # Jupyter
-      - "8000:8000"  # FastAPI (if running API)
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
-      - REDIS_URL=redis://redis:6379
-      - ENVIRONMENT=production
+      - "8888:8888"
+    env_file: .env
     volumes:
       - ./data:/app/data
       - ./notebooks:/app/notebooks
       - ./shared:/app/shared
-    depends_on:
-      - redis
     restart: unless-stopped
-    networks:
-      - rag-network
 
-  # Redis for caching
-  redis:
-    image: redis:7-alpine
-    container_name: langchain-rag-redis
+  # FastAPI template (needs vector stores: `make vector-stores`)
+  api:
+    build: .
+    container_name: langchain-rag-api
+    command: ["uvicorn", "templates.fastapi.app:app", "--host", "0.0.0.0", "--port", "8000"]
     ports:
-      - "6379:6379"
+      - "8000:8000"
+    env_file: .env
     volumes:
-      - redis-data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-    networks:
-      - rag-network
+      - ./data:/app/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Prometheus for monitoring (optional)
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: langchain-rag-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
     restart: unless-stopped
-    networks:
-      - rag-network
-    profiles:
-      - monitoring
-
-  # Grafana for visualization (optional)
-  grafana:
-    image: grafana/grafana:latest
-    container_name: langchain-rag-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-      - GF_INSTALL_PLUGINS=redis-datasource
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
-    depends_on:
-      - prometheus
-    restart: unless-stopped
-    networks:
-      - rag-network
-    profiles:
-      - monitoring
-
-volumes:
-  redis-data:
-    driver: local
-  prometheus-data:
-    driver: local
-  grafana-data:
-    driver: local
-
-networks:
-  rag-network:
-    driver: bridge

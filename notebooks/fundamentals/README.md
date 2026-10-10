@@ -79,9 +79,9 @@ Follow the notebooks in order:
 
 ```text
 01_setup_and_basics.ipynb
-         ↓
+         |
 02_embeddings_comparison.ipynb
-         ↓
+         |
 03_simple_rag.ipynb
 ```
 
@@ -106,7 +106,8 @@ All notebooks use the `shared` module for common functions:
 from shared import (
     load_langchain_docs,      # Document loading
     split_documents,          # Text splitting
-    load_vector_store,        # Load saved vector stores
+    load_vector_store,        # Load saved vector stores (None if missing)
+    require_vector_store,     # Load, or raise FileNotFoundError with build instructions
     save_vector_store,        # Save vector stores
     RAG_PROMPT_TEMPLATE,      # Standard RAG prompt
 )
@@ -119,8 +120,13 @@ This ensures code reusability and consistency across notebooks.
 After running these notebooks, you'll have:
 
 1. **Vector Stores** (saved in `data/vector_stores/`):
-   - `openai_embeddings/` - FAISS index with OpenAI embeddings
-   - `huggingface_embeddings/` - FAISS index with HuggingFace embeddings
+   - `openai__<OPENAI_EMBEDDING_MODEL>/` - FAISS index with OpenAI embeddings
+     (default `openai__text-embedding-3-small`)
+   - `hf__<HF_EMBEDDING_MODEL, / replaced by __>/` - FAISS index with HuggingFace embeddings
+     (default `hf__BAAI__bge-small-en-v1.5`)
+
+   Directory names follow the configured embedding models, so changing a model never loads a stale
+   index. `make vector-stores` builds the same stores without running the notebook.
 
 2. **Performance Baselines**:
    - Embedding generation times
@@ -130,15 +136,13 @@ After running these notebooks, you'll have:
 
 These artifacts are reused in advanced architecture notebooks to avoid redundant computation.
 
-## 📖 Documentation
+## Documentation
 
-For detailed guidance, see:
-
-- 🚀 **[Getting Started](../../docs/GETTING_STARTED.md)** - Quick start guide
-- 🛠️ **[Installation](../../docs/INSTALLATION.md)** - Detailed setup
-- 📚 **[API Reference](../../docs/API_REFERENCE.md)** - Shared module docs
-- 🐛 **[Troubleshooting](../../docs/TROUBLESHOOTING.md)** - Common issues
-- ❓ **[FAQ](../../docs/FAQ.md)** - Frequently asked questions
+- [Getting Started](../../docs/GETTING_STARTED.md) - Quick start guide
+- [Installation](../../docs/INSTALLATION.md) - Detailed setup
+- [API Reference](../../docs/API_REFERENCE.md) - Shared module docs
+- [Troubleshooting](../../docs/TROUBLESHOOTING.md) - Common issues
+- [FAQ](../../docs/FAQ.md) - Frequently asked questions
 
 ## Next Steps
 
@@ -152,4 +156,4 @@ Once you've completed the fundamentals:
 - Experiment with **Self-RAG** for self-reflective systems
 - Create **Agentic RAG** for autonomous reasoning
 
-See `../advanced_architectures/README.md` for details.
+See [advanced_architectures/README.md](../advanced_architectures/README.md) for details.

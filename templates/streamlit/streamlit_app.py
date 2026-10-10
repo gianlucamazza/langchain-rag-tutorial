@@ -1,42 +1,45 @@
-"""  
-Streamlit Production Template for LangChain RAG
-Interactive UI for querying the RAG system
+"""
+Streamlit starter template for the LangChain RAG tutorial.
+Interactive UI for querying the tutorial RAG chain.
 
 Note: This template requires Streamlit dependencies.
 Install with: pip install -r requirements.txt
 """
 
-import streamlit as st
 import sys
-from pathlib import Path
 import time
+from pathlib import Path
+
+import streamlit as st
 
 from typing import Tuple, Optional, Any
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-from shared import (
-    load_vector_store,
-    format_docs,
-    VECTOR_STORE_DIR
+from shared import format_docs, require_vector_store
+from shared.config import (
+    DEFAULT_MODEL,
+    DEFAULT_TEMPERATURE,
+    OPENAI_EMBEDDING_MODEL,
+    OPENAI_VECTOR_STORE_PATH,
 )
 from shared.prompts import RAG_PROMPT_TEMPLATE
 
 # Page configuration
 st.set_page_config(
     page_title="LangChain RAG Tutorial",
-    page_icon="🦜",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # Custom CSS
-st.markdown("""
+st.markdown(
+    """
     <style>
     .main-header {
         font-size: 3rem;
@@ -48,7 +51,9 @@ st.markdown("""
         margin-top: 1rem;
     }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 @st.cache_resource
@@ -56,14 +61,11 @@ def initialize_rag() -> Tuple[Optional[Any], Optional[Any]]:
     """Initialize RAG components (cached)"""
     try:
         # Load embeddings and vector store
-        embeddings = OpenAIEmbeddings()
-        vectorstore = load_vector_store(
-            VECTOR_STORE_DIR / "openai_embeddings",
-            embeddings
-        )
+        embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+        vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 
         # Initialize LLM
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        llm = ChatOpenAI(model=DEFAULT_MODEL, temperature=DEFAULT_TEMPERATURE)
 
         return vectorstore, llm
 
@@ -76,17 +78,17 @@ def main() -> None:
     """Main Streamlit application"""
 
     # Header
-    st.markdown('<div class="main-header">🦜 LangChain RAG Tutorial</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">LangChain RAG Tutorial</div>', unsafe_allow_html=True)
 
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        st.header("Configuration")
 
         # Architecture selection
         architecture = st.selectbox(
             "RAG Architecture",
             ["Simple RAG", "Contextual RAG", "Fusion RAG"],
-            help="Select the RAG architecture to use"
+            help="Select the RAG architecture to use",
         )
 
         # Number of documents
@@ -95,7 +97,7 @@ def main() -> None:
             min_value=1,
             max_value=10,
             value=4,
-            help="Number of documents to retrieve from vector store"
+            help="Number of documents to retrieve from vector store",
         )
 
         # Temperature
@@ -105,15 +107,15 @@ def main() -> None:
             max_value=1.0,
             value=0.0,
             step=0.1,
-            help="Controls randomness in responses"
+            help="Controls randomness in responses",
         )
 
         st.divider()
 
         # Info
-        st.subheader("📚 About")
+        st.subheader("About")
         st.markdown("""
-        This is a production-ready RAG application built with:
+        This is a tutorial RAG demo built with:
         - **LangChain** for RAG pipelines
         - **OpenAI** for embeddings and LLM
         - **FAISS** for vector search
@@ -123,32 +125,32 @@ def main() -> None:
         """)
 
     # Initialize RAG
-    with st.spinner("🔄 Loading RAG components..."):
+    with st.spinner("Loading RAG components..."):
         vectorstore, llm = initialize_rag()
 
     if vectorstore is None or llm is None:
-        st.error("❌ Failed to load RAG components. Check your configuration.")
+        st.error("Failed to load RAG components. Check your configuration.")
         return
 
     # Main content
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.subheader("💬 Ask a Question")
+        st.subheader("Ask a Question")
 
         # Query input
         query = st.text_area(
             "Enter your question:",
             height=100,
             placeholder="e.g., What is RAG and how does it work?",
-            key="query_input"
+            key="query_input",
         )
 
         # Submit button
-        submit = st.button("🚀 Get Answer", type="primary", use_container_width=True)
+        submit = st.button("Get Answer", type="primary", use_container_width=True)
 
     with col2:
-        st.subheader("📊 Statistics")
+        st.subheader("Statistics")
 
         # Placeholder for statistics
         stat_col1, stat_col2 = st.columns(2)
@@ -159,14 +161,12 @@ def main() -> None:
 
     # Process query
     if submit and query:
-        with st.spinner("🤔 Thinking..."):
+        with st.spinner("Thinking..."):
             start_time = time.time()
 
             try:
                 # Create retriever
-                retriever = vectorstore.as_retriever(
-                    search_kwargs={"k": k}
-                )
+                retriever = vectorstore.as_retriever(search_kwargs={"k": k})
 
                 # Update LLM temperature
                 llm.temperature = temperature
@@ -191,51 +191,53 @@ def main() -> None:
                 # Display results
                 st.divider()
 
-                st.subheader("✅ Answer")
+                st.subheader("Answer")
                 st.markdown(answer)
 
                 st.divider()
 
                 # Source documents
-                with st.expander("📄 Source Documents", expanded=False):
+                with st.expander("Source Documents", expanded=False):
                     for i, doc in enumerate(docs, 1):
-                        st.markdown(f"**Document {i}** (Source: {doc.metadata.get('source', 'unknown')})")
+                        st.markdown(
+                            f"**Document {i}** (Source: {doc.metadata.get('source', 'unknown')})"
+                        )
                         st.text(doc.page_content[:300] + "...")
                         st.divider()
 
                 # Metrics
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("⏱️ Latency", f"{latency:.0f} ms")
+                    st.metric("Latency", f"{latency:.0f} ms")
                 with col2:
-                    st.metric("📚 Sources", len(docs))
+                    st.metric("Sources", len(docs))
                 with col3:
-                    st.metric("🎯 Architecture", architecture.split()[0])
+                    st.metric("Architecture", architecture.split()[0])
 
                 # Success message
-                st.success("✅ Query completed successfully!")
+                st.success("Query completed successfully!")
 
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                st.error(f"Error: {e}")
 
     elif submit and not query:
-        st.warning("⚠️ Please enter a question.")
+        st.warning("Please enter a question.")
 
     # Sample queries
     st.divider()
-    st.subheader("💡 Try These Sample Queries")
+    st.subheader("Try These Sample Queries")
 
     sample_queries = [
         "What is RAG and how does it work?",
         "How do I create a FAISS vector store?",
         "What's the difference between similarity and MMR retrieval?",
         "How does Adaptive RAG routing work?",
-        "What are the cost optimization strategies for RAG?"
+        "What are the cost optimization strategies for RAG?",
     ]
 
     cols = st.columns(len(sample_queries))
     for i, col in enumerate(cols):
-        if col.button(f"📝 Query {i+1}", use_container_width=True):
+        if col.button(f"Query {i + 1}", use_container_width=True):
             st.session_state.query_input = sample_queries[i]
             st.rerun()
 

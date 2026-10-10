@@ -1,24 +1,29 @@
-.PHONY: install test lint format clean docker-build docker-run help
+.PHONY: help install install-dev test lint format clean vector-stores docker-build docker-run docker-stop
 
 help:
 	@echo "LangChain RAG Tutorial - Development Commands"
 	@echo ""
 	@echo "Setup:"
 	@echo "  make install        Install dependencies"
-	@echo "  make install-dev    Install dev dependencies"
+	@echo "  make install-dev    Install dev dependencies and pre-commit hooks"
 	@echo ""
 	@echo "Quality:"
-	@echo "  make test          Run tests"
-	@echo "  make lint          Run linters"
-	@echo "  make format        Format code"
+	@echo "  make test           Run tests"
+	@echo "  make lint           Run ruff and mypy"
+	@echo "  make format         Format and auto-fix with ruff"
+	@echo ""
+	@echo "Data:"
+	@echo "  make vector-stores  Build shared vector stores"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-build  Build Docker image"
-	@echo "  make docker-run    Run Docker container"
+	@echo "  make docker-build   Build Docker image"
+	@echo "  make docker-run     Start notebooks and API"
+	@echo "  make docker-stop    Stop containers"
 	@echo ""
 	@echo "Utilities:"
-	@echo "  make clean         Clean cache files"
-	@echo "  make vector-stores Build vector stores"
+	@echo "  make clean          Clean cache files"
+
+PY_SRC = shared/ tests/ scripts/ templates/
 
 install:
 	pip install -r requirements.txt
@@ -28,30 +33,30 @@ install-dev:
 	pre-commit install
 
 test:
-	pytest tests/ -v --cov=shared --cov-report=html
+	pytest
 
 lint:
-	flake8 shared/ tests/
-	mypy shared/
-	black --check shared/ tests/
+	ruff check $(PY_SRC)
+	ruff format --check $(PY_SRC)
+	mypy shared/ scripts/
 
 format:
-	black shared/ tests/
-	isort shared/ tests/
+	ruff format $(PY_SRC)
+	ruff check --fix $(PY_SRC)
 
 clean:
-	find . -type d -name "__pycache__" -exec rm -r {} +
+	find . -type d -name "__pycache__" -prune -exec rm -r {} +
 	find . -type f -name "*.pyc" -delete
-	rm -rf .pytest_cache .coverage htmlcov/
-
-docker-build:
-	docker build -t langchain-rag:latest .
-
-docker-run:
-	docker-compose up -d
-
-docker-stop:
-	docker-compose down
+	rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage coverage.xml htmlcov/
 
 vector-stores:
 	python scripts/build_vector_stores.py
+
+docker-build:
+	docker compose build
+
+docker-run:
+	docker compose up -d
+
+docker-stop:
+	docker compose down

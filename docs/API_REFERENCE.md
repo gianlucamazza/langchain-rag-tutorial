@@ -9,6 +9,7 @@ Complete API documentation for the `shared` module - reusable utilities across a
 - [utils.py](#utilspy) - Utility functions
 - [loaders.py](#loaderspy) - Document loading
 - [prompts.py](#promptspy) - Prompt templates
+- [retrievers.py](#retrieverspy) - Hybrid search and reranking retrievers
 
 ## Module Overview
 
@@ -27,13 +28,14 @@ from shared.config import OPENAI_API_KEY, DEFAULT_CHUNK_SIZE
 from shared.utils import format_docs, load_vector_store
 from shared.loaders import load_langchain_docs
 from shared.prompts import RAG_PROMPT_TEMPLATE
+from shared.retrievers import build_hybrid_retriever
 ```
 
 **Version:**
 
 ```python
 import shared
-print(shared.__version__)  # "1.0.0"
+print(shared.__version__)  # "1.4.0"
 ```
 
 ---
@@ -83,6 +85,20 @@ VECTOR_STORE_DIR: Path
 ```
 
 Path to vector stores directory (`data/vector_stores/`).
+
+---
+
+#### `OPENAI_VECTOR_STORE_PATH` / `HF_VECTOR_STORE_PATH`
+
+```python
+OPENAI_VECTOR_STORE_PATH: Path  # data/vector_stores/openai__<OPENAI_EMBEDDING_MODEL>
+HF_VECTOR_STORE_PATH: Path      # data/vector_stores/hf__<HF_EMBEDDING_MODEL, "/" -> "__">
+```
+
+Vector store locations keyed by embedding model. Defaults: `openai__text-embedding-3-small` and
+`hf__BAAI__bge-small-en-v1.5`. Changing `OPENAI_EMBEDDING_MODEL` or `HF_EMBEDDING_MODEL` points to
+a different directory, so a stale index built with another model is never loaded. Import from
+`shared.config`.
 
 ---
 
@@ -143,6 +159,18 @@ DEFAULT_TEMPERATURE: float = 0
 ```
 
 Default temperature for LLM generation (deterministic).
+
+---
+
+#### `DEFAULT_RERANKER_MODEL`
+
+```python
+DEFAULT_RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+```
+
+Local HuggingFace cross-encoder used for reranking (notebooks 12 and 19). Downloaded on first use
+(~90 MB, fast on CPU; `BAAI/bge-reranker-base` is stronger but ~5x slower on CPU). Override with the `DEFAULT_RERANKER_MODEL` environment variable. Also reported by
+`get_project_info()` as `reranker_model`.
 
 ---
 
@@ -226,10 +254,10 @@ formatted = format_docs(retrieved_docs)
 
 ```python
 def load_vector_store(
-    path: Union[str, Path],
+    path: str | Path,
     embeddings: Embeddings,
     verbose: bool = True
-) -> FAISS
+) -> FAISS | None
 ```
 
 Loads FAISS vector store from disk.
@@ -240,20 +268,32 @@ Loads FAISS vector store from disk.
 - `embeddings`: Embeddings instance (must match stored embeddings)
 - `verbose`: Print loading info
 
-**Returns**: FAISS vector store instance.
-
-**Raises**: `FileNotFoundError` if path doesn't exist.
+**Returns**: FAISS vector store instance, or `None` if the store is missing or cannot be loaded.
+Use `require_vector_store()` when a missing store should be an error.
 
 **Example:**
 
 ```python
 from shared.utils import load_vector_store
-from shared.config import OPENAI_VECTOR_STORE_PATH
+from shared.config import OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
 from langchain_openai import OpenAIEmbeddings
 
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
 vectorstore = load_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 ```
+
+---
+
+#### `require_vector_store()`
+
+```python
+def require_vector_store(path: str | Path, embeddings: Embeddings) -> FAISS
+```
+
+Loads a FAISS vector store that must already exist.
+
+**Raises**: `FileNotFoundError` if the store is missing or cannot be loaded; the message explains
+how to build it (`make vector-stores` or notebook 02).
 
 ---
 
@@ -262,7 +302,7 @@ vectorstore = load_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 ```python
 def save_vector_store(
     vectorstore: FAISS,
-    path: Union[str, Path],
+    path: str | Path,
     verbose: bool = True
 ) -> None
 ```
@@ -315,23 +355,30 @@ print_section_header("Document Loading")
 #### `print_results()`
 
 ```python
-def print_results(results: dict, max_length: int = 200) -> None
+def print_results(
+    docs: list[Document],
+    title: str = "Retrieved Documents",
+    max_docs: int | None = None,
+    preview_length: int = PREVIEW_LENGTH
+) -> None
 ```
 
-Pretty-prints RAG chain results.
+Pretty-prints retrieved documents: source, metadata and a content preview for each.
 
 **Parameters:**
 
-- `results`: Dictionary with `input`, `context`, `answer` keys
-- `max_length`: Max length for context preview
+- `docs`: Retrieved documents
+- `title`: Title of the results section
+- `max_docs`: Maximum number of documents to display (`None` = all)
+- `preview_length`: Characters shown per document (default `PREVIEW_LENGTH`, 300)
 
 **Example:**
 
 ```python
 from shared.utils import print_results
 
-results = chain.invoke({"input": "What is RAG?"})
-print_results(results)
+docs = retriever.invoke("What is RAG?")
+print_results(docs, "Similarity Search Results", max_docs=3)
 ```
 
 ---
@@ -339,14 +386,15 @@ print_results(results)
 #### `print_comparison_table()`
 
 ```python
-def print_comparison_table(data: List[List[str]]) -> None
+def print_comparison_table(data: list[list[str]], headers: list[str] | None = None) -> None
 ```
 
 Prints comparison table (used in benchmarks).
 
 **Parameters:**
 
-- `data`: 2D list, first row is header
+- `data`: Table rows; when `headers` is omitted, the first row is used as the header
+- `headers`: Optional header row
 
 **Example:**
 
@@ -366,14 +414,16 @@ print_comparison_table(data)
 #### `estimate_tokens()`
 
 ```python
-def estimate_tokens(text: str) -> int
+def estimate_tokens(text: str, model: str = DEFAULT_MODEL) -> int
 ```
 
-Estimates token count using tiktoken (cl100k_base).
+Estimates token count with the tiktoken encoding of `model`. Falls back to `len(text) // 4` if
+tiktoken is missing or does not know the model.
 
 **Parameters:**
 
 - `text`: Input text
+- `model`: Model whose tokenizer is used
 
 **Returns**: Estimated token count.
 
@@ -392,27 +442,29 @@ print(f"Tokens: {tokens}")  # Tokens: 4
 
 ```python
 def estimate_embedding_cost(
-    num_tokens: int,
-    model: str = "text-embedding-3-small"
-) -> float
+    texts: list[str],
+    model: str = "text-embedding-3-small",
+    cost_per_million: float = 0.02
+) -> tuple[int, float]
 ```
 
-Estimates OpenAI embedding cost.
+Estimates OpenAI embedding cost for a list of texts.
 
 **Parameters:**
 
-- `num_tokens`: Number of tokens
+- `texts`: Texts to embed
 - `model`: Embedding model name
+- `cost_per_million`: USD per million tokens (default: price of `text-embedding-3-small`)
 
-**Returns**: Estimated cost in USD.
+**Returns**: Tuple `(total_tokens, estimated_cost_usd)`.
 
 **Example:**
 
 ```python
 from shared.utils import estimate_embedding_cost
 
-cost = estimate_embedding_cost(10000)
-print(f"Cost: ${cost:.4f}")  # Cost: $0.0001
+tokens, cost = estimate_embedding_cost([doc.page_content for doc in chunks])
+print(f"Estimated cost: ${cost:.4f} for {tokens:,} tokens")
 ```
 
 ---
@@ -491,8 +543,9 @@ print(f"Split into {len(chunks)} chunks")
 
 ```python
 def compare_splitting_strategies(
-    docs: List[Document],
-    strategies: List[Tuple[int, int]]
+    docs: list[Document],
+    strategies: list[tuple[int, int]],
+    verbose: bool = True
 ) -> dict
 ```
 
@@ -502,6 +555,7 @@ Compares different splitting strategies.
 
 - `docs`: Documents to split
 - `strategies`: List of (chunk_size, overlap) tuples
+- `verbose`: Print the comparison table
 
 **Returns**: Dictionary with strategy comparison results.
 
@@ -520,28 +574,31 @@ results = compare_splitting_strategies(docs, strategies)
 
 ```python
 def load_and_split(
-    urls: Optional[List[str]] = None,
+    urls: list[str] | None = None,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
-    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP
-) -> List[Document]
+    chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
+    verbose: bool = True
+) -> tuple[list[Document], list[Document]]
 ```
 
 Convenience function: load and split in one call.
 
 **Parameters:**
 
-- `urls`: URLs to load
+- `urls`: URLs to load (defaults to `DEFAULT_LANGCHAIN_URLS`)
 - `chunk_size`: Chunk size
 - `chunk_overlap`: Overlap
+- `verbose`: Print status messages
 
-**Returns**: List of chunked documents.
+**Returns**: Tuple `(original_docs, chunks)`: the loaded documents and their chunks.
 
 **Example:**
 
 ```python
 from shared.loaders import load_and_split
 
-chunks = load_and_split(chunk_size=1000)
+docs, chunks = load_and_split(chunk_size=1000)
+_, chunks = load_and_split()  # chunks only
 ```
 
 ---
@@ -717,7 +774,7 @@ Agentic RAG ReAct agent prompt.
 
 ---
 
-### New Prompts in v1.1.0 ✨
+### Contextual, Fusion, SQL and GraphRAG Prompts
 
 #### `DOCUMENT_SUMMARY_PROMPT`
 
@@ -887,6 +944,35 @@ GraphRAG final answer generation with graph context.
 
 ---
 
+### Multi-Vector Retrieval Prompts
+
+#### `CHUNK_SUMMARY_PROMPT`
+
+```python
+CHUNK_SUMMARY_PROMPT: ChatPromptTemplate
+```
+
+Short, retrieval-oriented summary of a chunk, indexed by `MultiVectorRetriever` (notebook 20).
+Registered as `"chunk_summary"` in `get_prompt_by_name()`.
+
+**Variables**: `chunk`
+
+---
+
+#### `HYPOTHETICAL_QUESTIONS_PROMPT`
+
+```python
+HYPOTHETICAL_QUESTIONS_PROMPT: ChatPromptTemplate
+```
+
+Generates questions a chunk answers, indexed by `MultiVectorRetriever` (notebook 20). Use with
+`with_structured_output` to get a list of questions. Registered as `"hypothetical_questions"` in
+`get_prompt_by_name()`.
+
+**Variables**: `chunk`, `num_questions`
+
+---
+
 ### Utility Functions
 
 #### `get_prompt_by_name()`
@@ -915,12 +1001,136 @@ prompt = get_prompt_by_name("HYDE")
 
 ---
 
+## retrievers.py
+
+Builders for hybrid (BM25 + dense) search and cross-encoder reranking, used by notebooks 12 and 19. The retriever classes come from `langchain-classic` and `langchain-community`; BM25 requires
+`rank-bm25`.
+
+### Functions
+
+#### `bm25_tokenize()`
+
+```python
+def bm25_tokenize(text: str) -> list[str]
+```
+
+Lowercases and splits on non-word characters, keeping `snake_case` identifiers whole. The
+default BM25 tokenizer in LangChain splits on whitespace only, so `max_retries=2,` would never
+match the query `max_retries`.
+
+**Example:**
+
+```python
+bm25_tokenize("Set max_retries=2.")  # ["set", "max_retries", "2"]
+```
+
+---
+
+#### `build_bm25_retriever()`
+
+```python
+def build_bm25_retriever(
+    docs: Sequence[Document],
+    k: int = DEFAULT_K,
+    tokenizer: Callable[[str], list[str]] = bm25_tokenize
+) -> BM25Retriever
+```
+
+Builds a keyword (BM25) retriever over the given chunks. The index is kept in memory (no
+persistence).
+
+**Parameters:**
+
+- `docs`: Chunks to index
+- `k`: Number of documents to return
+- `tokenizer`: Applied to both documents and queries
+
+**Returns**: `BM25Retriever` instance.
+
+---
+
+#### `build_hybrid_retriever()`
+
+```python
+def build_hybrid_retriever(
+    docs: Sequence[Document],
+    vectorstore: VectorStore,
+    k: int = DEFAULT_K,
+    bm25_weight: float = 0.5,
+    rrf_c: int = 60
+) -> EnsembleRetriever
+```
+
+Combines BM25 and dense retrieval with weighted Reciprocal Rank Fusion. Both retrievers must index
+the same chunks, since RRF matches documents by content.
+
+**Parameters:**
+
+- `docs`: Chunks indexed in the vector store (used to build the BM25 index)
+- `vectorstore`: Dense vector store over the same chunks
+- `k`: Documents fetched from each retriever before fusion
+- `bm25_weight`: Weight of BM25 in [0, 1]; the dense retriever gets `1 - bm25_weight`
+- `rrf_c`: RRF constant (60, as in the original paper)
+
+**Returns**: `EnsembleRetriever` returning the fused ranking (up to `2 * k` unique documents).
+
+**Raises**: `ValueError` if `bm25_weight` is not in [0, 1].
+
+**Example:**
+
+```python
+from shared.retrievers import build_hybrid_retriever
+
+hybrid = build_hybrid_retriever(chunks, vectorstore, k=10, bm25_weight=0.5)
+docs = hybrid.invoke("What does max_retries control?")
+```
+
+---
+
+#### `build_reranking_retriever()`
+
+```python
+def build_reranking_retriever(
+    base_retriever: BaseRetriever,
+    top_n: int = DEFAULT_K,
+    model_name: str = DEFAULT_RERANKER_MODEL,
+    cross_encoder: BaseCrossEncoder | None = None
+) -> ContextualCompressionRetriever
+```
+
+Reranks a retriever's candidates with a cross-encoder and keeps the `top_n`. The base retriever
+should over-fetch (e.g. 20 candidates) so the reranker has something to choose from.
+
+**Parameters:**
+
+- `base_retriever`: First-stage retriever producing candidates
+- `top_n`: Documents kept after reranking
+- `model_name`: HuggingFace cross-encoder model (downloaded on first use)
+- `cross_encoder`: Pre-built cross-encoder; overrides `model_name` (reuse it across calls, loading
+  is the slow part)
+
+**Returns**: `ContextualCompressionRetriever` wrapping a `CrossEncoderReranker`.
+
+**Example:**
+
+```python
+from shared.retrievers import build_hybrid_retriever, build_reranking_retriever
+
+hybrid = build_hybrid_retriever(chunks, vectorstore, k=10)
+reranked = build_reranking_retriever(hybrid, top_n=4)
+docs = reranked.invoke("What does max_retries control?")
+```
+
+---
+
 ## Usage Examples
 
 ### Complete RAG Pipeline
 
 ```python
 from shared import *
+from shared.config import DEFAULT_MODEL, DEFAULT_TEMPERATURE, OPENAI_EMBEDDING_MODEL
+from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -930,7 +1140,7 @@ docs = load_langchain_docs()
 chunks = split_documents(docs)
 
 # Create embeddings and vector store
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
 vectorstore = FAISS.from_documents(chunks, embeddings)
 
 # Save for reuse
@@ -957,34 +1167,16 @@ print(response)
 
 ```python
 from shared import *
+from shared.config import OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
 from langchain_openai import OpenAIEmbeddings
 
 # Load pre-built vector store
-embeddings = OpenAIEmbeddings()
-vectorstore = load_vector_store(VECTOR_STORE_DIR / "openai_embeddings", embeddings)
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 
 # Use immediately
 retriever = vectorstore.as_retriever()
 ```
-
----
-
-## Version History
-
-- **v1.1.0** (2025-11-12): Major expansion
-  - 18 new prompt templates (30+ total) ✨
-  - Contextual RAG prompts (3 prompts)
-  - Fusion RAG prompts (2 prompts)
-  - SQL RAG prompts (4 prompts)
-  - GraphRAG prompts (5 prompts)
-  - Shared module expanded to 1500+ lines
-  - New dependencies: NetworkX, SQLAlchemy, RAGAS, Spacy
-
-- **v1.0.0** (2024-11-12): Initial release
-  - Core utilities (config, utils, loaders, prompts)
-  - 13 prompt templates
-  - Vector store persistence
-  - Cost estimation utilities
 
 ---
 
@@ -993,3 +1185,4 @@ retriever = vectorstore.as_retriever()
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Design decisions
 - [EXAMPLES.md](EXAMPLES.md) - Usage patterns
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Extend shared module
+- [CHANGELOG.md](CHANGELOG.md) - Version history

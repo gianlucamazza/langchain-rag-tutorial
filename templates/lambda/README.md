@@ -1,14 +1,18 @@
 # AWS Lambda Template
 
-Serverless deployment template for RAG on AWS Lambda.
+Serverless deployment template for the RAG system on AWS Lambda.
 
 ## Architecture
 
+```text
+API Gateway -> Lambda -> RAG chain -> OpenAI
+                 |
+                 v
+          S3 (vector store)
 ```
-API Gateway → Lambda → RAG Chain → OpenAI
-                  ↓
-             S3 (Vector Store)
-```
+
+The handler is self-contained (it does not import the `shared` module), so only
+`lambda_handler.py` goes into the function package; dependencies go into a Lambda layer.
 
 ## Deployment Steps
 
@@ -25,11 +29,17 @@ zip -r layer.zip python/
 
 ### 2. Upload Vector Store to S3
 
+Build the store first with notebook 02 or `make vector-stores`, then upload it:
+
 ```bash
-aws s3 cp data/vector_stores/openai_embeddings/ \
-    s3://your-bucket/vector_stores/openai_embeddings/ \
+aws s3 cp data/vector_stores/openai__text-embedding-3-small/ \
+    s3://your-bucket/vector_stores/openai__text-embedding-3-small/ \
     --recursive
 ```
+
+`VECTOR_STORE_KEY` defaults to `vector_stores/openai__<OPENAI_EMBEDDING_MODEL>`, matching the local
+layout; set it only if you upload elsewhere. `OPENAI_EMBEDDING_MODEL` must match the model the store
+was built with. Without a bucket, the store is read from `/opt/vector_stores/openai__<model>` (Lambda layer).
 
 ### 3. Create Lambda Function
 
@@ -44,7 +54,7 @@ aws lambda create-function \
     --zip-file fileb://function.zip \
     --timeout 60 \
     --memory-size 512 \
-    --environment Variables="{OPENAI_API_KEY=sk-proj-xxx,VECTOR_STORE_BUCKET=your-bucket}"
+    --environment Variables="{OPENAI_API_KEY=sk-proj-xxx,VECTOR_STORE_BUCKET=your-bucket,VECTOR_STORE_KEY=vector_stores/openai__text-embedding-3-small}"
 ```
 
 ### 4. Attach Layer
@@ -62,7 +72,7 @@ aws lambda update-function-configuration \
 
 ### 5. Create API Gateway
 
-Create REST API and integrate with Lambda.
+Create a REST or HTTP API and integrate it with the Lambda function.
 
 ## Testing
 
@@ -85,9 +95,16 @@ cat response.json
 
 ## Environment Variables
 
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
-- `VECTOR_STORE_BUCKET`: S3 bucket with vector store
-- `VECTOR_STORE_KEY`: S3 key prefix for vector store
+| Variable              | Default                           | Description                    |
+| --------------------- | --------------------------------- | ------------------------------ |
+| `OPENAI_API_KEY`         | (required)               | OpenAI API key                                   |
+| `DEFAULT_MODEL`          | `gpt-4o-mini`            | Chat model used for answers                      |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model; must match the uploaded store   |
+| `VECTOR_STORE_BUCKET`    | (empty)                  | S3 bucket holding the store                      |
+| `VECTOR_STORE_KEY`       | `vector_stores/openai__<OPENAI_EMBEDDING_MODEL>` | S3 key prefix of the store |
+
+Store the API key in AWS Secrets Manager or encrypted environment variables rather than in plain
+text; see [docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md#secrets-management).
 
 ## Performance
 

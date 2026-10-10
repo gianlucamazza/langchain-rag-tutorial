@@ -19,11 +19,11 @@ Be respectful, inclusive, and constructive. We welcome contributions from develo
 
 ### Ways to Contribute
 
-- 🐛 **Bug reports**: Found an issue? [Open an issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- ✨ **Feature requests**: Have an idea? [Suggest it](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- 📝 **Documentation**: Improve docs, fix typos
-- 💻 **Code**: Fix bugs, add features, optimize performance
-- 🎓 **Educational**: Add notebooks, examples, use cases
+- **Bug reports**: [open an issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
+- **Feature requests**: [suggest an idea](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
+- **Documentation**: improve docs, fix typos
+- **Code**: fix bugs, add features, optimize performance
+- **Educational content**: add notebooks, examples, use cases
 
 ### Before Contributing
 
@@ -61,16 +61,17 @@ git checkout -b fix/bug-description
 ### 3. Install Development Dependencies
 
 ```bash
-# Create virtual environment
+# Create a virtual environment (Python 3.10-3.13)
 python3 -m venv venv
 source venv/bin/activate
 
-# Install all dependencies
-pip install -r requirements.txt
-
-# Configure pre-commit hooks (if available)
-# pre-commit install
+# Install runtime and development dependencies
+make install
+make install-dev   # pip install -r requirements-dev.txt && pre-commit install
 ```
+
+`requirements-dev.txt` provides pytest (with pytest-cov), ruff, mypy and pre-commit. Tests use
+fake embeddings and LLMs, so `make test` needs no network access or API key.
 
 ### 4. Configure Environment
 
@@ -95,6 +96,7 @@ cp .env.example .env
    - `utils.py` - General utilities
    - `loaders.py` - Document loading
    - `prompts.py` - Prompt templates
+   - `retrievers.py` - Retriever builders (hybrid search, reranking)
 
 2. Include docstring:
 
@@ -148,7 +150,7 @@ __all__ = [
    ```markdown
    # ## - Title
 
-   **Complexity:** ⭐⭐⭐
+   **Complexity:** 3/5
    **Use Cases:** ...
    **Key Features:** ...
 
@@ -173,7 +175,7 @@ __all__ = [
 
 1. Edit appropriate file:
    - `docs/` - Modular documentation
-   - `README.md` - Landing page only
+   - `README.md` - Overview, quick start and links into `docs/`
    - Notebook READMEs - Category-specific
 
 2. Use clear, concise language
@@ -194,6 +196,7 @@ __all__ = [
 Before submitting, ensure:
 
 - [ ] Code runs without errors
+- [ ] `make test` and `make lint` pass
 - [ ] All notebooks execute successfully
 - [ ] Documentation updated
 - [ ] API_REFERENCE.md updated (if changed shared/)
@@ -201,15 +204,36 @@ Before submitting, ensure:
 - [ ] No secrets committed (.env, API keys)
 - [ ] Git history is clean
 
-### 2. Running Tests
+### 2. Running Tests and Quality Checks
 
 ```bash
-# Test notebooks execution (recommended)
-jupyter nbconvert --to notebook --execute notebooks/fundamentals/01_setup_and_basics.ipynb
-
-# Or run all notebooks
-find notebooks -name "*.ipynb" -not -path "*/.*" -exec jupyter nbconvert --to notebook --execute {} \;
+make test      # pytest tests/ with coverage for shared/
+make lint      # ruff check + ruff format --check + mypy
+make format    # ruff format + ruff check --fix
 ```
+
+Useful pytest variants:
+
+```bash
+pytest tests/test_utils.py -v   # single file
+pytest -m "not slow"            # skip tests marked slow
+```
+
+Pre-commit runs the ruff hooks (`ruff-pre-commit`) plus basic file checks on every commit; run
+them on the whole tree with:
+
+```bash
+pre-commit run --all-files
+```
+
+If you changed a notebook, execute it end to end:
+
+```bash
+jupyter nbconvert --to notebook --execute notebooks/fundamentals/01_setup_and_basics.ipynb
+```
+
+CI (GitHub Actions) runs the test suite on Python 3.10, 3.11, 3.12 and 3.13, and linting on
+Python 3.12.
 
 ### 3. Commit Your Changes
 
@@ -276,7 +300,7 @@ Brief description of changes
 ## Testing
 - [ ] Tested locally
 - [ ] All notebooks execute successfully
-- [ ] Documentation builds correctly
+- [ ] Documentation links checked
 
 ## Related Issues
 Fixes #issue_number
@@ -288,7 +312,8 @@ Fixes #issue_number
 
 ### Python Code
 
-Follow PEP 8 with these specifics:
+Formatting and linting are enforced by ruff (configuration in `ruff.toml`); type checking uses
+mypy. Run `make format` before committing. Conventions:
 
 ```python
 # Imports: standard, third-party, local
@@ -320,7 +345,7 @@ class CustomRetriever:
 """
 # ## - Title
 
-**Complexity:** ⭐⭐⭐
+**Complexity:** 3/5
 """
 
 # Cell 2: Imports
@@ -332,7 +357,7 @@ from shared import *
 # Cell 3: Setup with clear output
 print_section_header("Setup")
 # ... code ...
-print("✅ Setup complete!")
+print("Setup complete")
 
 # Keep cells focused: 5-15 lines of code max
 # Add markdown cells between code for explanation
@@ -342,15 +367,14 @@ print("✅ Setup complete!")
 
 - Use **bold** for emphasis
 - Use `code` for technical terms
-- Use ✅/❌/⚠️ for status indicators
+- Do not use emoji; write status in words (for example Yes/No, 3/5)
 - Include code examples with syntax highlighting
 - Add links to related docs
 - Keep lines under 100 characters
 
 ## Questions?
 
-- 💬 **General questions**: Open a [Discussion](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
-- 🐛 **Bug reports**: [Open an issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- 📧 **Direct contact**: See README for contact info
+- **General questions**: open a [Discussion](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
+- **Bug reports**: [open an issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
 
-Thank you for contributing! 🎉
+Thank you for contributing.

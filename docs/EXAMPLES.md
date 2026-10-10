@@ -1,24 +1,27 @@
 # Usage Examples
 
-Practical examples and patterns for using Lang Chain RAG Tutorial.
+Practical code patterns built on the `shared` module. Snippets assume the objects from example 1
+(`embeddings`, `vectorstore`, `retriever`, `llm`, `chain`) are already defined.
 
 ## Quick Examples
 
 ### 1. Basic RAG Query
 
 ```python
-from shared import *
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-# Load vector store
-embeddings = OpenAIEmbeddings()
-vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+from shared import RAG_PROMPT_TEMPLATE, VECTOR_STORE_DIR, format_docs, require_vector_store
+from shared.config import DEFAULT_MODEL, OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
+
+# Load vector store (built by notebook 02 or `make vector-stores`)
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
 # Build RAG chain
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(model=DEFAULT_MODEL, temperature=0)
 chain = (
     {"context": retriever | format_docs, "input": RunnablePassthrough()}
     | RAG_PROMPT_TEMPLATE
@@ -34,20 +37,26 @@ print(response)
 ### 2. Conversational RAG with Memory
 
 ```python
-from langchain.memory import ConversationBufferMemory
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory
+from operator import itemgetter
 
-# Create memory store
-store = {}
-def get_session_history(session_id: str):
+from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
+from shared.prompts import MEMORY_RAG_PROMPT
+
+# One in-memory history per session
+store: dict[str, InMemoryChatMessageHistory] = {}
+
+
+def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
     if session_id not in store:
-        store[session_id] = ChatMessageHistory()
+        store[session_id] = InMemoryChatMessageHistory()
     return store[session_id]
+
 
 # Build conversational chain
 base_chain = (
-    {"context": retriever | format_docs, "input": RunnablePassthrough()}
+    RunnablePassthrough.assign(context=itemgetter("input") | retriever | format_docs)
     | MEMORY_RAG_PROMPT
     | llm
     | StrOutputParser()
@@ -137,17 +146,46 @@ def adaptive_rag(query: str):
 simple_query = "What is FAISS?"
 complex_query = "How can I optimize semantic search latency while maintaining quality?"
 
-result1 = adaptive_rag(simple_query)  # → Similarity
-result2 = adaptive_rag(complex_query)  # → HyDe
+result1 = adaptive_rag(simple_query)  # Similarity
+result2 = adaptive_rag(complex_query)  # HyDE
+```
+
+### 5. Hybrid Search with Reranking
+
+```python
+from shared import build_hybrid_retriever, build_reranking_retriever
+from shared.loaders import load_and_split
+
+# BM25 needs the same chunks that were indexed in the vector store
+_, chunks = load_and_split()
+
+# BM25 + dense, fused with weighted Reciprocal Rank Fusion (up to 2 * k candidates)
+hybrid = build_hybrid_retriever(chunks, vectorstore, k=10, bm25_weight=0.5)
+
+# Cross-encoder reranker keeps the best 4 (DEFAULT_RERANKER_MODEL, ~90 MB download on first use)
+reranked = build_reranking_retriever(hybrid, top_n=4)
+
+hybrid_chain = (
+    {"context": reranked | format_docs, "input": RunnablePassthrough()}
+    | RAG_PROMPT_TEMPLATE
+    | llm
+    | StrOutputParser()
+)
+
+response = hybrid_chain.invoke("What does trim_messages do?")
 ```
 
 ## Advanced Patterns
 
-### 5. Custom Document Loader
+### 6. Custom Document Loader
 
 ```python
-from langchain_community.document_loaders import TextLoader, PDFLoader
 from pathlib import Path
+
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.vectorstores import FAISS
+
+from shared import VECTOR_STORE_DIR, save_vector_store, split_documents
 
 def load_custom_documents(directory: str):
     """Load all .txt and .pdf files from directory."""
@@ -158,7 +196,7 @@ def load_custom_documents(directory: str):
             loader = TextLoader(str(file_path))
             docs.extend(loader.load())
         elif file_path.suffix == ".pdf":
-            loader = PDFLoader(str(file_path))
+            loader = PyPDFLoader(str(file_path))
             docs.extend(loader.load())
     
     # Add metadata
@@ -174,10 +212,10 @@ chunks = split_documents(custom_docs, chunk_size=1000)
 
 # Create vector store
 vectorstore_custom = FAISS.from_documents(chunks, embeddings)
-save_vector_store(vectorstore_custom, "data/vector_stores/custom")
+save_vector_store(vectorstore_custom, VECTOR_STORE_DIR / "custom")
 ```
 
-### 6. Metadata Filtering
+### 7. Metadata Filtering
 
 ```python
 # Add rich metadata during loading
@@ -208,7 +246,7 @@ tutorial_docs = filtered_retrieve("How to build RAG?", "tutorial")
 api_docs = filtered_retrieve("What is the API for embeddings?", "api")
 ```
 
-### 7. Batch Processing
+### 8. Batch Processing
 
 ```python
 def batch_process_queries(queries: list, chain):
@@ -240,7 +278,7 @@ with open("batch_results.json", "w") as f:
     json.dump(results, f, indent=2)
 ```
 
-### 8. Cost Tracking
+### 9. Cost Tracking
 
 ```python
 from shared.utils import estimate_tokens, estimate_embedding_cost
@@ -274,7 +312,7 @@ print(f"Total cost: ${costs['total_cost']:.6f}")
 print(f"Tokens: {costs['total_tokens']}")
 ```
 
-### 9. Error Handling and Retry
+### 10. Error Handling and Retry
 
 ```python
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -296,7 +334,7 @@ def robust_rag_query(query: str, chain):
 result = robust_rag_query("What is RAG?", chain)
 ```
 
-### 10. Async Parallel Processing
+### 11. Async Parallel Processing
 
 ```python
 import asyncio
@@ -320,6 +358,9 @@ results = asyncio.run(process_queries_parallel(queries, chain))
 
 ## Integration Examples
 
+Complete, runnable versions of these integrations are in `templates/` (see
+[DEPLOYMENT.md](DEPLOYMENT.md#deployment-templates)).
+
 ### FastAPI REST API
 
 ```python
@@ -329,7 +370,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 # Initialize once
-vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 retriever = vectorstore.as_retriever()
 chain = (
     {"context": retriever | format_docs, "input": RunnablePassthrough()}
@@ -362,7 +403,7 @@ st.title("RAG Chatbot")
 # Initialize (cached)
 @st.cache_resource
 def load_chain():
-    vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+    vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
     retriever = vectorstore.as_retriever()
     return (
         {"context": retriever | format_docs, "input": RunnablePassthrough()}
@@ -380,7 +421,7 @@ if query:
         response = chain.invoke(query)
     st.write(response)
 
-# Run: streamlit run app.py
+# Run: streamlit run streamlit_app.py
 ```
 
 ## See Also

@@ -4,18 +4,18 @@ Provides reusable functions for document formatting, vector store management, an
 """
 
 import warnings
-from typing import List, Optional
 from pathlib import Path
-from langchain_core.documents import Document
+
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
-from .config import SECTION_WIDTH, PREVIEW_LENGTH
-
+from .config import DEFAULT_MODEL, PREVIEW_LENGTH, SECTION_WIDTH
 
 # ============================================================================
 # WARNING FILTERS
 # ============================================================================
+
 
 def suppress_warnings():
     """
@@ -26,7 +26,9 @@ def suppress_warnings():
     - Keep critical warnings visible for debugging
     """
     # Suppress Pydantic V1 deprecation warnings (from langchain_core)
-    warnings.filterwarnings("ignore", category=UserWarning, module="langchain_core._api.deprecation")
+    warnings.filterwarnings(
+        "ignore", category=UserWarning, module="langchain_core._api.deprecation"
+    )
     warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
 
     # Suppress other common non-critical warnings
@@ -37,7 +39,7 @@ def suppress_warnings():
 suppress_warnings()
 
 
-def format_docs(docs: List[Document]) -> str:
+def format_docs(docs: list[Document]) -> str:
     """
     Format a list of documents into a single string for use in prompts.
 
@@ -51,10 +53,8 @@ def format_docs(docs: List[Document]) -> str:
 
 
 def load_vector_store(
-    path: str | Path,
-    embeddings: Embeddings,
-    verbose: bool = True
-) -> Optional[FAISS]:
+    path: str | Path, embeddings: Embeddings, verbose: bool = True
+) -> FAISS | None:
     """
     Load a FAISS vector store from disk.
 
@@ -75,22 +75,36 @@ def load_vector_store(
         vectorstore = FAISS.load_local(
             str(path),
             embeddings,
-            allow_dangerous_deserialization=True  # Required for pickle files
+            allow_dangerous_deserialization=True,  # Required for pickle files
         )
         if verbose:
-            print(f"✓ Loaded vector store from {path}")
+            print(f"Loaded vector store from {path}")
         return vectorstore
     except Exception as e:
         if verbose:
-            print(f"✗ Error loading vector store from {path}: {e}")
+            print(f"Error loading vector store from {path}: {e}")
         return None
 
 
-def save_vector_store(
-    vectorstore: FAISS,
-    path: str | Path,
-    verbose: bool = True
-) -> None:
+def require_vector_store(path: str | Path, embeddings: Embeddings) -> FAISS:
+    """
+    Load a FAISS vector store that must already exist.
+
+    Raises:
+        FileNotFoundError: If the store is missing or cannot be loaded, with
+            instructions on how to build it.
+    """
+    vectorstore = load_vector_store(path, embeddings, verbose=False)
+    if vectorstore is None:
+        raise FileNotFoundError(
+            f"Vector store not found at {path}. Build it first with "
+            "`make vector-stores` or by running notebook 02_embeddings_comparison."
+        )
+    print(f"Loaded vector store from {path}")
+    return vectorstore
+
+
+def save_vector_store(vectorstore: FAISS, path: str | Path, verbose: bool = True) -> None:
     """
     Save a FAISS vector store to disk.
 
@@ -108,10 +122,10 @@ def save_vector_store(
 
         vectorstore.save_local(str(path))
         if verbose:
-            print(f"✓ Saved vector store to {path}")
+            print(f"Saved vector store to {path}")
     except Exception as e:
         if verbose:
-            print(f"✗ Error saving vector store to {path}: {e}")
+            print(f"Error saving vector store to {path}: {e}")
         raise
 
 
@@ -135,10 +149,10 @@ def print_section_header(title: str, width: int = SECTION_WIDTH) -> None:
 
 
 def print_results(
-    docs: List[Document],
+    docs: list[Document],
     title: str = "Retrieved Documents",
-    max_docs: Optional[int] = None,
-    preview_length: int = PREVIEW_LENGTH
+    max_docs: int | None = None,
+    preview_length: int = PREVIEW_LENGTH,
 ) -> None:
     """
     Print formatted results from document retrieval.
@@ -162,9 +176,9 @@ def print_results(
         print(f"\n{i}. Source: {doc.metadata.get('source', 'N/A')}")
 
         # Show additional metadata if available
-        if 'source_type' in doc.metadata:
+        if "source_type" in doc.metadata:
             print(f"   Type: {doc.metadata['source_type']}")
-        if 'process_date' in doc.metadata:
+        if "process_date" in doc.metadata:
             print(f"   Date: {doc.metadata['process_date']}")
 
         # Show content preview
@@ -177,10 +191,7 @@ def print_results(
         print(f"\n... and {len(docs) - max_docs} more documents")
 
 
-def print_comparison_table(
-    data: List[List[str]],
-    headers: Optional[List[str]] = None
-) -> None:
+def print_comparison_table(data: list[list[str]], headers: list[str] | None = None) -> None:
     """
     Print a formatted comparison table.
 
@@ -206,28 +217,25 @@ def print_comparison_table(
 
     # Calculate column widths
     all_rows = [headers] + data if headers else data
-    col_widths = [max(len(str(row[i])) for row in all_rows) + 2
-                  for i in range(len(all_rows[0]))]
+    col_widths = [max(len(str(row[i])) for row in all_rows) + 2 for i in range(len(all_rows[0]))]
 
     # Print headers
     if headers:
-        print("".join(str(item).ljust(col_widths[j])
-                      for j, item in enumerate(headers)))
+        print("".join(str(item).ljust(col_widths[j]) for j, item in enumerate(headers)))
         print("-" * sum(col_widths))
 
     # Print data rows
     for row in data:
-        print("".join(str(item).ljust(col_widths[j])
-                      for j, item in enumerate(row)))
+        print("".join(str(item).ljust(col_widths[j]) for j, item in enumerate(row)))
 
 
-def estimate_tokens(text: str, model: str = "gpt-3.5-turbo") -> int:
+def estimate_tokens(text: str, model: str = DEFAULT_MODEL) -> int:
     """
     Estimate the number of tokens in a text string.
 
     Args:
         text: Text to tokenize
-        model: Model name for tokenizer (default: gpt-3.5-turbo)
+        model: Model name for tokenizer (default: DEFAULT_MODEL)
 
     Returns:
         int: Estimated number of tokens
@@ -237,6 +245,7 @@ def estimate_tokens(text: str, model: str = "gpt-3.5-turbo") -> int:
     """
     try:
         import tiktoken
+
         encoding = tiktoken.encoding_for_model(model)
         return len(encoding.encode(text))
     except ImportError:
@@ -247,9 +256,7 @@ def estimate_tokens(text: str, model: str = "gpt-3.5-turbo") -> int:
 
 
 def estimate_embedding_cost(
-    texts: List[str],
-    model: str = "text-embedding-3-small",
-    cost_per_million: float = 0.02
+    texts: list[str], model: str = "text-embedding-3-small", cost_per_million: float = 0.02
 ) -> tuple[int, float]:
     """
     Estimate the cost of embedding a list of texts with OpenAI.
@@ -281,7 +288,7 @@ if __name__ == "__main__":
         ["Feature", "OpenAI", "HuggingFace"],
         ["Dimension", "1536", "384"],
         ["Cost", "Paid", "Free"],
-        ["Speed", "Fast", "Medium"]
+        ["Speed", "Fast", "Medium"],
     ]
     print_comparison_table(data)
 
