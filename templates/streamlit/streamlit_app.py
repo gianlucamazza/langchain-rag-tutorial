@@ -9,10 +9,9 @@ Install with: pip install -r requirements.txt
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import streamlit as st
-
-from typing import Tuple, Optional, Any
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -57,7 +56,7 @@ st.markdown(
 
 
 @st.cache_resource
-def initialize_rag() -> Tuple[Optional[Any], Optional[Any]]:
+def initialize_rag() -> tuple[Any | None, Any | None]:
     """Initialize RAG components (cached)"""
     try:
         # Load embeddings and vector store

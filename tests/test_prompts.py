@@ -6,24 +6,24 @@ import pytest
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 
 from shared.prompts import (
+    ADAPTIVE_RAG_PROMPT,
+    CITATION_CHECK_PROMPT,
+    COMPLEXITY_CLASSIFIER_PROMPT,
+    CONTEXTUAL_RAG_ANSWER_PROMPT,
+    CRAG_PROMPT,
+    ENTITY_EXTRACTION_PROMPT,
+    FUSION_RAG_ANSWER_PROMPT,
+    GRAPHRAG_ANSWER_PROMPT,
+    HYDE_PROMPT,
+    MEMORY_RAG_PROMPT,
+    MULTI_QUERY_PROMPT,
     RAG_PROMPT_TEMPLATE,
     RAG_WITH_METADATA_PROMPT,
-    MEMORY_RAG_PROMPT,
-    HYDE_PROMPT,
-    COMPLEXITY_CLASSIFIER_PROMPT,
-    ADAPTIVE_RAG_PROMPT,
+    REACT_AGENT_PROMPT,
     RELEVANCE_GRADER_PROMPT,
-    CRAG_PROMPT,
     RETRIEVAL_NEED_PROMPT,
     SELF_CRITIQUE_PROMPT,
-    CITATION_CHECK_PROMPT,
-    MULTI_QUERY_PROMPT,
-    REACT_AGENT_PROMPT,
-    CONTEXTUAL_RAG_ANSWER_PROMPT,
-    FUSION_RAG_ANSWER_PROMPT,
     TEXT_TO_SQL_PROMPT,
-    ENTITY_EXTRACTION_PROMPT,
-    GRAPHRAG_ANSWER_PROMPT,
 )
 
 
@@ -33,7 +33,7 @@ class TestSimpleRAGPrompts:
     def test_rag_prompt_template_structure(self):
         """Test RAG_PROMPT_TEMPLATE has correct structure"""
         assert isinstance(RAG_PROMPT_TEMPLATE, ChatPromptTemplate)
-        
+
         # Test input variables
         assert "context" in RAG_PROMPT_TEMPLATE.input_variables
         assert "input" in RAG_PROMPT_TEMPLATE.input_variables
@@ -41,10 +41,9 @@ class TestSimpleRAGPrompts:
     def test_rag_prompt_template_formatting(self):
         """Test RAG_PROMPT_TEMPLATE can be formatted"""
         formatted = RAG_PROMPT_TEMPLATE.format_messages(
-            context="Test context about LangChain",
-            input="What is LangChain?"
+            context="Test context about LangChain", input="What is LangChain?"
         )
-        
+
         assert len(formatted) == 2  # system + user messages
         assert "Test context about LangChain" in str(formatted)
         assert "What is LangChain?" in str(formatted)
@@ -52,7 +51,7 @@ class TestSimpleRAGPrompts:
     def test_rag_with_metadata_prompt_structure(self):
         """Test RAG_WITH_METADATA_PROMPT has correct variables"""
         assert isinstance(RAG_WITH_METADATA_PROMPT, ChatPromptTemplate)
-        
+
         required_vars = ["context", "input", "strategy", "num_docs"]
         for var in required_vars:
             assert var in RAG_WITH_METADATA_PROMPT.input_variables
@@ -60,12 +59,9 @@ class TestSimpleRAGPrompts:
     def test_rag_with_metadata_prompt_formatting(self):
         """Test RAG_WITH_METADATA_PROMPT formatting with metadata"""
         formatted = RAG_WITH_METADATA_PROMPT.format_messages(
-            context="Test context",
-            input="Test question",
-            strategy="similarity",
-            num_docs="5"
+            context="Test context", input="Test question", strategy="similarity", num_docs="5"
         )
-        
+
         assert len(formatted) == 2
         assert "similarity" in str(formatted)
         assert "5" in str(formatted)
@@ -82,17 +78,17 @@ class TestMemoryRAGPrompts:
 
     def test_memory_rag_prompt_with_history(self):
         """Test MEMORY_RAG_PROMPT with chat history"""
-        from langchain_core.messages import HumanMessage, AIMessage
-        
+        from langchain_core.messages import AIMessage, HumanMessage
+
         formatted = MEMORY_RAG_PROMPT.format_messages(
             context="LangChain documentation",
             input="Tell me more",
             chat_history=[
                 HumanMessage(content="What is RAG?"),
-                AIMessage(content="RAG stands for Retrieval-Augmented Generation.")
-            ]
+                AIMessage(content="RAG stands for Retrieval-Augmented Generation."),
+            ],
         )
-        
+
         # Should include system, history messages, and user message
         assert len(formatted) >= 3
 
@@ -107,10 +103,8 @@ class TestHyDePrompts:
 
     def test_hyde_prompt_formatting(self):
         """Test HYDE_PROMPT formatting"""
-        formatted = HYDE_PROMPT.format_messages(
-            question="What is machine learning?"
-        )
-        
+        formatted = HYDE_PROMPT.format_messages(question="What is machine learning?")
+
         assert len(formatted) == 2
         assert "hypothetical" in str(formatted).lower()
         assert "What is machine learning?" in str(formatted)
@@ -129,7 +123,7 @@ class TestAdaptiveRAGPrompts:
         formatted = COMPLEXITY_CLASSIFIER_PROMPT.format_messages(
             query="What is the capital of France?"
         )
-        
+
         formatted_text = str(formatted)
         assert "SIMPLE" in formatted_text
         assert "MEDIUM" in formatted_text
@@ -138,13 +132,11 @@ class TestAdaptiveRAGPrompts:
     def test_adaptive_rag_prompt(self):
         """Test ADAPTIVE_RAG_PROMPT"""
         assert isinstance(ADAPTIVE_RAG_PROMPT, ChatPromptTemplate)
-        
+
         formatted = ADAPTIVE_RAG_PROMPT.format_messages(
-            context="Test context",
-            input="Test query",
-            strategy="SIMPLE"
+            context="Test context", input="Test query", strategy="SIMPLE"
         )
-        
+
         assert "SIMPLE" in str(formatted)
 
 
@@ -154,7 +146,7 @@ class TestCorrectiveRAGPrompts:
     def test_relevance_grader_prompt(self):
         """Test RELEVANCE_GRADER_PROMPT"""
         assert isinstance(RELEVANCE_GRADER_PROMPT, ChatPromptTemplate)
-        
+
         required_vars = ["question", "document"]
         for var in required_vars:
             assert var in RELEVANCE_GRADER_PROMPT.input_variables
@@ -163,9 +155,9 @@ class TestCorrectiveRAGPrompts:
         """Test relevance grader formatting"""
         formatted = RELEVANCE_GRADER_PROMPT.format_messages(
             question="What is LangChain?",
-            document="LangChain is a framework for building LLM applications."
+            document="LangChain is a framework for building LLM applications.",
         )
-        
+
         formatted_text = str(formatted)
         assert "relevant" in formatted_text.lower() or "RELEVANT" in formatted_text
 
@@ -187,7 +179,7 @@ class TestSelfRAGPrompts:
     def test_self_critique_prompt(self):
         """Test SELF_CRITIQUE_PROMPT"""
         assert isinstance(SELF_CRITIQUE_PROMPT, ChatPromptTemplate)
-        
+
         # Updated to match actual implementation (query, context, response)
         required_vars = ["query", "context", "response"]
         for var in required_vars:
@@ -196,7 +188,7 @@ class TestSelfRAGPrompts:
     def test_citation_check_prompt(self):
         """Test CITATION_CHECK_PROMPT"""
         assert isinstance(CITATION_CHECK_PROMPT, ChatPromptTemplate)
-        
+
         # Check for correct variables (context and response, not answer)
         required_vars = ["response", "context"]
         for var in required_vars:
@@ -207,9 +199,9 @@ class TestSelfRAGPrompts:
         formatted = SELF_CRITIQUE_PROMPT.format_messages(
             query="What is AI?",
             context="AI context here",
-            response="AI is artificial intelligence."
+            response="AI is artificial intelligence.",
         )
-        
+
         assert "What is AI?" in str(formatted)
         assert "AI is artificial intelligence." in str(formatted)
 
@@ -220,7 +212,7 @@ class TestMultiQueryPrompts:
     def test_multi_query_prompt(self):
         """Test MULTI_QUERY_PROMPT"""
         # May be ChatPromptTemplate or PromptTemplate
-        assert hasattr(MULTI_QUERY_PROMPT, 'input_variables')
+        assert hasattr(MULTI_QUERY_PROMPT, "input_variables")
         assert "question" in MULTI_QUERY_PROMPT.input_variables
 
     def test_multi_query_formatting(self):
@@ -231,7 +223,7 @@ class TestMultiQueryPrompts:
             formatted_text = str(formatted)
         else:
             formatted_text = MULTI_QUERY_PROMPT.format(question="What is RAG?")
-        
+
         # Should ask for multiple variations/perspectives
         assert "What is RAG?" in formatted_text
 
@@ -242,11 +234,13 @@ class TestAgenticPrompts:
     def test_react_agent_prompt(self):
         """Test REACT_AGENT_PROMPT"""
         # May be ChatPromptTemplate or PromptTemplate
-        assert hasattr(REACT_AGENT_PROMPT, 'input_variables')
-        
+        assert hasattr(REACT_AGENT_PROMPT, "input_variables")
+
         # ReAct prompts typically have these variables
-        assert "input" in REACT_AGENT_PROMPT.input_variables or \
-               "question" in REACT_AGENT_PROMPT.input_variables
+        assert (
+            "input" in REACT_AGENT_PROMPT.input_variables
+            or "question" in REACT_AGENT_PROMPT.input_variables
+        )
 
 
 class TestContextualRAGPrompts:
@@ -275,7 +269,7 @@ class TestSQLRAGPrompts:
     def test_text_to_sql_prompt(self):
         """Test TEXT_TO_SQL_PROMPT"""
         assert isinstance(TEXT_TO_SQL_PROMPT, ChatPromptTemplate)
-        
+
         # Should have schema and question variables
         required_vars = ["schema", "question"]
         for var in required_vars:
@@ -285,9 +279,9 @@ class TestSQLRAGPrompts:
         """Test SQL prompt formatting"""
         formatted = TEXT_TO_SQL_PROMPT.format_messages(
             schema="CREATE TABLE users (id INT, name VARCHAR);",
-            question="How many users are there?"
+            question="How many users are there?",
         )
-        
+
         formatted_text = str(formatted)
         assert "CREATE TABLE" in formatted_text
         assert "How many users are there?" in formatted_text
@@ -304,7 +298,7 @@ class TestGraphRAGPrompts:
     def test_graphrag_answer_prompt(self):
         """Test GRAPHRAG_ANSWER_PROMPT"""
         assert isinstance(GRAPHRAG_ANSWER_PROMPT, ChatPromptTemplate)
-        
+
         # Should have graph context and query
         required_vars = ["context", "input"]
         for var in required_vars:
@@ -324,11 +318,12 @@ class TestPromptConsistency:
             CRAG_PROMPT,
             SELF_CRITIQUE_PROMPT,
         ]
-        
+
         for prompt in prompts_to_check:
             # Should be either ChatPromptTemplate or PromptTemplate
-            assert isinstance(prompt, (ChatPromptTemplate, PromptTemplate)), \
+            assert isinstance(prompt, (ChatPromptTemplate, PromptTemplate)), (
                 f"Prompt {prompt} should be a valid template"
+            )
 
     def test_prompts_have_required_variables(self):
         """Test that prompts define input variables"""
@@ -337,11 +332,10 @@ class TestPromptConsistency:
             (HYDE_PROMPT, ["question"]),
             (COMPLEXITY_CLASSIFIER_PROMPT, ["query"]),
         ]
-        
+
         for prompt, expected_vars in prompts_with_vars:
             for var in expected_vars:
-                assert var in prompt.input_variables, \
-                    f"Prompt should have variable '{var}'"
+                assert var in prompt.input_variables, f"Prompt should have variable '{var}'"
 
     def test_prompts_can_be_invoked(self):
         """Test that prompts can be invoked with correct parameters"""
@@ -352,12 +346,12 @@ class TestPromptConsistency:
                 RAG_PROMPT_TEMPLATE.format_messages(context="test", input="test")
             else:
                 RAG_PROMPT_TEMPLATE.format(context="test", input="test")
-            
+
             if isinstance(HYDE_PROMPT, ChatPromptTemplate):
                 HYDE_PROMPT.format_messages(question="test")
             else:
                 HYDE_PROMPT.format(question="test")
-            
+
             if isinstance(COMPLEXITY_CLASSIFIER_PROMPT, ChatPromptTemplate):
                 COMPLEXITY_CLASSIFIER_PROMPT.format_messages(query="test")
             else:

@@ -29,15 +29,17 @@ Pinned dependencies (see `requirements.txt`):
 - `langchain-community>=0.4.0,<0.4.2` because ragas 0.4.x still imports
   `langchain_community.chat_models.vertexai` ([vibrantlabsai/ragas#2753](https://github.com/vibrantlabsai/ragas/issues/2753))
 
-Local checks on this port (no API keys; details in the PR):
+Local checks on this port (Python 3.12.3, no API keys; 2026-10-10):
 
-- Install from the new pins
-- Unit tests: `pytest tests/ -m "not integration and not slow"`
-- `jupyter nbconvert --execute notebooks/00_index.ipynb`
-- Import-check each `shared/` module
+- Installed from these pins (CPU `torch` first, then `requirements.txt` + `requirements-dev.txt`). Resolved versions included `langchain==1.4.4`, `langchain-core==1.6.9`, `langchain-community==0.4.1`, `langchain-text-splitters==1.1.3`, `langchain-tavily==0.2.18`, `langgraph==1.2.14`, `ragas==0.4.3`.
+- Unit tests: `pytest tests/ -m "not integration and not slow"` → **67 passed**, 16 deselected (integration). `shared/` coverage 60%.
+- `jupyter nbconvert --to notebook --execute notebooks/00_index.ipynb` succeeded. The env-check cell printed `WARNING: OPENAI_API_KEY not found` / `OpenAI API Key: NOT LOADED` and continued.
+- Import-check: `shared`, `shared.config`, `shared.loaders`, `shared.prompts`, `shared.retrievers`, `shared.utils` all import (`shared.__version__ == "1.4.0"`).
+- Lint: `ruff check` + `ruff format --check` on `shared/ tests/ scripts/ templates/` and `mypy shared/ scripts/` are clean after formatting the main-only test files this merge kept.
 
-Notebooks that need live model calls (including 12, 19, 20 and the rest of 01–18 beyond the
-index) were **not** re-executed with OpenAI. Treat them as educational walkthroughs.
+Not run (need API keys and/or live model calls): notebooks 01–20 beyond the index (including 12, 19, 20), `make vector-stores`, and `tests/test_integration.py`.
+
+Treat the notebooks as educational walkthroughs.
 
 Shared-module unit tests (`pytest tests/ -m "not integration"`) do not require API keys.
 
