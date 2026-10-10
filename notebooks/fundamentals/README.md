@@ -56,7 +56,7 @@ This directory contains foundational notebooks for understanding and building ba
 - RAG chain construction with LCEL
 - Complete end-to-end RAG workflow
 - Query evaluation and comparison
-- Best practices and optimization tips
+- Practical tips from the simple RAG walkthrough
 
 **Prerequisites:**
 

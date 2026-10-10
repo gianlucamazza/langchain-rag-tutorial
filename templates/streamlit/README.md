@@ -1,6 +1,6 @@
-# Streamlit Production Template
+# Streamlit starter template
 
-Interactive web UI for the RAG system.
+Interactive demo UI for the tutorial RAG chain. Not a production app.
 
 ## Features
 

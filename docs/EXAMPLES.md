@@ -388,4 +388,4 @@ if query:
 - [GETTING_STARTED.md](GETTING_STARTED.md) - Quick start
 - [API_REFERENCE.md](API_REFERENCE.md) - Full API docs
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Design patterns
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Production setup
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Starter templates

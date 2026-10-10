@@ -5,6 +5,12 @@ All notable changes to LangChain RAG Tutorial will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Claims honesty (docs/metadata only):** Dropped unbacked “production-ready” / superlative framing from README, notebook markdown, docs, and package comments. The repo is a hands-on tutorial; starter templates and evaluation/monitoring examples are listed only where they actually exist. Benchmark-style tables without a reproducible script are labeled as teaching estimates. Added a short Status note that notebooks were last aligned to LangChain APIs around 2025-11-13 and were not re-executed in this pass.
+
 ## [1.2.1] - 2025-11-13
 
 ### Fixed
@@ -156,11 +162,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Project Structure**: Now includes templates/, tests/, .github/ directories
 - **README.md**: Updated to mention Docker support and production templates
 - **Total Notebooks**: 16 → 18 (+2)
-- **Project Completeness**: Development → Production-ready
+- **Project Completeness**: Development → tutorial + starter templates (later reframed; not a production product)
 
 ### Improved
 
-- **Deployment Options**: Docs only → 3 production templates (FastAPI, Streamlit, Lambda)
+- **Deployment Options**: Docs only → 3 starter templates (FastAPI, Streamlit, Lambda)
 - **Docker Support**: None → Full container support with monitoring
 - **Testing**: 0% coverage → Infrastructure for 70%+ coverage
 - **CI/CD**: None → Full GitHub Actions pipeline

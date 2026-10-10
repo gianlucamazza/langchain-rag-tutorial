@@ -1,5 +1,5 @@
 # ============================================================================
-# LANGCHAIN RAG TUTORIAL - Production Dependencies
+# LANGCHAIN RAG TUTORIAL - Tutorial dependencies
 # ============================================================================
 # Project: LangChain RAG Tutorial (v1.2.1)
 # Python: 3.9+
@@ -72,7 +72,7 @@ datasets>=2.16.0                   # Dataset management for RAGAS
 duckduckgo-search>=4.0.0           # Corrective RAG fallback
 
 # ----------------------------------------------------------------------------
-# Production Deployment Templates (v1.2.0)
+# Starter deployment templates (v1.2.0)
 # ----------------------------------------------------------------------------
 fastapi>=0.109.0                   # REST API template
 streamlit>=1.31.0                  # Web UI template

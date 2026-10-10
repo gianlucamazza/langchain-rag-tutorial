@@ -94,7 +94,7 @@ Complete these in order:
 
 ### **Step 3: Advanced Architectures** (Pick based on use case)
 
-Explore **12 advanced patterns**:
+Explore the advanced notebooks (04–18):
 
 **Foundation (⭐⭐-⭐⭐⭐):**
 - **Chatbots?** → [04_rag_with_memory.ipynb](../notebooks/advanced_architectures/04_rag_with_memory.ipynb)
@@ -109,15 +109,17 @@ Explore **12 advanced patterns**:
 - **Self-correcting?** → [09_self_rag.ipynb](../notebooks/advanced_architectures/09_self_rag.ipynb)
 - **Complex reasoning?** → [10_agentic_rag.ipynb](../notebooks/advanced_architectures/10_agentic_rag.ipynb)
 
-**Cutting-Edge ✨ (⭐⭐⭐-⭐⭐⭐⭐⭐):**
+**Later notebooks (⭐⭐⭐-⭐⭐⭐⭐⭐):**
 - **Technical docs?** → [12_contextual_rag.ipynb](../notebooks/advanced_architectures/12_contextual_rag.ipynb) - Context-augmented chunks
-- **Best ranking?** → [13_fusion_rag.ipynb](../notebooks/advanced_architectures/13_fusion_rag.ipynb) - Reciprocal Rank Fusion
+- **Rank fusion?** → [13_fusion_rag.ipynb](../notebooks/advanced_architectures/13_fusion_rag.ipynb) - Reciprocal Rank Fusion
 - **Analytics/BI?** → [14_sql_rag.ipynb](../notebooks/advanced_architectures/14_sql_rag.ipynb) - Natural Language to SQL
 - **Knowledge graphs?** → [15_graphrag.ipynb](../notebooks/advanced_architectures/15_graphrag.ipynb) - Graph-based reasoning
+- **Images + text?** → [17_multimodal_rag.ipynb](../notebooks/advanced_architectures/17_multimodal_rag.ipynb)
+- **Fine-tune embeddings?** → [18_finetuning_embeddings.ipynb](../notebooks/advanced_architectures/18_finetuning_embeddings.ipynb)
 
 **Analysis:**
-- **Benchmark all 12?** → [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
-- **Quality metrics?** → [16_evaluation_ragas.ipynb](../notebooks/advanced_architectures/16_evaluation_ragas.ipynb) ✨
+- **Qualitative comparison?** → [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
+- **RAGAS metrics?** → [16_evaluation_ragas.ipynb](../notebooks/advanced_architectures/16_evaluation_ragas.ipynb)
 
 ## First Run Checklist
 

@@ -98,12 +98,12 @@ llm_rag/
 **Pattern**: Documents → Summarize → Context-Augment Chunks → Embed → Query → Retrieve → Generate
 **Use Case**: Technical docs, code documentation
 **Innovation**: Anthropic's technique - prepend document context to each chunk
-**Benefits**: 15-30% better retrieval quality with minimal overhead
+**Note**: Extra indexing-time LLM calls to write context; this repo does not report a measured quality delta.
 
 ### 10. Fusion RAG ✨ (⭐⭐⭐)
 
 **Pattern**: Query → Generate Multi-Perspectives → Parallel Retrieve → RRF Ranking → Generate
-**Use Case**: Research, best ranking quality
+**Use Case**: Research, merging several ranked lists
 **Key Component**: Reciprocal Rank Fusion (RRF) algorithm
 **Innovation**: Documents appearing in multiple result sets rank higher
 
@@ -268,7 +268,7 @@ __pycache__/            # Python cache
 
 1. Create notebook: `notebooks/advanced_architectures/17_new_pattern.ipynb`
 2. Add prompts to `shared/prompts.py`
-3. Update `11_comparison.ipynb` with new benchmark
+3. Update `11_comparison.ipynb` with a qualitative row for the new pattern
 4. Document in `notebooks/advanced_architectures/README.md`
 5. Update CHANGELOG.md with the addition
 
@@ -289,16 +289,20 @@ __pycache__/            # Python cache
 - [x] Context-augmented retrieval (notebook 12)
 - [x] Reciprocal Rank Fusion (notebook 13)
 
-### Planned for v1.2.0+
+### Present in the repo (v1.2.x)
 
-- [ ] Multimodal RAG (images, audio, video)
-- [ ] Fine-tuning embeddings guide
-- [ ] Production deployment templates (FastAPI, Streamlit)
-- [ ] Docker containerization
-- [ ] CI/CD pipeline for notebook testing
-- [ ] Monitoring and observability (LangSmith integration)
-- [ ] Cost optimization strategies
-- [ ] Batch processing patterns
+- [x] Multimodal RAG for images + text (notebook 17; not audio/video)
+- [x] Fine-tuning embeddings walkthrough (notebook 18)
+- [x] Starter FastAPI, Streamlit, and Lambda templates
+- [x] Docker / Compose files
+- [x] GitHub Actions for pytest and lint (not full notebook execution)
+- [x] Example Prometheus/Grafana config under `monitoring/`
+
+### Still out of scope
+
+- Audio/video RAG
+- Automated notebook execution in CI
+- A measured, reproducible benchmark harness
 
 ## References
 
@@ -323,5 +327,5 @@ __pycache__/            # Python cache
 ## See Also
 
 - [API_REFERENCE.md](API_REFERENCE.md) - Shared module API
-- [PERFORMANCE.md](PERFORMANCE.md) - Benchmarks
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Production setup
+- [PERFORMANCE.md](PERFORMANCE.md) - What to measure
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Starter deployment notes

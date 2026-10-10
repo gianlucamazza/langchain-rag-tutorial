@@ -352,7 +352,7 @@ DEFAULT_TEMPERATURE=0
 DEFAULT_K=4
 ```
 
-**Production Profile:**
+**Stricter logging profile (`ENVIRONMENT=prod`):**
 ```bash
 ENVIRONMENT=prod
 DEBUG_MODE=false

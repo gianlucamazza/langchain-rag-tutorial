@@ -1,6 +1,6 @@
 # Advanced RAG Architectures
 
-This directory contains implementations of **12 advanced RAG architectures**, each optimized for different use cases and requirements, plus a comprehensive evaluation framework.
+This directory contains tutorial implementations of advanced RAG patterns (notebooks 04–18), plus a RAGAS evaluation walkthrough. These are learning notebooks, not hardened services.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ These provide the baseline components (vector stores, embeddings, retrievers) us
 | **08** | Corrective RAG (CRAG) | ⭐⭐⭐⭐ | High-stakes domains (legal, medical) | Relevance grading + web fallback |
 | **09** | Self-RAG | ⭐⭐⭐⭐⭐ | Exploratory research, Dynamic Q&A | Self-critique and refinement |
 | **10** | Agentic RAG | ⭐⭐⭐⭐⭐ | Multi-step reasoning, BI dashboards | Autonomous agents with tools |
-| **11** | Comparison | - | Benchmarking | Side-by-side performance analysis |
+| **11** | Comparison | - | Qualitative comparison | Side-by-side trade-off tables (not a measured harness) |
 | **12** ✨ | Contextual RAG | ⭐⭐⭐ | Technical docs, Code documentation | Context-augmented chunking (Anthropic) |
 | **13** ✨ | Fusion RAG | ⭐⭐⭐ | Research, Best ranking quality | Reciprocal Rank Fusion algorithm |
 | **14** ✨ | SQL RAG | ⭐⭐⭐⭐ | Analytics, BI, Structured data | Natural Language to SQL with safety |
@@ -322,7 +322,7 @@ Enhances document chunks by prepending them with document-level context, improvi
 - Document summarization with LLM
 - Chunk-specific contextualization
 - Context-augmented embeddings
-- ~15-30% better retrieval quality
+- Extra document/chunk context at index time (quality not measured here)
 
 **Example:**
 
@@ -476,9 +476,9 @@ Comprehensive quality assessment for RAG systems using 6 evaluation metrics.
 **When to Use:**
 
 - Benchmarking multiple architectures
-- Quality assurance before production
-- A/B testing RAG improvements
-- Cost-quality trade-off analysis
+- Comparing chains on a labeled set before you ship anything
+- A/B testing RAG changes
+- Cost vs quality exploration (you still have to measure)
 
 #### Key Metrics
 
@@ -511,24 +511,24 @@ Duration: ~20 minutes
 
 ---
 
-## Comparison Matrix
+## Comparison matrix (qualitative)
 
-| Architecture | Latency | Cost | Accuracy | Complexity | Best For |
-|--------------|---------|------|----------|------------|----------|
-| Simple RAG | Fast (2s) | Low | Good | ⭐ | General purpose |
-| Memory RAG | Fast (2-3s) | Low-Med | Good | ⭐⭐ | Conversations |
-| Branched RAG | Medium (5-8s) | Medium | Very Good | ⭐⭐⭐ | Multi-intent |
-| HyDe | Medium (4-6s) | Medium | Very Good | ⭐⭐⭐ | Ambiguous queries |
-| Contextual RAG ✨ | Fast (2-3s) | Low | Very Good | ⭐⭐⭐ | Technical docs |
-| Fusion RAG ✨ | Medium (5-8s) | Medium | Excellent | ⭐⭐⭐ | Research |
-| Adaptive RAG | Variable | Optimized | Very Good | ⭐⭐⭐⭐ | Mixed workloads |
-| SQL RAG ✨ | Fast (2-5s) | Low-Med | Perfect* | ⭐⭐⭐⭐ | Analytics |
-| CRAG | Slow (10-15s) | High | Excellent | ⭐⭐⭐⭐ | High-accuracy |
-| Self-RAG | Slow (10-20s) | High | Excellent | ⭐⭐⭐⭐⭐ | Quality-critical |
-| GraphRAG ✨ | Medium (3-8s) | High | Excellent** | ⭐⭐⭐⭐⭐ | Knowledge graphs |
-| Agentic RAG | Very Slow (20-40s) | Very High | Excellent | ⭐⭐⭐⭐⭐ | Complex reasoning |
+Teaching estimates only — not timed or scored in this repo. Use notebook 16 to measure on your data.
 
-*Perfect for structured data queries | **Excellent for relationship queries
+| Architecture | Typical extra LLM work | Complexity | Best for exploring |
+|--------------|------------------------|------------|--------------------|
+| Simple RAG | 1 generation call | ⭐ | General Q&A |
+| Memory RAG | 1 generation + history | ⭐⭐ | Follow-up questions |
+| Branched RAG | Several query + 1 gen | ⭐⭐⭐ | Multi-intent questions |
+| HyDe | Hypothetical doc + gen | ⭐⭐⭐ | Vague queries |
+| Contextual RAG ✨ | Index-time context calls | ⭐⭐⭐ | Long technical docs |
+| Fusion RAG ✨ | Several queries + RRF | ⭐⭐⭐ | Merging ranked lists |
+| Adaptive RAG | Classify then route | ⭐⭐⭐⭐ | Mixed query types |
+| SQL RAG ✨ | Schema + SQL + interpret | ⭐⭐⭐⭐ | Structured tables |
+| CRAG | Grade + optional web | ⭐⭐⭐⭐ | Weak retrieval fallback |
+| Self-RAG | Critique / retry loop | ⭐⭐⭐⭐⭐ | Self-check patterns |
+| GraphRAG ✨ | Extract + traverse | ⭐⭐⭐⭐⭐ | Relationship questions |
+| Agentic RAG | Multi-tool loop | ⭐⭐⭐⭐⭐ | Multi-step tool use |
 
 ---
 
@@ -619,18 +619,18 @@ These are already included in `requirements.txt`.
 
 ---
 
-## Production Considerations
+## Before you take a pattern further
 
-Before deploying any advanced architecture:
+The notebooks show the pattern, not a deployable service. If you reuse an idea:
 
-1. **Cost Analysis**: Track token usage with `tiktoken`
-2. **Latency Monitoring**: Profile each component
-3. **Error Handling**: Implement robust fallbacks
-4. **Caching**: Cache embeddings and frequent queries
-5. **Rate Limiting**: Prevent API overuse
-6. **Logging**: Use LangSmith for tracing
+1. **Cost**: Trace token usage (`tiktoken` or provider logs)
+2. **Latency**: Time retrieve vs generate separately
+3. **Errors**: Add fallbacks the notebooks only sketch
+4. **Caching**: Reuse embeddings and frequent queries
+5. **Limits**: Provider rate limits are easy to hit in loops (Self-RAG, agents)
+6. **Tracing**: Optional LangSmith keys are documented in `.env.example`
 
-See each notebook's "Production Optimizations" section for specific guidance.
+See each notebook's optimizations section for pattern-specific notes.
 
 ---
 
@@ -640,8 +640,8 @@ For comprehensive guides, see:
 
 - 🚀 **[Getting Started](../../docs/GETTING_STARTED.md)** - Quick start (5 min)
 - 🏗️ **[Architecture](../../docs/ARCHITECTURE.md)** - Design decisions
-- ⚡ **[Performance](../../docs/PERFORMANCE.md)** - Benchmarks & optimization
-- 🚀 **[Deployment](../../docs/DEPLOYMENT.md)** - Production setup
+- ⚡ **[Performance](../../docs/PERFORMANCE.md)** - What to measure
+- 🚀 **[Deployment](../../docs/DEPLOYMENT.md)** - Starter templates
 - 📝 **[Examples](../../docs/EXAMPLES.md)** - Usage patterns
 - 🐛 **[Troubleshooting](../../docs/TROUBLESHOOTING.md)** - Detailed troubleshooting
 - ❓ **[FAQ](../../docs/FAQ.md)** - Common questions
