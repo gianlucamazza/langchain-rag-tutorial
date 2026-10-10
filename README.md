@@ -16,9 +16,8 @@ This is a learning repo, not a finished product you can drop into production.
 
 ## Status
 
-This tree ports the LangChain 1.x migration from
-[Venere-Labs/langchain-rag-tutorial#1](https://github.com/Venere-Labs/langchain-rag-tutorial/pull/1)
-(v1.3.0 + v1.4.0, tip `a1ddb906`) onto the claims-honesty `main`.
+This tree ports the LangChain 1.x migration from the earlier fork (tip `a1ddb906`)
+onto the claims-honesty `main`.
 
 Pinned dependencies (see `requirements.txt`):
 

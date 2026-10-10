@@ -14,7 +14,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.language_models import FakeListChatModel
+from langchain_openai import OpenAIEmbeddings
 
 # Mark all tests in this module as integration tests
 pytestmark = pytest.mark.integration
@@ -41,12 +42,13 @@ def mock_embeddings():
     return mock
 
 
+MOCK_LLM_RESPONSE = "This is a mocked response from the LLM."
+
+
 @pytest.fixture
 def mock_llm():
-    """Mock LLM for testing without API calls"""
-    mock = MagicMock(spec=ChatOpenAI)
-    mock.invoke.return_value.content = "This is a mocked response from the LLM."
-    return mock
+    """Runnable fake chat model; no API key required."""
+    return FakeListChatModel(responses=[MOCK_LLM_RESPONSE] * 32)
 
 
 @pytest.fixture
@@ -83,8 +85,7 @@ class TestSimpleRAGWorkflow:
 
         # Assertions
         assert isinstance(result, str)
-        assert len(result) > 0
-        mock_llm.invoke.assert_called_once()
+        assert result == MOCK_LLM_RESPONSE
 
     def test_retrieval_quality(self, test_vector_store):
         """Test that retrieval returns relevant documents"""
@@ -155,7 +156,7 @@ class TestMemoryRAGWorkflow:
         result = chain.invoke("Can you explain more?")
 
         assert result is not None
-        mock_llm.invoke.assert_called_once()
+        assert result.content == MOCK_LLM_RESPONSE
 
     def test_context_aware_follow_up(self, test_vector_store):
         """Test that follow-up questions work with context"""
@@ -179,15 +180,16 @@ class TestAdvancedRAGArchitectures:
         """Test multi-query retrieval approach"""
         from langchain.retrievers.multi_query import MultiQueryRetriever
 
-        # Mock LLM to return query variations
-        mock_llm.invoke.return_value.content = """
-        1. What is LangChain framework?
-        2. How does LangChain work?
-        3. LangChain documentation overview
-        """
+        llm = FakeListChatModel(
+            responses=[
+                "1. What is LangChain framework?\n"
+                "2. How does LangChain work?\n"
+                "3. LangChain documentation overview"
+            ]
+        )
 
         retriever = MultiQueryRetriever.from_llm(
-            retriever=test_vector_store.as_retriever(), llm=mock_llm
+            retriever=test_vector_store.as_retriever(), llm=llm
         )
 
         query = "Tell me about LangChain"
@@ -203,12 +205,11 @@ class TestAdvancedRAGArchitectures:
 
         # Step 1: Generate hypothetical document
         hyde_chain = HYDE_PROMPT | mock_llm
-        mock_llm.invoke.return_value.content = "LangChain is a comprehensive framework..."
 
         hypothetical_doc = hyde_chain.invoke({"question": "What is LangChain?"})
 
         assert hypothetical_doc is not None
-        assert len(hypothetical_doc.content) > 0
+        assert hypothetical_doc.content == MOCK_LLM_RESPONSE
 
         # Step 2: Use hypothetical doc for retrieval
         # (In real implementation, would embed and search)
@@ -217,7 +218,7 @@ class TestAdvancedRAGArchitectures:
 
         assert len(docs) > 0
 
-    def test_adaptive_routing(self, mock_llm):
+    def test_adaptive_routing(self):
         """Test query complexity classification and routing"""
         from shared.prompts import COMPLEXITY_CLASSIFIER_PROMPT
 
@@ -226,14 +227,11 @@ class TestAdvancedRAGArchitectures:
             ("Compare X and Y", "MEDIUM"),
             ("Explain how X works with Y in context of Z", "COMPLEX"),
         ]
+        llm = FakeListChatModel(responses=[expected for _, expected in test_cases])
+        classifier = COMPLEXITY_CLASSIFIER_PROMPT | llm
 
         for query, expected_complexity in test_cases:
-            # Mock classifier response
-            mock_llm.invoke.return_value.content = expected_complexity
-
-            classifier = COMPLEXITY_CLASSIFIER_PROMPT | mock_llm
             result = classifier.invoke({"query": query})
-
             assert expected_complexity in result.content
 
 

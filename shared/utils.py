@@ -91,15 +91,20 @@ def require_vector_store(path: str | Path, embeddings: Embeddings) -> FAISS:
     Load a FAISS vector store that must already exist.
 
     Raises:
-        FileNotFoundError: If the store is missing or cannot be loaded, with
-            instructions on how to build it.
+        FileNotFoundError: If the store path is missing, with build instructions.
+        Exception: Re-raised from FAISS if the path exists but cannot be loaded.
     """
-    vectorstore = load_vector_store(path, embeddings, verbose=False)
-    if vectorstore is None:
+    store_path = Path(path)
+    if not store_path.exists():
         raise FileNotFoundError(
             f"Vector store not found at {path}. Build it first with "
             "`make vector-stores` or by running notebook 02_embeddings_comparison."
         )
+    vectorstore = FAISS.load_local(
+        str(store_path),
+        embeddings,
+        allow_dangerous_deserialization=True,  # Required for pickle files
+    )
     print(f"Loaded vector store from {path}")
     return vectorstore
 

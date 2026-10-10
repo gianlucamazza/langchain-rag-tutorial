@@ -7,6 +7,7 @@ import logging
 import sys
 import time
 from pathlib import Path
+from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,7 +61,9 @@ class QueryRequest(BaseModel):
 
     query: str = Field(..., min_length=1, max_length=1000, description="User question")
     k: int = Field(4, ge=1, le=10, description="Number of documents to retrieve")
-    architecture: str = Field("simple", description="RAG architecture: simple, contextual, fusion")
+    architecture: Literal["simple"] = Field(
+        "simple", description="Only the simple tutorial chain is implemented"
+    )
 
     class Config:
         json_schema_extra = {"example": {"query": "What is RAG?", "k": 4, "architecture": "simple"}}
@@ -171,22 +174,11 @@ async def query_rag(request: QueryRequest, app_state: AppState = Depends(get_app
     try:
         logger.info(f"Processing query: {request.query[:50]}...")
 
-        # Update retriever with custom k
         retriever = app_state.vectorstore.as_retriever(search_kwargs={"k": request.k})
-
-        # Rebuild chain with custom retriever
-        chain = (
-            {"context": retriever | format_docs, "input": RunnablePassthrough()}
-            | RAG_PROMPT_TEMPLATE
-            | app_state.llm
-            | StrOutputParser()
-        )
-
-        # Get answer
-        answer = chain.invoke(request.query)
-
-        # Get source documents
         docs = retriever.invoke(request.query)
+        answer = (RAG_PROMPT_TEMPLATE | app_state.llm | StrOutputParser()).invoke(
+            {"context": format_docs(docs), "input": request.query}
+        )
         sources = [doc.metadata.get("source", "unknown") for doc in docs]
 
         # Calculate latency
@@ -210,21 +202,9 @@ async def list_architectures():
         "architectures": [
             {
                 "name": "simple",
-                "description": "Basic RAG with similarity search",
+                "description": "Basic RAG with similarity search (the only implemented chain)",
                 "latency": "~2s",
                 "cost": "Low",
-            },
-            {
-                "name": "contextual",
-                "description": "Context-augmented chunking (Anthropic)",
-                "latency": "~2-3s",
-                "cost": "Low",
-            },
-            {
-                "name": "fusion",
-                "description": "Multi-query with Reciprocal Rank Fusion",
-                "latency": "~5-8s",
-                "cost": "Medium",
             },
         ]
     }

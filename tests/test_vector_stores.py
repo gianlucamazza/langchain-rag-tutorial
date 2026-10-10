@@ -28,3 +28,13 @@ def test_require_vector_store_roundtrip(tmp_path, sample_documents):
 def test_require_vector_store_missing_raises_with_instructions(tmp_path):
     with pytest.raises(FileNotFoundError, match="make vector-stores"):
         require_vector_store(tmp_path / "missing", DeterministicFakeEmbedding(size=16))
+
+
+def test_require_vector_store_existing_unloadable_does_not_look_like_missing(tmp_path):
+    broken = tmp_path / "broken"
+    broken.mkdir()
+    (broken / "index.pkl").write_text("not a faiss store")
+    with pytest.raises(Exception) as exc_info:
+        require_vector_store(broken, DeterministicFakeEmbedding(size=16))
+    assert "make vector-stores" not in str(exc_info.value)
+    assert not isinstance(exc_info.value, FileNotFoundError)

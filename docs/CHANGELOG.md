@@ -151,7 +151,8 @@ Migration to LangChain 1.x and modernized tooling.
 - Unused development dependencies: `mkdocs`, `mkdocs-material` (no MkDocs site exists), `black`,
   `flake8`, `isort`, `pytest-asyncio`, `memory-profiler`.
 - Redis, Prometheus and Grafana services and the `monitoring` profile from `docker-compose.yml`
-  (no code used Redis, and the monitoring configuration never existed).
+  (no code used Redis). Example Prometheus/Grafana files remain under `monitoring/` as a
+  standalone sketch; they are not started by compose and the app does not expose `/metrics`.
 
 ### Upgrade notes
 

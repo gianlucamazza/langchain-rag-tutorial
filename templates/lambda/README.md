@@ -41,6 +41,19 @@ aws s3 cp data/vector_stores/openai__text-embedding-3-small/ \
 layout; set it only if you upload elsewhere. `OPENAI_EMBEDDING_MODEL` must match the model the store
 was built with. Without a bucket, the store is read from `/opt/vector_stores/openai__<model>` (Lambda layer).
 
+**Unpickling warning.** `FAISS.load_local(..., allow_dangerous_deserialization=True)` unpickles
+`index.pkl`. That is only safe if **you** (or a pipeline you control) are the only writer of that
+S3 prefix or Lambda layer. Anyone who can overwrite `index.pkl` can run code in the function.
+The handler hashes `index.pkl` (SHA-256) and refuses to load unless
+`VECTOR_STORE_INDEX_SHA256` matches. Compute it after upload:
+
+```bash
+sha256sum data/vector_stores/openai__text-embedding-3-small/index.pkl
+```
+
+Set `ALLOW_UNVERIFIED_VECTOR_STORE=1` only for a local experiment; do not use that opt-out if the
+bucket is shared or writable by others.
+
 ### 3. Create Lambda Function
 
 ```bash
@@ -54,7 +67,7 @@ aws lambda create-function \
     --zip-file fileb://function.zip \
     --timeout 60 \
     --memory-size 512 \
-    --environment Variables="{OPENAI_API_KEY=sk-proj-xxx,VECTOR_STORE_BUCKET=your-bucket,VECTOR_STORE_KEY=vector_stores/openai__text-embedding-3-small}"
+    --environment Variables="{OPENAI_API_KEY=sk-proj-xxx,VECTOR_STORE_BUCKET=your-bucket,VECTOR_STORE_KEY=vector_stores/openai__text-embedding-3-small,VECTOR_STORE_INDEX_SHA256=hexdigest}"
 ```
 
 ### 4. Attach Layer
@@ -102,6 +115,8 @@ cat response.json
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model; must match the uploaded store   |
 | `VECTOR_STORE_BUCKET`    | (empty)                  | S3 bucket holding the store                      |
 | `VECTOR_STORE_KEY`       | `vector_stores/openai__<OPENAI_EMBEDDING_MODEL>` | S3 key prefix of the store |
+| `VECTOR_STORE_INDEX_SHA256` | (required unless opt-out) | Expected SHA-256 of `index.pkl` (hex) |
+| `ALLOW_UNVERIFIED_VECTOR_STORE` | unset | Set `1` to skip the hash check (local experiments only) |
 
 Store the API key in AWS Secrets Manager or encrypted environment variables rather than in plain
 text; see [docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md#secrets-management).

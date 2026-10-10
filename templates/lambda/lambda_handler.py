@@ -3,6 +3,7 @@ AWS Lambda Handler for LangChain RAG
 Serverless deployment template
 """
 
+import hashlib
 import json
 import os
 import sys
@@ -24,7 +25,15 @@ OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embeddin
 # Same layout as shared/config.py: a store is keyed by the model that built it
 STORE_NAME = f"openai__{OPENAI_EMBEDDING_MODEL}"
 VECTOR_STORE_KEY = os.environ.get("VECTOR_STORE_KEY", f"vector_stores/{STORE_NAME}")
+VECTOR_STORE_INDEX_SHA256 = os.environ.get("VECTOR_STORE_INDEX_SHA256", "").strip().lower()
+ALLOW_UNVERIFIED_VECTOR_STORE = os.environ.get("ALLOW_UNVERIFIED_VECTOR_STORE", "").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 DEFAULT_K = 4
+MIN_K = 1
+MAX_K = 10
 
 RAG_PROMPT = ChatPromptTemplate.from_template(
     """Answer the question based only on the following context:
@@ -44,6 +53,49 @@ answer_chain = None
 def format_docs(docs):
     """Format retrieved documents into a single string"""
     return "\n\n".join(doc.page_content for doc in docs)
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_index_pkl(index_pkl: Path) -> None:
+    """Refuse to unpickle index.pkl unless its SHA-256 matches or opt-out is set."""
+    if ALLOW_UNVERIFIED_VECTOR_STORE:
+        print(
+            "WARNING: loading FAISS index.pkl without SHA-256 verification "
+            "(ALLOW_UNVERIFIED_VECTOR_STORE is set)"
+        )
+        return
+    if not VECTOR_STORE_INDEX_SHA256:
+        raise RuntimeError(
+            "VECTOR_STORE_INDEX_SHA256 is unset. Refusing to unpickle index.pkl. "
+            "Set the expected SHA-256, or ALLOW_UNVERIFIED_VECTOR_STORE=1 to opt out."
+        )
+    digest = _sha256_file(index_pkl)
+    if digest != VECTOR_STORE_INDEX_SHA256:
+        raise RuntimeError("index.pkl SHA-256 does not match VECTOR_STORE_INDEX_SHA256")
+
+
+def parse_k(raw) -> int:
+    """Parse k as an int in [1, 10]. Raises ValueError on bad input."""
+    if raw is None:
+        return DEFAULT_K
+    if isinstance(raw, bool) or isinstance(raw, float):
+        raise ValueError("k must be an integer")
+    if isinstance(raw, int):
+        k = raw
+    elif isinstance(raw, str) and raw.strip().lstrip("-").isdigit():
+        k = int(raw)
+    else:
+        raise ValueError("k must be an integer")
+    if k < MIN_K or k > MAX_K:
+        raise ValueError("k out of range")
+    return k
 
 
 def initialize():
@@ -76,17 +128,21 @@ def initialize():
                     VECTOR_STORE_BUCKET, f"{VECTOR_STORE_KEY}/{file}", f"{local_path}/{file}"
                 )
 
+            verify_index_pkl(Path(local_path) / "index.pkl")
             vectorstore = FAISS.load_local(
                 local_path,
                 embeddings,
-                allow_dangerous_deserialization=True,  # Trusted: our own bucket
+                # Only after SHA-256 check (or explicit opt-out)
+                allow_dangerous_deserialization=True,
             )
         else:
-            # Load from local (Lambda layer)
+            layer_path = Path(f"/opt/vector_stores/{STORE_NAME}")
+            verify_index_pkl(layer_path / "index.pkl")
             vectorstore = FAISS.load_local(
-                f"/opt/vector_stores/{STORE_NAME}",
+                str(layer_path),
                 embeddings,
-                allow_dangerous_deserialization=True,  # Trusted: shipped in our Lambda layer
+                # Only after SHA-256 check (or explicit opt-out)
+                allow_dangerous_deserialization=True,
             )
 
         # Retrieval runs per request (k is request-scoped); the chain only answers
@@ -129,7 +185,10 @@ def lambda_handler(event, context):
         if not query:
             return {"statusCode": 400, "body": json.dumps({"error": "Missing query parameter"})}
 
-        k = int(body.get("k", DEFAULT_K))
+        try:
+            k = parse_k(body.get("k", DEFAULT_K))
+        except ValueError:
+            return {"statusCode": 400, "body": json.dumps({"error": "Invalid k parameter"})}
 
         print(f"Processing query: {query}")
 
@@ -146,9 +205,9 @@ def lambda_handler(event, context):
             "body": json.dumps(response),
         }
 
-    except Exception as e:
-        print(f"Error processing query: {e}")
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    except Exception:
+        print("Error processing query")
+        return {"statusCode": 500, "body": json.dumps({"error": "Request failed"})}
 
 
 # Local testing
