@@ -59,7 +59,7 @@ pdf2image>=1.16.0                  # PDF image extraction (notebook 17)
 # Evaluation & Testing
 # ----------------------------------------------------------------------------
 ragas>=0.4.0                        # RAG evaluation framework (notebook 16)
-datasets>=2.16.0                   # Dataset management for RAGAS
+datasets>=5.1.0                   # Dataset management for RAGAS
 
 # ----------------------------------------------------------------------------
 # Starter deployment templates (v1.2.0)
