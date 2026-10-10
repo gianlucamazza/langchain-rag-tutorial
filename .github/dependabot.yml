@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directories:
+      - "/"
+      - "/templates/fastapi"
+      - "/templates/lambda"
+      - "/templates/streamlit"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      langchain:
+        applies-to: security-updates
+        patterns:
+          - "langchain"
+          - "langchain-*"
+          - "langgraph"
+          - "langgraph-*"
