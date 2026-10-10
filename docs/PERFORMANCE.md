@@ -19,11 +19,15 @@ Teaching estimates for this tutorial — **not** results from a checked-in, repr
 | 09_self_rag | 10-20 min | 4 min | Multiple iterations + self-critique |
 | 10_agentic_rag | 20-40 min | 8 min | Agent loop with multiple tool calls |
 | 11_comparison | 5-8 min | 2 min | Prints qualitative comparison tables (no live timing harness) |
-| 12_contextual_rag ✨ | 8-12 min | 2 min | Context generation (one-time) + retrieval |
-| 13_fusion_rag ✨ | 5-8 min | 2 min | Multiple query perspectives + RRF ranking |
-| 14_sql_rag ✨ | 5-8 min | 1.5 min | Chinook DB setup + SQL generation |
-| 15_graphrag ✨ | 10-15 min | 3 min | Entity extraction + graph construction |
-| 16_evaluation_ragas ✨ | 15-20 min | 5 min | Evaluation dataset + metrics computation |
+| 12_contextual_rag | 8-12 min | 2 min | Context generation (one-time) + retrieval |
+| 13_fusion_rag | 5-8 min | 2 min | Multiple query perspectives + RRF ranking |
+| 14_sql_rag | 5-8 min | 1.5 min | Chinook DB setup + SQL generation |
+| 15_graphrag | 10-15 min | 3 min | Entity extraction + graph construction |
+| 16_evaluation_ragas | 15-20 min | 5 min | Evaluation dataset + metrics computation |
+| 17_multimodal_rag | 10-20 min | 3 min | Vision/OCR setup + image queries |
+| 18_finetuning_embeddings | 20-40 min | 5 min | Contrastive fine-tune (local) |
+| 19_hybrid_search_reranking | 8-15 min | 2 min | BM25 + dense + first-run reranker download (~90 MB) |
+| 20_parent_multivector_retrieval | 10-20 min | 3 min | Parent/multi-vector index (LLM summaries) |
 
 **Key Insight:** First run includes model downloads, vector store creation, and database setup. Subsequent runs use cached data.
 
@@ -37,13 +41,15 @@ Teaching estimates for this tutorial — **not** results from a checked-in, repr
 | Memory RAG | 2-3s | 1 LLM call | ~2,000 tokens (+ history) |
 | Branched RAG | 5-8s | 4 LLM calls | ~6,000 tokens |
 | HyDe | 4-6s | 2 LLM calls | ~3,000 tokens |
-| Contextual RAG ✨ | 2-3s | 1 LLM call (+ upfront context) | ~1,800 tokens |
-| Fusion RAG ✨ | 5-8s | 5-6 LLM calls | ~7,000 tokens |
+| Contextual RAG | 2-3s | 1 LLM call (+ upfront context) | ~1,800 tokens |
+| Fusion RAG | 5-8s | 5-6 LLM calls | ~7,000 tokens |
+| Hybrid + Rerank | 2-4s | 1 LLM call (+ local reranker) | ~1,500 tokens |
+| Parent-Document / Multi-Vector | 2-3s | 1 LLM call (+ indexing-time LLM calls for multi-vector) | ~1,500-4,000 tokens (parents are larger) |
 | Adaptive RAG | Variable | 2-3 LLM calls | 2,000-6,000 tokens (depends on route) |
-| SQL RAG ✨ | 2-5s | 2-3 LLM calls | ~2,500 tokens |
+| SQL RAG | 2-5s | 2-3 LLM calls | ~2,500 tokens |
 | CRAG | 10-15s | 5-6 LLM calls | ~8,000 tokens |
 | Self-RAG | 10-20s | 4-6 LLM calls | ~10,000 tokens |
-| GraphRAG ✨ | 3-8s | 3-4 LLM calls + graph ops | ~4,500 tokens |
+| GraphRAG | 3-8s | 3-4 LLM calls + graph ops | ~4,500 tokens |
 | Agentic RAG | 20-40s | 5-10 LLM calls | ~15,000 tokens |
 
 **Factors Affecting Latency:**
@@ -52,12 +58,13 @@ Teaching estimates for this tutorial — **not** results from a checked-in, repr
 - Number of retrieved documents (k)
 - LLM model speed
 - Number of iterations (Self-RAG, Agentic)
+- Cross-encoder reranking (notebooks 12, 19): about 1-4 s per query on a laptop CPU with the
+  default MiniLM model and 20 candidates, ~5x more with `BAAI/bge-reranker-base`; latency grows with
+  the number and length of candidates; load the model once and reuse it
 
-## Cost notes (list-price arithmetic)
+## Cost Estimates
 
-Assumed token counts × published OpenAI list prices at the time of writing. Recalculate with current prices and your traces.
-
-### OpenAI API (GPT-4o-mini list prices, illustrative)
+### OpenAI API Costs (GPT-4o-mini)
 
 **Pricing:**
 
@@ -72,13 +79,13 @@ Assumed token counts × published OpenAI list prices at the time of writing. Rec
 | Memory RAG | 1,800 | 400 | $0.00051 |
 | Branched RAG | 4,800 | 1,200 | $0.00144 |
 | HyDe | 2,400 | 600 | $0.00072 |
-| Contextual RAG ✨ | 1,500 | 350 | $0.00043 |
-| Fusion RAG ✨ | 5,500 | 1,400 | $0.00167 |
+| Contextual RAG | 1,500 | 350 | $0.00043 |
+| Fusion RAG | 5,500 | 1,400 | $0.00167 |
 | Adaptive RAG | 2,000-5,000 | 500-1,000 | $0.00045-$0.00135 |
-| SQL RAG ✨ | 2,000 | 500 | $0.00060 |
+| SQL RAG | 2,000 | 500 | $0.00060 |
 | CRAG | 6,500 | 1,500 | $0.00188 |
 | Self-RAG | 8,000 | 2,000 | $0.00240 |
-| GraphRAG ✨ | 3,500 | 1,000 | $0.00113 |
+| GraphRAG | 3,500 | 1,000 | $0.00113 |
 | Agentic RAG | 12,000 | 3,000 | $0.00360 |
 
 **Monthly Cost Estimates (1000 queries/month):**
@@ -114,15 +121,15 @@ Assumed token counts × published OpenAI list prices at the time of writing. Rec
 
 ### Disk Space Breakdown
 
-```
-venv/                 892 MB    (Python dependencies)
-vector_stores/        1-5 MB    (FAISS indexes)
-.cache/huggingface/   90 MB     (Sentence transformers model)
-data/chinook.db       984 KB    (Chinook SQL database) ✨
-data/en_core_web_sm/  15 MB     (Spacy NLP model) ✨
-notebooks/            600 KB    (16 Jupyter notebooks) ✨
-shared/               150 KB    (Python modules - 1500+ lines) ✨
-Total:                ~1.1 GB
+```text
+venv/                 ~900 MB   Python dependencies
+.cache/huggingface/   ~90 MB    Sentence-transformers model
+.cache/huggingface/   ~90 MB    Reranker model (ms-marco-MiniLM-L-6-v2, notebooks 12, 19)
+data/vector_stores/   1-5 MB    FAISS indexes
+data/chinook.db       984 KB    Chinook SQLite database (SQL RAG)
+notebooks/            ~700 KB   21 Jupyter notebooks
+shared/               ~150 KB   Shared Python modules
+Total:                ~1.2 GB
 ```
 
 ## Optimization Strategies
@@ -134,18 +141,22 @@ Total:                ~1.1 GB
 **Solution:**
 
 ```python
-# Create once (notebook 02)
-vectorstore = FAISS.from_documents(chunks, embeddings)
-save_vector_store(vectorstore, "data/vector_stores/openai")
+from shared.config import OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
 
-# Reuse everywhere (notebooks 03-16)
-vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+
+# Create once (notebook 02, or `make vector-stores`)
+vectorstore = FAISS.from_documents(chunks, embeddings)
+save_vector_store(vectorstore, OPENAI_VECTOR_STORE_PATH)
+
+# Reuse everywhere (notebooks 03-18)
+vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 ```
 
 **Savings:**
 
-- Time: 8 minutes → 5 seconds
-- Cost: $0.02 → $0.00
+- Time: 8 minutes to 5 seconds
+- Cost: $0.02 to $0.00
 
 ### 2. Reduce Retrieved Documents (k)
 
@@ -173,9 +184,9 @@ retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
 
 **Solution:**
 
-- SIMPLE queries → Similarity search (fast)
-- MEDIUM queries → MMR (balanced)
-- COMPLEX queries → HyDe (slow but accurate)
+- SIMPLE queries: similarity search (fast)
+- MEDIUM queries: MMR (balanced)
+- COMPLEX queries: HyDE (slower but more accurate)
 
 **Savings:**
 
@@ -265,30 +276,52 @@ print(f"Embedding: ${embedding_cost:.4f} (one-time)")
 print(f"LLM: ${llm_cost:.6f} (per query)")
 ```
 
-## How to compare architectures
+## Benchmarking Results
 
-This repo does not ship a measured quality-vs-latency plot. Use notebook 16 (RAGAS) on a labeled set, and time `chain.invoke` as shown below. Notebook 11 is a qualitative cheat-sheet, not a benchmark run.
+### Quality vs Speed Trade-off
+
+```
+Relative quality (illustrative, unmeasured)
+                |                    * Agentic RAG (~30s)
+                |                  * Self-RAG (~15s)
+                |                * GraphRAG (~6s)
+                |                * CRAG (~12s)
+                |              * Fusion RAG (~7s)
+                |            * SQL RAG (~4s; high if SQL valid)
+                |            * HyDe (~5s)
+                |          * Branched RAG (~6s)
+                |       * Adaptive RAG (variable)
+                |       * Contextual RAG (~2.5s)
+                |     * Memory RAG (~2.5s)
+                |   * Simple RAG (~2s)
+                |_________________________________
+                         Latency (seconds)
+```
+
+This sketch is unlabeled teaching intuition, not a scored benchmark. SQL RAG quality is high when the generated SQL is valid and the schema is in scope; it is not guaranteed.
+
+**Key Insight:** more elaborate loops usually cost a lot more latency than they gain in quality. Specialized architectures (Contextual, Fusion, SQL, GraphRAG) are worth trying when they match the question type.
 
 ## Performance Tips
 
-✅ **Do:**
+**Do:**
 
-- Cache vector stores (run notebook 02 first)
+- Cache vector stores (notebook 02 or `make vector-stores`)
 - Use Adaptive RAG for mixed workloads
-- Start with Simple RAG, upgrade if needed
+- Start with Simple RAG and upgrade only if needed
 - Monitor token usage
 - Use HuggingFace embeddings for demos
 
-❌ **Don't:**
+**Avoid:**
 
-- Re-create vector stores on every run
-- Use Agentic RAG for simple queries
-- Retrieve k=10 documents (overkill)
-- Skip caching
-- Use GPT-4 for tutorials (expensive)
+- Re-creating vector stores on every run
+- Agentic RAG for simple queries
+- Retrieving k=10 documents or more without a reason
+- Skipping caching
+- Larger models than needed for tutorial runs (`DEFAULT_MODEL=gpt-4o-mini` is the default)
 
 ## See Also
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Design notes
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Design decisions
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues
-- [FAQ.md](FAQ.md) - Performance questions
+- [FAQ.md](FAQ.md) - Performance FAQs

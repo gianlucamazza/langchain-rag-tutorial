@@ -19,17 +19,15 @@ Common issues and solutions for LangChain RAG Tutorial.
 **Problem:**
 
 ```
-ERROR: This package requires Python 3.9+
+ERROR: Package 'langchain' requires a different Python: 3.9.x not in '>=3.10'
 ```
 
-**Solution:**
+**Solution:** the tutorial supports Python 3.10-3.13. Recreate the virtual environment with a
+supported interpreter:
 
 ```bash
-# Check Python version
 python --version
-
-# Use Python 3.9+ explicitly
-python3.10 -m venv venv
+python3.12 -m venv venv
 ```
 
 ### Dependency Conflicts
@@ -43,13 +41,34 @@ ERROR: Cannot install langchain and langchain-community
 **Solution:**
 
 ```bash
-# Clear pip cache
-pip cache purge
-
-# Install fresh
 pip install --upgrade pip
 pip install -r requirements.txt --no-cache-dir
 ```
+
+If you manage dependencies yourself, keep all LangChain packages on the 1.x line
+(`langchain`, `langchain-core`, `langchain-openai`, `langchain-text-splitters`, `langgraph`) and
+`langchain-community` at `>=0.4.0,<0.4.2`.
+
+### RAGAS Import Fails With `chat_models.vertexai`
+
+**Problem:**
+
+```
+ModuleNotFoundError: No module named 'langchain_community.chat_models.vertexai'
+```
+
+**Cause:** `langchain-community` 0.4.2 removed this module, but ragas 0.4.x imports it at module
+load ([vibrantlabsai/ragas#2753](https://github.com/vibrantlabsai/ragas/issues/2753)).
+
+**Solution:** install the pinned version from `requirements.txt`:
+
+```bash
+pip install "langchain-community>=0.4.0,<0.4.2"
+```
+
+The pin will be lifted once ragas ships a fix. Note that `langchain-community` is being sunset
+upstream ([langchain-ai/langchain-community#674](https://github.com/langchain-ai/langchain-community/issues/674));
+it is kept only because it is still the official home of the FAISS integration and `WebBaseLoader`.
 
 ### FAISS Installation Failed
 
@@ -107,7 +126,7 @@ cat .env
 
 **2. Restart Jupyter kernel:**
 
-- In Jupyter: `Kernel → Restart`
+- In Jupyter: `Kernel > Restart`
 - Environment variables load on kernel start
 
 **3. Reload .env manually:**
@@ -132,10 +151,10 @@ AuthenticationError: Incorrect API key
 3. Ensure no quotes around key in .env:
 
    ```bash
-   # ✅ Correct
+   # Correct
    OPENAI_API_KEY=sk-proj-abc123
 
-   # ❌ Wrong
+   # Wrong
    OPENAI_API_KEY="sk-proj-abc123"
    ```
 
@@ -172,7 +191,7 @@ which python  # Should point to venv/bin/python
 
 # 2. Reinstall in venv
 source venv/bin/activate
-pip install langchain
+pip install -r requirements.txt
 
 # 3. Install Jupyter kernel
 python -m ipykernel install --user --name=venv
@@ -233,7 +252,10 @@ jupyter notebook notebooks/fundamentals/02_embeddings_comparison.ipynb
 
 # Verify creation
 ls -la data/vector_stores/
-# Should show: openai_embeddings/ and huggingface_embeddings/
+# Should show openai__<OPENAI_EMBEDDING_MODEL>/ and hf__<HF_EMBEDDING_MODEL with / -> __>/,
+# e.g. openai__text-embedding-3-small/ and hf__BAAI__bge-small-en-v1.5/
+# Changing either model points to a new directory: rebuild the stores
+# Alternatively: make vector-stores
 ```
 
 ### Dimension Mismatch
@@ -249,11 +271,11 @@ RuntimeError: Embedding dimension mismatch
 ```python
 # Ensure same embeddings for save/load
 # Save:
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
 save_vector_store(vectorstore, path)
 
 # Load:
-embeddings = OpenAIEmbeddings()  # Same model!
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)  # Same model!
 vectorstore = load_vector_store(path, embeddings)
 ```
 
@@ -285,7 +307,7 @@ vectorstore = FAISS.load_local(
 
 **Explanation:** Expected behavior
 
-- HuggingFace model downloads (~90MB)
+- HuggingFace model downloads (~90MB; plus ~90MB for the reranker in notebooks 12 and 19)
 - Vector store creation (embedding all documents)
 - Package initialization
 
@@ -341,7 +363,7 @@ for i in range(0, len(docs), batch_size):
 python -m ipykernel install --user --name=venv --display-name="Python (LangChain RAG)"
 
 # Restart Jupyter
-# Select: Kernel → Change Kernel → Python (LangChain RAG)
+# Select: Kernel > Change Kernel > Python (LangChain RAG)
 ```
 
 ### Kernel Keeps Dying
@@ -356,7 +378,7 @@ python -m ipykernel install --user --name=venv --display-name="Python (LangChain
 c.NotebookApp.max_buffer_size = 500000000
 
 # 2. Restart kernel between notebooks
-# In Jupyter: Kernel → Restart & Clear Output
+# In Jupyter: Kernel > Restart & Clear Output
 
 # 3. Check system resources
 htop  # or Activity Monitor on macOS
@@ -401,29 +423,59 @@ urllib.error.URLError: [SSL: CERTIFICATE_VERIFY_FAILED]
 pip install --upgrade certifi
 ```
 
-### DuckDuckGo Search Fails (CRAG notebook)
+### Web Search Fails (Notebooks 08 and 10)
 
 **Problem:**
 
 ```
-ImportError: duckduckgo-search not found
+ModuleNotFoundError: No module named 'langchain_tavily'
 ```
 
 **Solution:**
 
 ```bash
-pip install duckduckgo-search>=4.0.0
+pip install langchain-tavily
 ```
 
-**Problem:** Search timeouts
+**Problem:** authentication or missing key errors from Tavily.
+
+**Solution:** set `TAVILY_API_KEY` in `.env` and restart the kernel. Use the current tool:
+
+```python
+from langchain_tavily import TavilySearch
+
+search = TavilySearch(max_results=3)
+```
+
+`TavilySearchResults` from `langchain_community` is deprecated and no longer used.
+
+### Calculator Tool Fails (Notebook 10)
+
+**Problem:**
+
+```
+ModuleNotFoundError: No module named 'numexpr'
+```
 
 **Solution:**
 
-```python
-# Increase timeout
-from langchain_community.tools import DuckDuckGoSearchResults
-search = DuckDuckGoSearchResults(num_results=2, timeout=30)
+```bash
+pip install numexpr
 ```
+
+### Deprecated Imports After Upgrading to LangChain 1.x
+
+**Problem:** `ImportError` or deprecation warnings for older import paths.
+
+**Solution:** use the LangChain 1.x locations:
+
+| Old import                                                                  | Current import                                            |
+| --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `langchain_community.chat_message_histories.ChatMessageHistory`             | `langchain_core.chat_history.InMemoryChatMessageHistory`  |
+| `langchain_community.tools.tavily_search.TavilySearchResults`               | `langchain_tavily.TavilySearch`                           |
+| `langchain.text_splitter.RecursiveCharacterTextSplitter`                    | `langchain_text_splitters.RecursiveCharacterTextSplitter` |
+| `langchain.schema.Document`                                                 | `langchain_core.documents.Document`                       |
+| `langchain.retrievers.EnsembleRetriever` (and other `langchain.retrievers`) | `langchain_classic.retrievers.EnsembleRetriever`          |
 
 ### LangGraph Issues (Agentic RAG)
 
@@ -436,7 +488,7 @@ ModuleNotFoundError: No module named 'langgraph'
 **Solution:**
 
 ```bash
-pip install langgraph>=0.0.20
+pip install "langgraph>=1.0"
 ```
 
 ### Tokenizer Parallelism Warning
@@ -493,19 +545,16 @@ If issues persist:
 
 ## Prevention Tips
 
-✅ **Best Practices:**
+**Recommended:**
 
-- Always activate venv before running
-- Run notebook 02 first (creates vector stores)
-- Restart kernel between major changes
-- Keep dependencies updated
-- Don't commit .env files
-- Use .env.example as template
+- Activate the virtual environment before running anything
+- Build vector stores first (notebook 02 or `make vector-stores`)
+- Restart the kernel after changing `.env` or upgrading packages
+- Install from `requirements.txt` rather than individual packages
+- Use `.env.example` as the template for `.env`
 
-❌ **Common Mistakes:**
+**Common mistakes:**
 
 - Hardcoding API keys
-- Not activating venv
-- Skipping notebook 02
-- Wrong embeddings for load_vector_store
-- Not restarting kernel after .env changes
+- Loading a vector store with different embeddings than it was built with
+- Upgrading `langchain-community` past the pinned range

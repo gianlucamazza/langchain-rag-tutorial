@@ -2,9 +2,10 @@
 Pytest configuration and fixtures
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -18,11 +19,11 @@ def sample_documents():
     return [
         Document(
             page_content="LangChain is a framework for building LLM applications.",
-            metadata={"source": "doc1.txt"}
+            metadata={"source": "doc1.txt"},
         ),
         Document(
             page_content="RAG stands for Retrieval-Augmented Generation.",
-            metadata={"source": "doc2.txt"}
+            metadata={"source": "doc2.txt"},
         ),
     ]
 

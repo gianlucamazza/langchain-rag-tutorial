@@ -2,63 +2,56 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.2.x   | :white_check_mark: |
-| 1.1.x   | :white_check_mark: |
-| 1.0.x   | :x:                |
-| < 1.0   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 1.4.x   | Yes       |
+| 1.3.x   | Yes       |
+| 1.2.x   | Yes       |
+| < 1.2   | No        |
 
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security issue, please report it by:
+Report security issues privately through
+[GitHub Security Advisories](https://github.com/gianlucamazza/langchain-rag-tutorial/security/advisories/new)
+(the "Security" tab of this repository).
 
-1. **Email**: <security@yourdomain.com> (replace with actual email)
-2. **GitHub Security Advisories**: Use the "Security" tab in this repository
+Please do **not** open a public issue or disclose the vulnerability publicly before a fix is
+released.
 
-**Please do NOT**:
-
-- Open a public issue
-- Disclose the vulnerability publicly before it's fixed
-
-## What to Include
-
-When reporting a vulnerability, please include:
+### What to Include
 
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
-- Suggested fix (if any)
+- Suggested fix, if any
 
 ## Response Time
 
-- **Initial response**: Within 48 hours
-- **Fix timeline**: Critical issues within 7 days, others within 30 days
-- **Disclosure**: Coordinated disclosure after fix is released
+There is **no committed SLA**. Responses are best-effort and depend on maintainer availability.
 
 ## Security Best Practices
 
 ### API Keys
 
-- ✅ Always use environment variables (`.env` file)
-- ✅ Never commit `.env` to git
-- ✅ Rotate keys regularly
-- ✅ Use key management services in production (AWS Secrets Manager, etc.)
+- Keep keys in environment variables or a `.env` file; never commit `.env`.
+- Rotate keys regularly and immediately after any exposure.
+- Use a secrets manager if you take a template beyond a local demo (for example AWS Secrets Manager or Azure Key Vault).
 
-### Docker Security
+### Docker
 
-- ✅ Run as non-root user (already configured)
-- ✅ Use multi-stage builds (already configured)
-- ✅ Scan images for vulnerabilities
-- ✅ Keep base images updated
+- The image runs as a non-root user and uses a multi-stage build.
+- Scan images for vulnerabilities and keep the base image (`python:3.12-slim`) updated.
 
-### Production Deployment
+### If you deploy a template
 
-- ✅ Enable HTTPS/TLS
-- ✅ Implement rate limiting
-- ✅ Use CORS restrictions
-- ✅ Enable authentication/authorization
-- ✅ Monitor for suspicious activity
+These templates are teaching apps. If you take one further than a local demo:
+
+- Enable HTTPS/TLS.
+- Add rate limiting, authentication and authorization.
+- Restrict CORS origins.
+- Monitor for suspicious activity.
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for starter notes.
 
 ## Known Issues
 
@@ -66,12 +59,9 @@ None at this time.
 
 ## Security Updates
 
-Security updates will be announced via:
-
-- GitHub Security Advisories
-- Release notes in CHANGELOG.md
-- Git tags
+Security updates are announced through GitHub Security Advisories, the
+[changelog](docs/CHANGELOG.md) and git tags.
 
 ---
 
-Last updated: 2025-11-13
+Last updated: 2026-10-10

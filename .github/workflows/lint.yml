@@ -11,26 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
-        python-version: "3.11"
+        python-version: "3.12"
+        cache: pip
+        cache-dependency-path: requirements*.txt
 
     - name: Install dependencies
       run: |
-        pip install black flake8 mypy isort
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r requirements-dev.txt
 
-    - name: Run black
-      run: black --check shared/ tests/
-
-    - name: Run flake8
-      run: flake8 shared/ tests/ --max-line-length=100
-
-    - name: Run isort
-      run: isort --check-only shared/ tests/
+    - name: Run ruff
+      run: |
+        ruff check shared/ tests/ scripts/ templates/
+        ruff format --check shared/ tests/ scripts/ templates/
 
     - name: Run mypy
-      run: mypy shared/ --ignore-missing-imports
-      continue-on-error: true
+      run: mypy shared/ scripts/

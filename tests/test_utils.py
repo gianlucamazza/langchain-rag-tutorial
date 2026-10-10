@@ -2,9 +2,9 @@
 Tests for shared/utils.py
 """
 
-import pytest
-from shared.utils import format_docs, estimate_tokens
 from langchain_core.documents import Document
+
+from shared.utils import estimate_tokens, format_docs
 
 
 def test_format_docs():
@@ -15,7 +15,7 @@ def test_format_docs():
     ]
 
     result = format_docs(docs)
-    
+
     assert "First doc" in result
     assert "Second doc" in result
     assert "\n\n" in result  # Check separator
@@ -30,9 +30,9 @@ def test_format_docs_empty():
 def test_estimate_tokens():
     """Test token estimation"""
     text = "This is a test sentence."
-    
+
     tokens = estimate_tokens(text)
-    
+
     assert isinstance(tokens, int)
     assert tokens > 0
     assert tokens < 100  # Reasonable range for short text

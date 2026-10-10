@@ -2,13 +2,12 @@
 Tests for shared/config.py
 """
 
-import pytest
 from shared.config import (
-    PROJECT_ROOT,
     DATA_DIR,
-    VECTOR_STORE_DIR,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_K,
+    PROJECT_ROOT,
+    VECTOR_STORE_DIR,
 )
 
 

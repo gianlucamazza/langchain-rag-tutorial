@@ -1,35 +1,30 @@
 # Getting Started
 
-Get up and running with LangChain RAG Tutorial in **5 minutes**.
+Get the tutorial running in about five minutes. For platform-specific details, optional setups and
+the full configuration reference, see [INSTALLATION.md](INSTALLATION.md).
 
 ## Prerequisites
 
-Before you begin, ensure you have:
-
-- Python 3.9+ installed
-- OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
-- ~2GB RAM available
-- Internet connection for dependencies
+- Python 3.10-3.13
+- OpenAI API key ([create one](https://platform.openai.com/api-keys))
+- About 2 GB of free RAM and disk space
+- Internet connection for dependencies and API calls
 
 ## Quick Start
 
-### 1. Clone and Navigate
+### 1. Clone the Repository
 
 ```bash
-cd llm_rag
+git clone https://github.com/gianlucamazza/langchain-rag-tutorial.git
+cd langchain-rag-tutorial
 ```
 
-### 2. Create Virtual Environment
+### 2. Create a Virtual Environment
 
 ```bash
-# Create virtual environment
 python3 -m venv venv
-
-# Activate (macOS/Linux)
-source venv/bin/activate
-
-# Activate (Windows)
-venv\Scripts\activate
+source venv/bin/activate      # macOS/Linux
+# venv\Scripts\activate       # Windows
 ```
 
 ### 3. Install Dependencies
@@ -38,130 +33,88 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-This will install:
+This installs LangChain 1.x (with `langchain-openai`, `langchain-community`,
+`langchain-huggingface`, `langchain-text-splitters`, `langchain-tavily` and `langgraph`), FAISS,
+sentence-transformers, NetworkX, RAGAS, Jupyter and the deployment template dependencies. See
+[INSTALLATION.md](INSTALLATION.md#dependencies) for the full list.
 
-- LangChain and extensions
-- OpenAI SDK
-- FAISS for vector storage
-- Jupyter notebook support
-- HuggingFace transformers (local embeddings)
-- NetworkX (graph algorithms) ✨
-- SQLAlchemy (SQL RAG) ✨
-- RAGAS (evaluation framework) ✨
-- Spacy (entity extraction) ✨
-
-### 4. Configure API Key
-
-Create a `.env` file in the project root:
-
-```bash
-echo "OPENAI_API_KEY=sk-proj-your-key-here" > .env
-```
-
-Or copy from template:
+### 4. Configure API Keys
 
 ```bash
 cp .env.example .env
-# Edit .env with your actual API key
+# Edit .env and set OPENAI_API_KEY (and TAVILY_API_KEY for notebooks 08 and 10)
 ```
 
 ### 5. Launch Jupyter
 
 ```bash
-jupyter notebook
+jupyter notebook notebooks/00_index.ipynb
 ```
-
-Then navigate to `notebooks/00_index.ipynb` to start!
 
 ## Learning Path
 
-Follow this recommended sequence:
+### Step 1: Navigation Hub (2 minutes)
 
-### **Step 1: Navigation Hub** (2 minutes)
+[00_index.ipynb](../notebooks/00_index.ipynb) gives an overview of all notebooks and validates the
+environment.
 
-- 📍 Start here: [notebooks/00_index.ipynb](../notebooks/00_index.ipynb)
-- Overview of all notebooks
-- Environment validation
-- Architecture comparison
-
-### **Step 2: Fundamentals** (30-40 minutes)
+### Step 2: Fundamentals (30-40 minutes)
 
 Complete these in order:
 
-1. [01_setup_and_basics.ipynb](../notebooks/fundamentals/01_setup_and_basics.ipynb) - Document loading & splitting
-2. [02_embeddings_comparison.ipynb](../notebooks/fundamentals/02_embeddings_comparison.ipynb) - OpenAI vs HuggingFace
+1. [01_setup_and_basics.ipynb](../notebooks/fundamentals/01_setup_and_basics.ipynb) - Document
+   loading and splitting
+2. [02_embeddings_comparison.ipynb](../notebooks/fundamentals/02_embeddings_comparison.ipynb) -
+   OpenAI vs HuggingFace embeddings; creates the vector stores used by later notebooks
 3. [03_simple_rag.ipynb](../notebooks/fundamentals/03_simple_rag.ipynb) - Your first RAG chain
 
-### **Step 3: Advanced Architectures** (Pick based on use case)
+Alternatively, build the vector stores up front with `make vector-stores`
+(see [INSTALLATION.md](INSTALLATION.md#pre-building-vector-stores)).
 
-Explore the advanced notebooks (04–18):
+### Step 3: Advanced Architectures (pick by use case)
 
-**Foundation (⭐⭐-⭐⭐⭐):**
-- **Chatbots?** → [04_rag_with_memory.ipynb](../notebooks/advanced_architectures/04_rag_with_memory.ipynb)
-- **Research tool?** → [05_branched_rag.ipynb](../notebooks/advanced_architectures/05_branched_rag.ipynb)
-- **Ambiguous queries?** → [06_hyde.ipynb](../notebooks/advanced_architectures/06_hyde.ipynb)
+| Complexity | Question                    | Notebook                                                                                                           |
+| ---------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 2/5        | Chatbot with memory?        | [04_rag_with_memory.ipynb](../notebooks/advanced_architectures/04_rag_with_memory.ipynb)                           |
+| 3/5        | Research coverage?          | [05_branched_rag.ipynb](../notebooks/advanced_architectures/05_branched_rag.ipynb)                                 |
+| 3/5        | Ambiguous queries?          | [06_hyde.ipynb](../notebooks/advanced_architectures/06_hyde.ipynb)                                                 |
+| 4/5        | Mixed workload?             | [07_adaptive_rag.ipynb](../notebooks/advanced_architectures/07_adaptive_rag.ipynb)                                 |
+| 4/5        | High accuracy?              | [08_corrective_rag.ipynb](../notebooks/advanced_architectures/08_corrective_rag.ipynb)                             |
+| 5/5        | Self-correcting?            | [09_self_rag.ipynb](../notebooks/advanced_architectures/09_self_rag.ipynb)                                         |
+| 5/5        | Complex reasoning?          | [10_agentic_rag.ipynb](../notebooks/advanced_architectures/10_agentic_rag.ipynb)                                   |
+| 3/5        | Technical docs?             | [12_contextual_rag.ipynb](../notebooks/advanced_architectures/12_contextual_rag.ipynb)                             |
+| 3/5        | Best ranking?               | [13_fusion_rag.ipynb](../notebooks/advanced_architectures/13_fusion_rag.ipynb)                                     |
+| 4/5        | Analytics/BI?               | [14_sql_rag.ipynb](../notebooks/advanced_architectures/14_sql_rag.ipynb)                                           |
+| 5/5        | Knowledge graphs?           | [15_graphrag.ipynb](../notebooks/advanced_architectures/15_graphrag.ipynb)                                         |
+| 4/5        | Images + text?              | [17_multimodal_rag.ipynb](../notebooks/advanced_architectures/17_multimodal_rag.ipynb)                             |
+| 4/5        | Domain-specific embeddings? | [18_finetuning_embeddings.ipynb](../notebooks/advanced_architectures/18_finetuning_embeddings.ipynb)               |
+| 3/5        | Identifiers and jargon?     | [19_hybrid_search_reranking.ipynb](../notebooks/advanced_architectures/19_hybrid_search_reranking.ipynb)           |
+| 3/5        | Chunk-size trade-offs?      | [20_parent_multivector_retrieval.ipynb](../notebooks/advanced_architectures/20_parent_multivector_retrieval.ipynb) |
 
-**Enhanced (⭐⭐⭐⭐):**
-- **Mixed workload?** → [07_adaptive_rag.ipynb](../notebooks/advanced_architectures/07_adaptive_rag.ipynb)
-- **High accuracy?** → [08_corrective_rag.ipynb](../notebooks/advanced_architectures/08_corrective_rag.ipynb)
+For a qualitative overview, [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
+prints trade-off tables (not a measured harness).
+[16_evaluation_ragas.ipynb](../notebooks/advanced_architectures/16_evaluation_ragas.ipynb) measures
+quality with RAGAS when you have a chain and an API key.
 
-**Self-Improving (⭐⭐⭐⭐⭐):**
-- **Self-correcting?** → [09_self_rag.ipynb](../notebooks/advanced_architectures/09_self_rag.ipynb)
-- **Complex reasoning?** → [10_agentic_rag.ipynb](../notebooks/advanced_architectures/10_agentic_rag.ipynb)
+Suggested tracks:
 
-**Later notebooks (⭐⭐⭐-⭐⭐⭐⭐⭐):**
-- **Technical docs?** → [12_contextual_rag.ipynb](../notebooks/advanced_architectures/12_contextual_rag.ipynb) - Context-augmented chunks
-- **Rank fusion?** → [13_fusion_rag.ipynb](../notebooks/advanced_architectures/13_fusion_rag.ipynb) - Reciprocal Rank Fusion
-- **Analytics/BI?** → [14_sql_rag.ipynb](../notebooks/advanced_architectures/14_sql_rag.ipynb) - Natural Language to SQL
-- **Knowledge graphs?** → [15_graphrag.ipynb](../notebooks/advanced_architectures/15_graphrag.ipynb) - Graph-based reasoning
-- **Images + text?** → [17_multimodal_rag.ipynb](../notebooks/advanced_architectures/17_multimodal_rag.ipynb)
-- **Fine-tune embeddings?** → [18_finetuning_embeddings.ipynb](../notebooks/advanced_architectures/18_finetuning_embeddings.ipynb)
-
-**Analysis:**
-- **Qualitative comparison?** → [11_comparison.ipynb](../notebooks/advanced_architectures/11_comparison.ipynb)
-- **RAGAS metrics?** → [16_evaluation_ragas.ipynb](../notebooks/advanced_architectures/16_evaluation_ragas.ipynb)
+- **Fast track** (1-2 hours): Simple RAG, then Contextual RAG, then your use case
+- **Complete tutorial** (5-7 hours): all notebooks in order
+- **With multimodal and evaluation**: add 2 hours
+- **Starter templates**: add 1-2 hours (see [DEPLOYMENT.md](DEPLOYMENT.md))
 
 ## First Run Checklist
 
-Before running notebooks, verify:
-
-- [ ] Virtual environment activated (`which python` should point to `venv/`)
+- [ ] Virtual environment activated (`which python` points to `venv/`)
 - [ ] Dependencies installed (`pip list | grep langchain`)
-- [ ] API key configured (`.env` file exists)
-- [ ] Jupyter running (`jupyter notebook`)
+- [ ] `.env` exists in the project root with `OPENAI_API_KEY` set
 - [ ] Started with `00_index.ipynb`
 
-## Quick Troubleshooting
-
-**Import errors?**
-
-```bash
-pip install --upgrade -r requirements.txt
-```
-
-**API key errors?**
-
-- Verify `.env` file exists in project root
-- Check key format: `OPENAI_API_KEY=sk-proj-...`
-- Ensure no quotes around the key in `.env`
-
-**Jupyter kernel issues?**
-
-```bash
-python -m ipykernel install --user --name=venv
-```
-
-For more troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+If something fails, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ## Next Steps
 
-- 📖 Detailed setup instructions: [INSTALLATION.md](INSTALLATION.md)
-- 🏗️ Understand the architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
-- 📚 Explore shared module API: [API_REFERENCE.md](API_REFERENCE.md)
-- ❓ Common questions: [FAQ.md](FAQ.md)
-
-## Need Help?
-
-- 🐛 Found a bug? [Open an issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- 💬 Questions? Check [FAQ.md](FAQ.md)
-- 🤝 Want to contribute? See [CONTRIBUTING.md](CONTRIBUTING.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md) - How the architectures work
+- [API_REFERENCE.md](API_REFERENCE.md) - The `shared` module
+- [FAQ.md](FAQ.md) - Common questions
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contributing

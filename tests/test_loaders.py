@@ -2,22 +2,23 @@
 Tests for document loading and splitting utilities
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from langchain_core.documents import Document
 
 from shared.loaders import (
+    compare_splitting_strategies,
+    load_and_split,
     load_langchain_docs,
     split_documents,
-    load_and_split,
-    compare_splitting_strategies
 )
 
 
 class TestLoadLangChainDocs:
     """Tests for load_langchain_docs function"""
 
-    @patch('shared.loaders.WebBaseLoader')
+    @patch("shared.loaders.WebBaseLoader")
     def test_load_docs_default_urls(self, mock_loader_class):
         """Test loading with default URLs"""
         # Setup mock
@@ -33,10 +34,10 @@ class TestLoadLangChainDocs:
         # Assert
         assert len(docs) == 1
         assert docs[0].page_content == "Test content"
-        assert 'source_type' in docs[0].metadata
-        assert docs[0].metadata['source_type'] == 'web_documentation'
+        assert "source_type" in docs[0].metadata
+        assert docs[0].metadata["source_type"] == "web_documentation"
 
-    @patch('shared.loaders.WebBaseLoader')
+    @patch("shared.loaders.WebBaseLoader")
     def test_load_docs_custom_urls(self, mock_loader_class):
         """Test loading with custom URLs"""
         # Setup mock
@@ -55,7 +56,7 @@ class TestLoadLangChainDocs:
         mock_loader_class.assert_called_once_with(custom_urls)
         assert len(docs) == 1
 
-    @patch('shared.loaders.WebBaseLoader')
+    @patch("shared.loaders.WebBaseLoader")
     def test_load_docs_without_metadata(self, mock_loader_class):
         """Test loading without adding custom metadata"""
         # Setup mock
@@ -69,10 +70,10 @@ class TestLoadLangChainDocs:
         docs = load_langchain_docs(add_metadata=False, verbose=False)
 
         # Assert
-        assert 'source_type' not in docs[0].metadata
-        assert 'process_date' not in docs[0].metadata
+        assert "source_type" not in docs[0].metadata
+        assert "process_date" not in docs[0].metadata
 
-    @patch('shared.loaders.WebBaseLoader')
+    @patch("shared.loaders.WebBaseLoader")
     def test_load_docs_handles_errors(self, mock_loader_class):
         """Test error handling when loading fails"""
         # Setup mock to raise exception
@@ -83,7 +84,7 @@ class TestLoadLangChainDocs:
         # Execute and assert
         with pytest.raises(Exception) as exc_info:
             load_langchain_docs(verbose=False)
-        
+
         assert "Network error" in str(exc_info.value)
 
 
@@ -108,8 +109,7 @@ class TestSplitDocuments:
         """Test that splitting preserves document metadata"""
         docs = [
             Document(
-                page_content="A" * 1000,
-                metadata={"source": "doc1.txt", "author": "Test Author"}
+                page_content="A" * 1000, metadata={"source": "doc1.txt", "author": "Test Author"}
             )
         ]
 
@@ -127,12 +127,7 @@ class TestSplitDocuments:
         """Test splitting with custom chunk size and overlap"""
         docs = [Document(page_content="A" * 1000, metadata={})]
 
-        chunks = split_documents(
-            docs,
-            chunk_size=300,
-            chunk_overlap=100,
-            verbose=False
-        )
+        chunks = split_documents(docs, chunk_size=300, chunk_overlap=100, verbose=False)
 
         assert len(chunks) > 0
         assert all(len(chunk.page_content) <= 300 for chunk in chunks)
@@ -141,8 +136,8 @@ class TestSplitDocuments:
 class TestLoadAndSplit:
     """Tests for load_and_split convenience function"""
 
-    @patch('shared.loaders.load_langchain_docs')
-    @patch('shared.loaders.split_documents')
+    @patch("shared.loaders.load_langchain_docs")
+    @patch("shared.loaders.split_documents")
     def test_load_and_split_workflow(self, mock_split, mock_load):
         """Test complete load and split workflow"""
         # Setup mocks
@@ -162,8 +157,8 @@ class TestLoadAndSplit:
         assert mock_split.called
         assert len(result) == 2
 
-    @patch('shared.loaders.load_langchain_docs')
-    @patch('shared.loaders.split_documents')
+    @patch("shared.loaders.load_langchain_docs")
+    @patch("shared.loaders.split_documents")
     def test_load_and_split_custom_params(self, mock_split, mock_load):
         """Test with custom parameters"""
         mock_docs = [Document(page_content="Test", metadata={})]
@@ -171,14 +166,9 @@ class TestLoadAndSplit:
         mock_split.return_value = mock_docs
 
         custom_urls = ["https://example.com"]
-        
+
         # Execute
-        load_and_split(
-            urls=custom_urls,
-            chunk_size=500,
-            chunk_overlap=100,
-            verbose=False
-        )
+        load_and_split(urls=custom_urls, chunk_size=500, chunk_overlap=100, verbose=False)
 
         # Assert
         mock_load.assert_called_once()
@@ -196,9 +186,9 @@ class TestCompareSplittingStrategies:
         # Assert result structure
         assert isinstance(result, dict)
         assert len(result) == 2
-        
+
         # Check each strategy has required keys
-        for strategy_name, data in result.items():
+        for _strategy_name, data in result.items():
             assert "num_chunks" in data
             assert "chunk_size" in data
             assert "chunk_overlap" in data
@@ -210,7 +200,7 @@ class TestCompareSplittingStrategies:
         """Test with empty document list"""
         strategies = [(1000, 200)]
         result = compare_splitting_strategies([], strategies, verbose=False)
-        
+
         # Should return results even for empty list
         assert isinstance(result, dict)
         for strategy_data in result.values():
@@ -236,7 +226,7 @@ class TestEdgeCases:
         """Test splitting with very small chunk size"""
         docs = [Document(page_content="Short text", metadata={})]
         chunks = split_documents(docs, chunk_size=5, chunk_overlap=1, verbose=False)
-        
+
         # Should handle gracefully
         assert len(chunks) >= 1
 
@@ -244,14 +234,14 @@ class TestEdgeCases:
         """Test splitting with zero overlap"""
         docs = [Document(page_content="A" * 500, metadata={})]
         chunks = split_documents(docs, chunk_size=100, chunk_overlap=0, verbose=False)
-        
+
         assert len(chunks) >= 1
 
     def test_single_char_document(self):
         """Test splitting single character document"""
         docs = [Document(page_content="A", metadata={})]
         chunks = split_documents(docs, chunk_size=100, chunk_overlap=50, verbose=False)
-        
+
         assert len(chunks) >= 1
         # May have multiple chunks depending on splitter behavior
         assert chunks[0].page_content in ["A", "A\n"]

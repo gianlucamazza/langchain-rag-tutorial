@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -10,20 +10,11 @@ repos:
       - id: check-toml
       - id: detect-private-key
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
     hooks:
-      - id: black
-        language_version: python3.11
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile", "black"]
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
-        args: ["--max-line-length=100", "--extend-ignore=E203,W503"]
+      - id: ruff-check
+        args: [--fix]
+        files: ^(shared|tests|scripts|templates)/
+      - id: ruff-format
+        files: ^(shared|tests|scripts|templates)/

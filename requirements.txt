@@ -1,26 +1,32 @@
 # ============================================================================
 # LANGCHAIN RAG TUTORIAL - Tutorial dependencies
 # ============================================================================
-# Project: LangChain RAG Tutorial (v1.2.1)
-# Python: 3.9+
-# Last updated: 2025-11-13
+# Project: LangChain RAG Tutorial (v1.4.0)
+# Python: 3.10+
+# Last updated: 2026-09-21 (ported to this repo 2026-10-10)
 # ============================================================================
 
 # ----------------------------------------------------------------------------
 # Core LangChain Ecosystem
 # ----------------------------------------------------------------------------
-langchain>=0.1.0
-langchain-core>=0.1.0              # Required for updated imports
-langchain-openai>=0.0.2
-langchain-community>=0.0.10
-langchain-huggingface>=0.0.1
-langgraph>=0.0.20
+langchain>=1.0.0                  # create_agent, langchain.messages (notebooks 10, 12)
+langchain-core>=1.0.0
+langchain-classic>=1.0.0         # EnsembleRetriever, ParentDocument/MultiVector, rerankers (12, 19, 20)
+langchain-openai>=1.0.0
+langchain-community>=0.4.0,<0.4.2  # FAISS, WebBaseLoader. <0.4.2: ragas imports
+                                    # chat_models.vertexai, removed in 0.4.2
+                                    # (vibrantlabsai/ragas#2753) - drop bound once fixed
+langchain-huggingface>=1.0.0
+langchain-text-splitters>=1.0.0   # No longer pulled in by langchain 1.x
+langchain-tavily>=0.2.0           # Web search tool (notebooks 08, 10)
+langgraph>=1.0.0
 
 # ----------------------------------------------------------------------------
 # Vector Stores & Embeddings
 # ----------------------------------------------------------------------------
 faiss-cpu>=1.7.4
-sentence-transformers>=2.2.0        # For fine-tuning embeddings (notebook 18)
+rank-bm25>=0.2.2                    # BM25 keyword retrieval (notebooks 12, 19)
+sentence-transformers>=2.2.0        # Cross-encoder reranking (12, 19), fine-tuning (18)
 accelerate>=0.26.0                  # Required for fine-tuning with Trainer
 
 # ----------------------------------------------------------------------------
@@ -35,18 +41,12 @@ tiktoken>=0.5.0
 # ----------------------------------------------------------------------------
 pandas>=2.2.0                      # SQL RAG, RAGAS evaluation
 matplotlib>=3.8.0                  # GraphRAG visualization
-plotly>=5.18.0                     # Interactive charts
 
 # ----------------------------------------------------------------------------
 # Graph & Knowledge Management
 # ----------------------------------------------------------------------------
 networkx>=3.2                      # GraphRAG (notebook 15)
 python-louvain>=0.16               # Community detection in GraphRAG
-
-# ----------------------------------------------------------------------------
-# Database & SQL
-# ----------------------------------------------------------------------------
-sqlalchemy>=2.0.25                 # SQL RAG (notebook 14)
 
 # ----------------------------------------------------------------------------
 # Multimodal & Image Processing (v1.2.0)
@@ -56,20 +56,10 @@ pytesseract>=0.3.10                # OCR text extraction (notebook 17)
 pdf2image>=1.16.0                  # PDF image extraction (notebook 17)
 
 # ----------------------------------------------------------------------------
-# NLP & Advanced Processing
-# ----------------------------------------------------------------------------
-spacy>=3.7.0                       # Entity extraction for GraphRAG
-
-# ----------------------------------------------------------------------------
 # Evaluation & Testing
 # ----------------------------------------------------------------------------
-ragas>=0.1.7                       # RAG evaluation framework (notebook 16)
+ragas>=0.4.0                        # RAG evaluation framework (notebook 16)
 datasets>=2.16.0                   # Dataset management for RAGAS
-
-# ----------------------------------------------------------------------------
-# Web Search
-# ----------------------------------------------------------------------------
-duckduckgo-search>=4.0.0           # Corrective RAG fallback
 
 # ----------------------------------------------------------------------------
 # Starter deployment templates (v1.2.0)
@@ -78,6 +68,11 @@ fastapi>=0.109.0                   # REST API template
 streamlit>=1.31.0                  # Web UI template
 uvicorn>=0.27.0                    # ASGI server for FastAPI
 boto3>=1.34.0                      # AWS SDK for Lambda template
+
+# ----------------------------------------------------------------------------
+# Agent Tools
+# ----------------------------------------------------------------------------
+numexpr>=2.10.0                    # Safe calculator tool (notebook 10)
 
 # ----------------------------------------------------------------------------
 # Environment & Configuration

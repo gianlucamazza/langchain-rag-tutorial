@@ -4,250 +4,195 @@ Starter notes for the tutorial templates (FastAPI, Streamlit, Lambda, Docker Com
 
 ## Table of Contents
 
-- [Pre-Deployment Checklist](#pre-deployment-checklist)
-- [Deployment Options](#deployment-options)
+- [Pre-deployment checklist](#production-checklist)
+- [Docker](#docker)
+- [Deployment Templates](#deployment-templates)
+- [Custom FastAPI Image](#custom-fastapi-image)
 - [Configuration Management](#configuration-management)
 - [Scaling Strategies](#scaling-strategies)
 - [Monitoring](#monitoring)
 - [Security](#security)
 - [Cost Optimization](#cost-optimization)
 
-## Pre-Deployment Checklist
+## Production Checklist
 
-Before you take a template beyond a local demo:
+**Code and data**
 
-### Code Quality
+- [ ] Shared module tested (`make test`) and linted (`make lint`)
+- [ ] Error handling and logging configured
+- [ ] Vector stores pre-built and versioned (`make vector-stores`)
 
-- [ ] All notebooks execute without errors
-- [ ] Shared module functions tested
-- [ ] Error handling implemented
-- [ ] Logging configured
-- [ ] No hardcoded secrets
+**Performance**
 
-### Performance
-
-- [ ] Vector stores pre-built and cached
-- [ ] Latency requirements met
-- [ ] Cost per query calculated
-- [ ] Rate limiting implemented
+- [ ] Latency requirements met and cost per query calculated
+      (see [PERFORMANCE.md](PERFORMANCE.md))
 - [ ] Caching strategy defined
+- [ ] Load testing completed
 
-### Security
+**Security**
 
-- [ ] API keys in environment variables
-- [ ] Secrets management configured
-- [ ] Input validation implemented
-- [ ] Output sanitization added
+- [ ] No hardcoded secrets; API keys in environment variables or a secrets manager
+- [ ] Input validation, rate limiting and authentication in place
 - [ ] HTTPS enabled
 
-### Documentation
+**Operations**
 
-- [ ] API documentation complete
-- [ ] Deployment runbook created
-- [ ] Incident response plan ready
-- [ ] Contact information updated
+- [ ] Health checks and monitoring configured
+- [ ] Backup, rollback and incident response plans documented
 
-## Deployment Options
+## Docker
 
-### Option 1: FastAPI + Docker
+### Image
 
-**Best for:** REST API, microservices
+The repository `Dockerfile` is a multi-stage build on `python:3.12-slim`:
+
+- Python dependencies are installed in a builder stage and copied into the runtime stage.
+- The runtime stage installs `tesseract-ocr` and `poppler-utils`, so the multimodal notebook (17)
+  works in the container.
+- `shared/`, `scripts/`, `templates/`, `notebooks/` and `.env.example` are copied into `/app`.
+- Everything runs as a non-root user (`appuser`, UID 1000); Jupyter does not use `--allow-root`.
+- The default command starts Jupyter on port **8888**; the health check probes Jupyter's `/api`
+  endpoint on that port.
+
+```bash
+docker build -t langchain-rag:latest .
+docker run -p 8888:8888 --env-file .env langchain-rag:latest
+```
+
+### Docker Compose
+
+`docker-compose.yml` defines two services built from the same image. Both read `.env` through
+`env_file`, so create it first:
+
+```bash
+cp .env.example .env     # set OPENAI_API_KEY
+make vector-stores       # the API needs a pre-built OpenAI vector store
+make docker-build        # docker compose build
+make docker-run          # docker compose up -d
+make docker-stop         # docker compose down
+```
+
+| Service     | Port | Description                                                                  |
+| ----------- | ---- | ---------------------------------------------------------------------------- |
+| `notebooks` | 8888 | Jupyter; mounts `./data`, `./notebooks` and `./shared`                       |
+| `api`       | 8000 | FastAPI template (`uvicorn templates.fastapi.app:app`); mounts `./data`; health check `GET /health` |
+
+No cache or monitoring services are included. Redis caching and Prometheus metrics appear below
+only as optional patterns you implement yourself.
+
+## Deployment Templates
+
+Three templates live in `templates/`. All of them read the chat model from the `DEFAULT_MODEL`
+environment variable (default `gpt-4o-mini`) and expect a pre-built OpenAI vector store
+at `OPENAI_VECTOR_STORE_PATH` (`data/vector_stores/openai__<OPENAI_EMBEDDING_MODEL>`, default
+`openai__text-embedding-3-small`), created by notebook 02 or `make vector-stores`. They build
+OpenAI embeddings with `OPENAI_EMBEDDING_MODEL`, which must match the model the store was built with.
+
+| Template                                      | Best for                 | Details                                   |
+| --------------------------------------------- | ------------------------ | ----------------------------------------- |
+| [FastAPI](../templates/fastapi/README.md)     | REST APIs, microservices | Pydantic validation, CORS, `/health`      |
+| [Streamlit](../templates/streamlit/README.md) | Internal tools, demos    | Web UI with sources and metrics           |
+| [AWS Lambda](../templates/lambda/README.md)   | Serverless, low traffic  | Vector store loaded from S3 on cold start |
+
+### Streamlit Community Cloud
+
+1. Push the repository to GitHub.
+2. Create an app at [share.streamlit.io](https://share.streamlit.io) pointing to
+   `templates/streamlit/streamlit_app.py`.
+3. Add `OPENAI_API_KEY` (and optionally `DEFAULT_MODEL`) as secrets.
+4. Deploy.
+
+## Custom FastAPI Image
+
+The Compose `api` service already runs the FastAPI template from the main image. For a smaller,
+API-only image, a minimal recipe:
 
 ```dockerfile
-# Dockerfile
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application
 COPY shared/ ./shared/
 COPY data/vector_stores/ ./data/vector_stores/
 COPY app.py .
 
-# Expose port
 EXPOSE 8000
-
-# Run
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ```python
 # app.py
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from shared import *
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-import os
+from pydantic import BaseModel
 
-app = FastAPI()
+from shared import RAG_PROMPT_TEMPLATE, format_docs, require_vector_store
+from shared.config import DEFAULT_MODEL, OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
 
-# Initialize (on startup)
-@app.on_event("startup")
-async def startup():
+chain = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global chain
-    embeddings = OpenAIEmbeddings()
-    vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+    embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+    vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
     retriever = vectorstore.as_retriever()
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatOpenAI(model=DEFAULT_MODEL, temperature=0)
     chain = (
         {"context": retriever | format_docs, "input": RunnablePassthrough()}
         | RAG_PROMPT_TEMPLATE
         | llm
         | StrOutputParser()
     )
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 class Query(BaseModel):
     question: str
 
+
 @app.post("/query")
 async def query_rag(query: Query):
     try:
-        response = chain.invoke(query.question)
-        return {"answer": response, "status": "success"}
+        return {"answer": await chain.ainvoke(query.question)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
 ```
 
-**Deploy:**
-
 ```bash
-# Build
 docker build -t rag-api .
-
-# Run locally
 docker run -p 8000:8000 --env-file .env rag-api
-
-# Push to registry
-docker tag rag-api your-registry/rag-api:latest
-docker push your-registry/rag-api:latest
-```
-
-### Option 2: Streamlit Cloud
-
-**Best for:** Internal tools, demos
-
-```python
-# streamlit_app.py
-import streamlit as st
-from shared import *
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-
-st.title("RAG Chatbot")
-
-@st.cache_resource
-def load_chain():
-    embeddings = OpenAIEmbeddings()
-    vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
-    retriever = vectorstore.as_retriever()
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    return (
-        {"context": retriever | format_docs, "input": RunnablePassthrough()}
-        | RAG_PROMPT_TEMPLATE
-        | llm
-        | StrOutputParser()
-    )
-
-chain = load_chain()
-
-# Chat interface
-query = st.text_input("Ask a question:")
-if query:
-    with st.spinner("Thinking..."):
-        response = chain.invoke(query)
-    st.success(response)
-```
-
-**Deploy to Streamlit Cloud:**
-
-1. Push to GitHub
-2. Connect at [share.streamlit.io](https://share.streamlit.io)
-3. Add secrets in dashboard (OPENAI_API_KEY)
-4. Deploy
-
-### Option 3: AWS Lambda + API Gateway
-
-**Best for:** Serverless, low traffic
-
-```python
-# lambda_handler.py
-import json
-import os
-from shared import *
-
-# Initialize outside handler (cold start optimization)
-embeddings = OpenAIEmbeddings()
-vectorstore = load_vector_store("/tmp/vector_stores/openai", embeddings)
-retriever = vectorstore.as_retriever()
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-chain = (
-    {"context": retriever | format_docs, "input": RunnablePassthrough()}
-    | RAG_PROMPT_TEMPLATE
-    | llm
-    | StrOutputParser()
-)
-
-def lambda_handler(event, context):
-    try:
-        body = json.loads(event['body'])
-        query = body['question']
-        
-        response = chain.invoke(query)
-        
-        return {
-            'statusCode': 200,
-            'body': json.dump({'answer': response})
-        }
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
-        }
-```
-
-**Deploy:**
-
-```bash
-# Package
-pip install -r requirements.txt -t package/
-cp -r shared package/
-cp lambda_handler.py package/
-
-# Create deployment package
-cd package && zip -r ../deployment.zip . && cd ..
-
-# Upload to AWS Lambda
-aws lambda create-function \
-  --function-name rag-api \
-  --runtime python3.10 \
-  --handler lambda_handler.lambda_handler \
-  --zip-file fileb://deployment.zip \
-  --role arn:aws:iam::ACCOUNT:role/lambda-role \
-  --environment Variables={OPENAI_API_KEY=sk-proj-...} \
-  --timeout 30 \
-  --memory-size 1024
 ```
 
 ## Configuration Management
 
 ### Environment Variables
 
+The application settings documented in [INSTALLATION.md](INSTALLATION.md#configuration-reference)
+apply in production as well. A typical production `.env`:
+
 ```bash
-# .env.production
 OPENAI_API_KEY=sk-proj-...
-ENVIRONMENT=production
-LOG_LEVEL=INFO
-CACHE_DIR=/app/cache
-VECTOR_STORE_DIR=/app/data/vector_stores
-MAX_RETRIES=3
-TIMEOUT=30
+ENVIRONMENT=prod
+LOG_LEVEL=WARNING
+DEFAULT_MODEL=gpt-4o-mini
+DEFAULT_K=3
 ```
 
 ### Secrets Management
@@ -255,17 +200,18 @@ TIMEOUT=30
 **AWS Secrets Manager:**
 
 ```python
-import boto3
 import json
 
-def get_secret(secret_name):
-    client = boto3.client('secretsmanager')
-    response = client.get_secret_value(SecretId=secret_name)
-    return json.loads(response['SecretString'])
+import boto3
 
-# Use in app
-secrets = get_secret('rag-api-secrets')
-OPENAI_API_KEY = secrets['OPENAI_API_KEY']
+
+def get_secret(secret_name: str) -> dict:
+    client = boto3.client("secretsmanager")
+    response = client.get_secret_value(SecretId=secret_name)
+    return json.loads(response["SecretString"])
+
+
+OPENAI_API_KEY = get_secret("rag-api-secrets")["OPENAI_API_KEY"]
 ```
 
 **Azure Key Vault:**
@@ -274,9 +220,9 @@ OPENAI_API_KEY = secrets['OPENAI_API_KEY']
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
-credential = DefaultAzureCredential()
-client = SecretClient(vault_url="https://your-vault.vault.azure.net/", credential=credential)
-
+client = SecretClient(
+    vault_url="https://your-vault.vault.azure.net/", credential=DefaultAzureCredential()
+)
 OPENAI_API_KEY = client.get_secret("OPENAI-API-KEY").value
 ```
 
@@ -284,11 +230,9 @@ OPENAI_API_KEY = client.get_secret("OPENAI-API-KEY").value
 
 ### Horizontal Scaling
 
-**Load Balancer + Multiple Instances:**
+Run several API replicas behind a load balancer:
 
 ```yaml
-# docker-compose.yml
-version: '3.8'
 services:
   rag-api:
     image: rag-api:latest
@@ -296,7 +240,7 @@ services:
       replicas: 3
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-  
+
   nginx:
     image: nginx:latest
     ports:
@@ -307,46 +251,41 @@ services:
       - rag-api
 ```
 
-### Caching Strategy
+### Response Caching With Redis (Optional Pattern)
 
-**Redis for Response Caching:**
+Not included in the repository or the Compose file; add a Redis service and the `redis` package
+yourself if you need it.
 
 ```python
-import redis
 import hashlib
 import json
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+import redis
 
-def cached_rag_query(query: str, chain, ttl=3600):
-    # Generate cache key
-    cache_key = f"rag:{hashlib.md5(query.encode()).hexdigest()}"
-    
-    # Check cache
-    cached = redis_client.get(cache_key)
-    if cached:
+redis_client = redis.Redis(host="localhost", port=6379, db=0)
+
+
+def cached_rag_query(query: str, chain, ttl: int = 3600):
+    cache_key = f"rag:{hashlib.sha256(query.encode()).hexdigest()}"
+    if cached := redis_client.get(cache_key):
         return json.loads(cached)
-    
-    # Query if not cached
     response = chain.invoke(query)
-    
-    # Cache result
     redis_client.setex(cache_key, ttl, json.dumps(response))
-    
     return response
 ```
 
-### Vector Store Optimization
+### Versioned Vector Stores
 
-**Pre-build and version vector stores:**
+Build vector stores ahead of time and keep one directory per version, so a deployment can pin a
+specific index and roll back:
 
 ```bash
-# Build script
-python scripts/build_vector_stores.py --version v1.0
-
-# Deploy
-docker build --build-arg VECTOR_STORE_VERSION=v1.0 -t rag-api .
+python scripts/build_vector_stores.py --version v1.0                      # -> data/vector_stores/v1.0/
+python scripts/build_vector_stores.py --provider openai --version v1.1    # OpenAI only
 ```
+
+Without `--version`, stores are written to `data/vector_stores/`. Copy or mount the chosen
+directory into the container and point the application at it.
 
 ## Monitoring
 
@@ -354,55 +293,57 @@ docker build --build-arg VECTOR_STORE_VERSION=v1.0 -t rag-api .
 
 ```python
 import logging
-from datetime import datetime
+import time
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
+
 def monitored_rag_query(query: str, chain):
-    start = datetime.now()
-    logger.info(f"Query received: {query}")
-    
+    start = time.perf_counter()
     try:
         response = chain.invoke(query)
-        latency = (datetime.now() - start).total_seconds()
-        
-        logger.info(f"Query successful. Latency: {latency:.2f}s")
+        logger.info("Query succeeded in %.2fs", time.perf_counter() - start)
         return response
-    except Exception as e:
-        logger.error(f"Query failed: {e}")
+    except Exception:
+        logger.exception("Query failed")
         raise
 ```
 
-### Metrics Collection
+### Metrics With Prometheus (Optional Pattern)
 
-**Prometheus + Grafana:**
+Not included in the repository; requires the `prometheus_client` package and your own Prometheus
+setup.
 
 ```python
 from prometheus_client import Counter, Histogram, start_http_server
 
-# Metrics
-query_counter = Counter('rag_queries_total', 'Total RAG queries')
-query_latency = Histogram('rag_query_latency_seconds', 'RAG query latency')
-error_counter = Counter('rag_errors_total', 'Total RAG errors')
+query_counter = Counter("rag_queries_total", "Total RAG queries")
+query_latency = Histogram("rag_query_latency_seconds", "RAG query latency")
+error_counter = Counter("rag_errors_total", "Total RAG errors")
+
 
 @query_latency.time()
 def monitored_query(query: str, chain):
     query_counter.inc()
     try:
         return chain.invoke(query)
-    except Exception as e:
+    except Exception:
         error_counter.inc()
         raise
 
-# Start metrics server
-start_http_server(9090)
+
+start_http_server(9100)  # metrics endpoint for Prometheus to scrape
 ```
 
+For LangChain-level tracing, set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY`.
+
 ### Health Checks
+
+Report readiness only when dependencies are available:
 
 ```python
 @app.get("/health")
@@ -410,118 +351,93 @@ async def health_check():
     checks = {
         "vectorstore": check_vectorstore(),
         "openai_api": check_openai_api(),
-        "memory": check_memory_usage(),
     }
-    
     if all(checks.values()):
         return {"status": "healthy", "checks": checks}
-    else:
-        raise HTTPException(status_code=503, detail=checks)
+    raise HTTPException(status_code=503, detail=checks)
 ```
 
 ## Security
 
+See [SECURITY.md](../SECURITY.md) for the security policy.
+
 ### Input Validation
 
 ```python
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
+
 
 class Query(BaseModel):
     question: str
-    
-    @validator('question')
-    def validate_question(cls, v):
-        if len(v) > 1000:
-            raise ValueError('Query too long')
+
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError('Query cannot be empty')
-        # Add more validation
+            raise ValueError("Query cannot be empty")
+        if len(v) > 1000:
+            raise ValueError("Query too long")
         return v
 ```
 
 ### Rate Limiting
 
 ```python
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 
+
 @app.post("/query")
 @limiter.limit("10/minute")
-async def query_rag(query: Query):
-    # ...
+async def query_rag(request: Request, query: Query): ...
 ```
 
 ### API Authentication
 
 ```python
-from fastapi import Header, HTTPException
+import os
 
-API_KEYS = set(os.getenv('API_KEYS', '').split(','))
+from fastapi import Depends, Header, HTTPException
+
+API_KEYS = set(filter(None, os.getenv("API_KEYS", "").split(",")))
+
 
 async def verify_api_key(x_api_key: str = Header(...)):
     if x_api_key not in API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API key")
 
+
 @app.post("/query", dependencies=[Depends(verify_api_key)])
-async def query_rag(query: Query):
-    # ...
+async def query_rag(query: Query): ...
 ```
 
 ## Cost Optimization
 
-### 1. Implement Caching
+| Strategy                      | Typical saving                |
+| ----------------------------- | ----------------------------- |
+| Response caching (1-24 h TTL) | 80-90% on repeated queries    |
+| Adaptive RAG routing          | 40-60% average cost reduction |
+| Batching requests             | 20-30% less API overhead      |
+| Smaller `DEFAULT_K`           | 20-30% fewer tokens per query |
 
-- Cache responses for 1-24 hours
-- Savings: 80-90% for repeated queries
-
-### 2. Use Adaptive RAG
-
-- Route simple queries to cheaper strategies
-- Savings: 40-60% average cost reduction
-
-### 3. Batch Processing
-
-- Process multiple queries together
-- Savings: 20-30% API overhead reduction
-
-### 4. Monitor and Alert
+Track cost per query and alert on outliers:
 
 ```python
-# Cost tracking
-def track_costs(query, response):
-    input_cost = estimate_tokens(query) * 0.15 / 1_000_000
-    output_cost = estimate_tokens(response) * 0.60 / 1_000_000
-    total_cost = input_cost + output_cost
-    
-    # Send to monitoring
-    cost_metric.observe(total_cost)
-    
-    # Alert if exceeds threshold
-    if total_cost > COST_THRESHOLD:
-        send_alert(f"High cost query: ${total_cost}")
+from shared.utils import estimate_tokens
+
+
+def track_costs(query: str, response: str) -> float:
+    # gpt-4o-mini pricing: $0.15 / 1M input tokens, $0.60 / 1M output tokens
+    return (estimate_tokens(query) * 0.15 + estimate_tokens(response) * 0.60) / 1_000_000
 ```
 
-## Production Checklist
-
-- [ ] Environment variables configured
-- [ ] Secrets management implemented
-- [ ] Logging enabled
-- [ ] Monitoring dashboard created
-- [ ] Health checks configured
-- [ ] Rate limiting implemented
-- [ ] Caching enabled
-- [ ] Error handling robust
-- [ ] Load testing completed
-- [ ] Backup strategy defined
-- [ ] Rollback plan ready
-- [ ] Documentation updated
+See [PERFORMANCE.md](PERFORMANCE.md) for detailed cost figures.
 
 ## See Also
 
 - [PERFORMANCE.md](PERFORMANCE.md) - Optimization strategies
-- [SECURITY.md](SECURITY.md) - Security best practices
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System design
 - [EXAMPLES.md](EXAMPLES.md) - Integration patterns

@@ -25,127 +25,162 @@ graph TD
 
 ### Modular Design
 
-```
-llm_rag/
-├── shared/                    # Reusable utilities (DRY principle)
-├── notebooks/
-│   ├── fundamentals/         # Core concepts (01-03)
-│   └── advanced_architectures/ # Advanced patterns (04-16)
-├── data/                     # Generated artifacts, Chinook DB (gitignored)
-└── docs/                     # Modular documentation
+```text
+langchain-rag-tutorial/
+|-- shared/                      # Reusable utilities (DRY principle)
+|-- notebooks/
+|   |-- fundamentals/            # Core concepts (01-03)
+|   `-- advanced_architectures/  # Advanced patterns (04-20)
+|-- scripts/                     # build_vector_stores.py
+|-- templates/                   # FastAPI, Streamlit, Lambda
+|-- data/                        # Generated artifacts, Chinook DB (gitignored)
+`-- docs/                        # Documentation
 ```
 
 **Design Rationale:**
 
 - **Modularity**: Each architecture in separate notebook
-- **Reusability**: Shared module eliminates code duplication (1500+ lines shared, 30+ prompts)
+- **Reusability**: Shared module eliminates code duplication (30+ shared prompts)
 - **Persistence**: Vector stores saved to avoid re-embedding
-- **Progressive Learning**: Simple → Advanced complexity gradient
+- **Progressive Learning**: Simple -> Advanced complexity gradient
 
 ## Architecture Patterns
 
-### 1. Simple RAG (⭐)
+### 1. Simple RAG (complexity 1/5)
 
-**Pattern**: Query → Retrieve → Generate  
+**Pattern**: Query -> Retrieve -> Generate  
 **Use Case**: General Q&A, fast responses  
 **Complexity**: Minimal
 
-### 2. Memory RAG (⭐⭐)
+### 2. Memory RAG (complexity 2/5)
 
-**Pattern**: Query + History → Retrieve → Generate  
+**Pattern**: Query + History -> Retrieve -> Generate  
 **Use Case**: Chatbots, conversational AI  
-**Key Component**: `RunnableWithMessageHistory`
+**Key Components**: `RunnableWithMessageHistory` with `InMemoryChatMessageHistory` (`langchain_core`)
 
-### 3. Branched RAG (⭐⭐⭐)
+### 3. Branched RAG (complexity 3/5)
 
-**Pattern**: Query → Generate Sub-queries → Parallel Retrieve → Merge → Generate  
+**Pattern**: Query -> Generate Sub-queries -> Parallel Retrieve -> Merge -> Generate  
 **Use Case**: Research, comprehensive coverage  
 **Key Component**: `MultiQueryRetriever`
 
-### 4. HyDe (⭐⭐⭐)
+### 4. HyDe (complexity 3/5)
 
-**Pattern**: Query → Generate Hypothetical Answer → Embed → Retrieve → Generate  
+**Pattern**: Query -> Generate Hypothetical Answer -> Embed -> Retrieve -> Generate  
 **Use Case**: Ambiguous queries, technical jargon  
 **Innovation**: Semantic matching via hypothetical documents
 
-### 5. Adaptive RAG (⭐⭐⭐⭐)
+### 5. Adaptive RAG (complexity 4/5)
 
-**Pattern**: Query → Classify Complexity → Route to Strategy → Retrieve → Generate  
+**Pattern**: Query -> Classify Complexity -> Route to Strategy -> Retrieve -> Generate  
 **Use Case**: Mixed workloads, cost optimization  
-**Routes**: SIMPLE→Similarity, MEDIUM→MMR, COMPLEX→HyDe
+**Routes**: SIMPLE->Similarity, MEDIUM->MMR, COMPLEX->HyDe
 
-### 6. Corrective RAG (⭐⭐⭐⭐)
+### 6. Corrective RAG (complexity 4/5)
 
-**Pattern**: Query → Retrieve → Grade Relevance → [Poor: Web Search] → Generate  
+**Pattern**: Query -> Retrieve -> Grade Relevance -> [Poor: Web Search] -> Generate  
 **Use Case**: High-accuracy domains (legal, medical)  
-**Key Component**: Relevance grader + DuckDuckGo fallback
+**Key Component**: Relevance grader + Tavily web search fallback (`langchain_tavily.TavilySearch`)
 
-### 7. Self-RAG (⭐⭐⭐⭐⭐)
+### 7. Self-RAG (complexity 5/5)
 
-**Pattern**: Query → Decide Retrieval → Retrieve → Generate → Self-Critique → [Retry if poor]  
+**Pattern**: Query -> Decide Retrieval -> Retrieve -> Generate -> Self-Critique -> [Retry if poor]  
 **Use Case**: Quality-critical, exploratory research  
 **Innovation**: Autonomous retrieval decision + iterative refinement
 
-### 8. Agentic RAG (⭐⭐⭐⭐⭐)
+### 8. Agentic RAG (complexity 5/5)
 
-**Pattern**: Query → Agent Loop (Think → Select Tool → Execute → Observe) → Final Answer
+**Pattern**: Query -> Agent Loop (Think -> Select Tool -> Execute -> Observe) -> Final Answer
 **Use Case**: Complex multi-step reasoning, BI dashboards
-**Tools**: Retriever, Calculator, Web Search
+**Tools**: Retriever, calculator (`numexpr`), web search (`TavilySearch`)
 **Key Component**: ReAct agent pattern
 
-### 9. Contextual RAG ✨ (⭐⭐⭐)
+### 9. Contextual RAG (complexity 3/5)
 
-**Pattern**: Documents → Summarize → Context-Augment Chunks → Embed → Query → Retrieve → Generate
+**Pattern**: Documents -> Summarize -> Context-Augment Chunks -> Embed -> Query -> Retrieve -> Generate
 **Use Case**: Technical docs, code documentation
 **Innovation**: Anthropic's technique - prepend document context to each chunk
-**Note**: Extra indexing-time LLM calls to write context; this repo does not report a measured quality delta.
+**Benefits**: often better retrieval on technical docs (gains are workload-dependent; not measured in this repo)
+**Full recipe**: contextual embeddings + contextual BM25 + reranking (section 11)
 
-### 10. Fusion RAG ✨ (⭐⭐⭐)
+### 10. Fusion RAG (complexity 3/5)
 
-**Pattern**: Query → Generate Multi-Perspectives → Parallel Retrieve → RRF Ranking → Generate
-**Use Case**: Research, merging several ranked lists
+**Pattern**: Query -> Generate Multi-Perspectives -> Parallel Retrieve -> RRF Ranking -> Generate
+**Use Case**: Research, best ranking quality
 **Key Component**: Reciprocal Rank Fusion (RRF) algorithm
 **Innovation**: Documents appearing in multiple result sets rank higher
 
-### 11. SQL RAG ✨ (⭐⭐⭐⭐)
+### 11. SQL RAG (complexity 4/5)
 
-**Pattern**: Query → Retrieve Schema → Generate SQL → Validate → Execute → Interpret Results
+**Pattern**: Query -> Retrieve Schema -> Generate SQL -> Validate -> Execute -> Interpret Results
 **Use Case**: Analytics, BI, structured data queries
 **Key Components**: Schema retrieval, safe SQL execution (read-only, SELECT only)
 **Database**: Chinook sample database (music store)
 
-### 12. GraphRAG ✨ (⭐⭐⭐⭐⭐)
+### 12. GraphRAG (complexity 5/5)
 
-**Pattern**: Documents → Extract Entities → Extract Relationships → Build Graph → Query → Traverse → Generate
+**Pattern**: Documents -> Extract Entities -> Extract Relationships -> Build Graph -> Query -> Traverse -> Generate
 **Use Case**: Knowledge graphs, relationship queries, multi-hop reasoning
 **Key Components**: Entity extraction, NetworkX graph, community detection (Louvain)
 **Innovation**: Microsoft Research's approach to graph-based knowledge retrieval
+
+### 13. Multimodal RAG (complexity 4/5)
+
+**Pattern**: Documents + Images -> OCR / Vision Model Description -> Embed -> Retrieve -> Generate
+**Use Case**: Documents mixing text with images, diagrams or scanned pages
+**Key Components**: Tesseract OCR (`pytesseract`), PDF image extraction (`pdf2image`), vision model (`DEFAULT_VISION_MODEL`)
+
+### 14. Hybrid Search + Reranking (complexity 3/5)
+
+**Pattern**: Query -> [BM25 + Dense Retrieve] -> Weighted RRF -> Cross-Encoder Rerank -> Generate
+**Use Case**: Queries mixing identifiers or jargon with natural language
+**Key Components**: `EnsembleRetriever` (BM25 + FAISS), `ContextualCompressionRetriever` + `CrossEncoderReranker` (`langchain-classic`)
+**Innovation**: Cheap two-retriever recall followed by a precise local reranker (`DEFAULT_RERANKER_MODEL`); no extra API calls
+
+### 15. Parent-Document and Multi-Vector Retrieval (complexity 3/5)
+
+**Pattern**: Index small chunks or generated representations -> Retrieve -> Return parent / original chunk -> Generate
+**Use Case**: Chunk-size trade-offs, vocabulary mismatch between questions and text
+**Key Components**: `ParentDocumentRetriever`, `MultiVectorRetriever` with LLM summaries and hypothetical questions, docstore keyed by `doc_id`
+**Innovation**: Separates what is searched (vector store) from what the LLM reads (docstore)
+
+### Beyond Architectures
+
+- **Comparison** (notebook 11): side-by-side benchmark of the architectures
+- **RAGAS evaluation** (notebook 16): faithfulness, relevancy, precision and recall metrics
+- **Embedding fine-tuning** (notebook 18): domain-specific sentence-transformers models
 
 ## Technology Stack
 
 ### Core Dependencies
 
-- **LangChain**: v0.1.0+ (framework, LCEL)
-- **OpenAI SDK**: v1.12.0+ (GPT-4o-mini, embeddings)
-- **FAISS**: v1.7.4+ (vector similarity search)
-- **HuggingFace Transformers**: Local embeddings
-- **Python**: 3.9+ (type hints, pathlib)
+- **Python**: 3.10-3.13
+- **LangChain 1.x**: `langchain`, `langchain-core`, `langchain-openai`, `langchain-text-splitters`,
+  `langchain-huggingface`, `langgraph` (all `>=1.0`); `langchain-tavily` (`>=0.2`) for web search
+- **langchain-community** (`>=0.4.0,<0.4.2`): FAISS integration and `WebBaseLoader`; see
+  [INSTALLATION.md](INSTALLATION.md#why-langchain-community-is-pinned-below-042) for the pin
+- **FAISS** (`faiss-cpu`): vector similarity search
+- **OpenAI**: GPT-4o-mini (chat), GPT-4o (vision), `text-embedding-3-small`
+- **HuggingFace / sentence-transformers**: local embeddings and fine-tuning
 
-### New Dependencies ✨
+### Architecture-Specific Dependencies
 
-- **NetworkX**: v3.2+ (graph algorithms, GraphRAG)
-- **SQLAlchemy**: v2.0.25+ (database abstraction, SQL RAG)
-- **Pandas**: v2.2.0+ (data manipulation, SQL results)
-- **RAGAS**: v0.1.7+ (RAG evaluation framework)
-- **Spacy**: v3.7.0+ (NLP, entity extraction)
-- **Matplotlib**: v3.8.0+ (graph visualization)
+- **NetworkX** + **python-louvain**: GraphRAG
+- **sqlite3** (standard library) + **pandas**: SQL RAG
+- **numexpr**: agent calculator tool
+- **RAGAS** + **datasets**: evaluation
+- **Matplotlib**: graph visualization
+- **pillow**, **pytesseract**, **pdf2image**: multimodal RAG
+- **langchain-classic** + **rank-bm25**: hybrid search, reranking, parent-document and multi-vector
+  retrievers (LangChain 1.x moved `EnsembleRetriever` and the other legacy retrievers there)
+- **sentence-transformers**: cross-encoder reranker (`cross-encoder/ms-marco-MiniLM-L-6-v2`)
 
 ### Architecture Decisions
 
 #### Why LangChain?
 
 - **LCEL**: Composable chains with `|` operator
-- **Extensive integrations**: 700+ integrations
+- **Integrations**: large ecosystem of model, vector store and loader integrations
 - **Active community**: Rapid updates, good docs
 
 #### Why FAISS?
@@ -175,6 +210,11 @@ llm_rag/
 from shared import format_docs, load_vector_store, RAG_PROMPT_TEMPLATE
 ```
 
+Modules: `config.py` (environment, paths, defaults), `utils.py` (formatting, vector store I/O),
+`loaders.py` (document loading and splitting), `prompts.py` (all prompt templates) and
+`retrievers.py` (builders for BM25, hybrid BM25 + dense and cross-encoder reranking retrievers,
+used by notebooks 12 and 19).
+
 **Benefits:**
 
 - DRY principle (Don't Repeat Yourself)
@@ -184,13 +224,27 @@ from shared import format_docs, load_vector_store, RAG_PROMPT_TEMPLATE
 ### 2. Vector Store Persistence Pattern
 
 ```python
+from shared.config import OPENAI_EMBEDDING_MODEL, OPENAI_VECTOR_STORE_PATH
+
+embeddings = OpenAIEmbeddings(model=OPENAI_EMBEDDING_MODEL)
+
 # Notebook 02: Create and save
 vectorstore = FAISS.from_documents(chunks, embeddings)
-save_vector_store(vectorstore, "data/vector_stores/openai")
+save_vector_store(vectorstore, OPENAI_VECTOR_STORE_PATH)
 
-# Notebooks 03-16: Load existing
-vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
+# Notebooks 03-18: Load existing
+vectorstore = require_vector_store(OPENAI_VECTOR_STORE_PATH, embeddings)
 ```
+
+Store paths are keyed by embedding model (`shared/config.py`):
+
+- `OPENAI_VECTOR_STORE_PATH` = `data/vector_stores/openai__<OPENAI_EMBEDDING_MODEL>`
+  (default `openai__text-embedding-3-small`)
+- `HF_VECTOR_STORE_PATH` = `data/vector_stores/hf__<HF_EMBEDDING_MODEL, with / replaced by __>`
+  (default `hf__BAAI__bge-small-en-v1.5`)
+
+Changing the embedding model therefore never loads a stale index. The same stores can be built
+outside the notebooks with `make vector-stores` (`scripts/build_vector_stores.py`).
 
 **Benefits:**
 
@@ -201,9 +255,9 @@ vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 ### 3. Progressive Disclosure Pattern
 
 ```
-00_index.ipynb → Overview + Navigation
-01-03 → Fundamentals (required)
-04-16 → Advanced (12 architectures + evaluation, pick based on use case)
+00_index.ipynb -> Overview + Navigation
+01-03 -> Fundamentals (required)
+04-20 -> Advanced (architectures, comparison, evaluation, fine-tuning; pick by use case)
 ```
 
 **Benefits:**
@@ -214,42 +268,26 @@ vectorstore = load_vector_store("data/vector_stores/openai", embeddings)
 
 ## Performance Considerations
 
-### Latency Profile
+Latency, API calls and cost per architecture are documented in [PERFORMANCE.md](PERFORMANCE.md).
+The main levers are:
 
-| Architecture | Latency | API Calls | Cost |
-|---|---|---|---|
-| Simple RAG | ~2s | 1 LLM | Low |
-| Memory RAG | ~2-3s | 1 LLM | Low-Med |
-| Branched RAG | ~5-8s | 4 LLM (3 sub-queries + 1 gen) | Medium |
-| HyDe | ~4-6s | 2 LLM (hypo + gen) | Medium |
-| Contextual RAG ✨ | ~2-3s | 1 LLM + upfront context generation | Low |
-| Fusion RAG ✨ | ~5-8s | 5-6 LLM (4-5 queries + gen) | Medium |
-| Adaptive RAG | Variable | 2-3 LLM (classify + gen) | Optimized |
-| SQL RAG ✨ | ~2-5s | 2-3 LLM (schema + SQL + interpret) | Low-Med |
-| CRAG | ~10-15s | 5-6 LLM (grade x4 + gen + optional web) | High |
-| Self-RAG | ~10-20s | 4-6 LLM (2-3 iterations) | High |
-| GraphRAG ✨ | ~3-8s | 3-4 LLM + graph traversal | Medium-High |
-| Agentic RAG | ~20-40s | 5-10 LLM (agent loop) | Very High |
-
-### Optimization Strategies
-
-1. **Caching**: Vector stores, embeddings
-2. **Lazy Loading**: Load embeddings only when needed
-3. **Batch Processing**: Process multiple queries together
-4. **Async**: Use `ainvoke` for parallel calls
+1. **Caching**: persist vector stores and cache responses
+2. **Lazy loading**: load embeddings only when needed
+3. **Batch processing**: process multiple queries together
+4. **Async**: use `ainvoke` / `abatch` for parallel calls
 
 ## Security Architecture
 
 ### API Key Management
 
 ```python
-# ✅ Correct: Environment variables
+# Correct: environment variables
 from dotenv import load_dotenv
 import os
 load_dotenv()
 api_key = os.getenv('OPENAI_API_KEY')
 
-# ❌ Wrong: Hardcoded
+# Wrong: hardcoded
 api_key = "sk-proj-..."  # NEVER DO THIS
 ```
 
@@ -266,9 +304,9 @@ __pycache__/            # Python cache
 
 ### Adding New Architecture
 
-1. Create notebook: `notebooks/advanced_architectures/17_new_pattern.ipynb`
+1. Create notebook: `notebooks/advanced_architectures/21_new_pattern.ipynb`
 2. Add prompts to `shared/prompts.py`
-3. Update `11_comparison.ipynb` with a qualitative row for the new pattern
+3. Update `11_comparison.ipynb` with new benchmark
 4. Document in `notebooks/advanced_architectures/README.md`
 5. Update CHANGELOG.md with the addition
 
@@ -279,44 +317,19 @@ __pycache__/            # Python cache
 3. Document in `docs/API_REFERENCE.md`
 4. Test in notebooks
 
-## Future Enhancements
-
-### Completed in v1.1.0 ✨
-
-- [x] Graph RAG integration (notebook 15)
-- [x] Advanced evaluation metrics (RAGAS framework, notebook 16)
-- [x] SQL RAG for structured data (notebook 14)
-- [x] Context-augmented retrieval (notebook 12)
-- [x] Reciprocal Rank Fusion (notebook 13)
-
-### Present in the repo (v1.2.x)
-
-- [x] Multimodal RAG for images + text (notebook 17; not audio/video)
-- [x] Fine-tuning embeddings walkthrough (notebook 18)
-- [x] Starter FastAPI, Streamlit, and Lambda templates
-- [x] Docker / Compose files
-- [x] GitHub Actions for pytest and lint (not full notebook execution)
-- [x] Example Prometheus/Grafana config under `monitoring/`
-
-### Still out of scope
-
-- Audio/video RAG
-- Automated notebook execution in CI
-- A measured, reproducible benchmark harness
-
 ## References
 
 **Core RAG:**
-- [LangChain Docs](https://python.langchain.com/)
+- [LangChain Docs](https://docs.langchain.com/)
 - [FAISS Documentation](https://faiss.ai/)
 - [RAG Paper (Lewis et al.)](https://arxiv.org/abs/2005.11401)
 
 **Advanced Architectures:**
 - [Self-RAG Paper](https://arxiv.org/abs/2310.11511)
 - [CRAG Paper](https://arxiv.org/abs/2401.15884)
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
+- [LangGraph Documentation](https://docs.langchain.com/oss/python/langgraph/overview)
 
-**New Architectures ✨:**
+**Newer Architectures:**
 - [Contextual Retrieval (Anthropic)](https://www.anthropic.com/news/contextual-retrieval) - Context-augmented chunking
 - [RAG-Fusion Paper](https://arxiv.org/abs/2402.03367) - Reciprocal Rank Fusion
 - [GraphRAG (Microsoft Research)](https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/)
@@ -327,5 +340,5 @@ __pycache__/            # Python cache
 ## See Also
 
 - [API_REFERENCE.md](API_REFERENCE.md) - Shared module API
-- [PERFORMANCE.md](PERFORMANCE.md) - What to measure
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Starter deployment notes
+- [PERFORMANCE.md](PERFORMANCE.md) - Benchmarks
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Production setup
