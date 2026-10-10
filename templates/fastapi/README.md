@@ -1,16 +1,15 @@
-# FastAPI Production Template
+# FastAPI starter template
 
-Production-ready RAG API with FastAPI.
+Educational FastAPI wrapper around the tutorial RAG chain. Useful for local demos; not a hardened production service (no auth, rate limits, or SLO testing).
 
 ## Features
 
-- ✅ RESTful API with automatic documentation
-- ✅ Error handling and logging
-- ✅ CORS configuration
-- ✅ Health check endpoint
-- ✅ Request validation with Pydantic
-- ✅ Async support
-- ✅ Production-ready deployment
+- RESTful API with automatic documentation
+- Basic error handling and logging
+- CORS configuration
+- Health check endpoint
+- Request validation with Pydantic
+- Async request handlers
 
 ## Quick Start
 
@@ -79,7 +78,7 @@ Health check
 ### GET /architectures
 List available architectures
 
-## Production Deployment
+## Running the template
 
 ### Docker
 

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Production deployment strategies for LangChain RAG applications.
+Starter notes for the tutorial templates (FastAPI, Streamlit, Lambda, Docker Compose). These are teaching apps, not a production rollout playbook.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ Production deployment strategies for LangChain RAG applications.
 
 ## Pre-Deployment Checklist
 
-Before deploying to production:
+Before you take a template beyond a local demo:
 
 ### Code Quality
 

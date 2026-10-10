@@ -4,12 +4,18 @@
 ![LangChain](https://img.shields.io/badge/langchain-%3E%3D0.1.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-orange.svg)
-![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg?logo=docker&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-pytest-0A9EDC.svg?logo=pytest&logoColor=white)
 
-A comprehensive, production-ready tutorial for building **Retrieval-Augmented Generation (RAG)** systems using LangChain.
+Hands-on tutorial for building **Retrieval-Augmented Generation (RAG)** systems with LangChain. It walks through patterns you would typically need before production — evaluation, monitoring, and starter deployment templates — only to the extent the notebooks and templates in this repo actually cover them.
 
-**🎯 Features:** **15 advanced RAG architectures** | Multimodal RAG (images + text) | Fine-tuning embeddings | RAGAS evaluation | SQL & Graph support | Docker & production templates | Complete testing & CI/CD
+This is a learning repo, not a finished product you can drop into production.
+
+## Status
+
+Pinned dependencies target the LangChain 0.1+ / early 1.x APIs used when these notebooks were last updated (changelog: 2025-11-13). Several notebooks import current LangChain surfaces (`langchain_openai`, `langchain_core`, `create_agent`) and also older helpers (for example `ConversationBufferMemory` in sample text). Full notebook execution was **not** re-verified in this docs-only pass and needs API keys plus live model calls. Treat the notebooks as educational walkthroughs; expect import or API drift if you install today's latest LangChain without pinning.
+
+Shared-module unit tests (`pytest tests/ -m "not integration"`) do not require API keys.
 
 ## 🚀 Quick Start
 
@@ -32,211 +38,151 @@ jupyter notebook notebooks/00_index.ipynb
 
 **📖 Full guide:** [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)
 
-## 📚 What You'll Learn
+## 📚 What the notebooks cover
 
-### Fundamentals (30-40 min)
+### Fundamentals (notebooks 01–03)
 
-Master the core concepts of RAG:
+- **Document loading & splitting** — load web docs and compare chunking strategies
+- **Embeddings comparison** — OpenAI vs HuggingFace embeddings and FAISS persistence
+- **Simple RAG** — similarity vs MMR retrieval and an LCEL RAG chain
 
-- **Document Loading & Splitting** - Process and chunk text efficiently
-- **Embeddings Comparison** - OpenAI vs HuggingFace benchmarks
-- **Simple RAG** - Build your first end-to-end RAG system
+[📘 Fundamentals →](notebooks/fundamentals/)
 
-[📘 Start with Fundamentals →](notebooks/fundamentals/)
+### Advanced patterns (notebooks 04–18)
 
-### Advanced Architectures (4-5 hours)
+Tutorial implementations of these patterns (not hardened services):
 
-Explore **15 production-ready patterns**:
+| Notebook | Pattern | What it demonstrates |
+| -------- | ------- | -------------------- |
+| **04** | Memory RAG | Conversation history with `RunnableWithMessageHistory` |
+| **05** | Branched RAG | Multi-query / parallel retrieval |
+| **06** | HyDe | Hypothetical document embeddings |
+| **07** | Adaptive RAG | Route simple / medium / complex queries |
+| **08** | Corrective RAG | Relevance grading + web-search fallback |
+| **09** | Self-RAG | Self-critique / refinement loop |
+| **10** | Agentic RAG | Tool-using agent loop |
+| **11** | Comparison | Qualitative trade-off tables (not a measured harness) |
+| **12** | Contextual RAG | Context-augmented chunks |
+| **13** | Fusion RAG | Reciprocal Rank Fusion |
+| **14** | SQL RAG | Natural language → SQL on the Chinook sample DB |
+| **15** | GraphRAG | Entity/relationship extraction + NetworkX |
+| **16** | RAGAS evaluation | Faithfulness, relevancy, context precision/recall, correctness |
+| **17** | Multimodal RAG | GPT-4 Vision + Tesseract OCR on images + text |
+| **18** | Embedding fine-tuning | Contrastive fine-tune of a sentence-transformers model |
 
-| Architecture              | Complexity | Use Case            | Key Feature                      |
-| ------------------------- | ---------- | ------------------- | -------------------------------- |
-| **Memory RAG**            | ⭐⭐         | Chatbots            | Conversation history             |
-| **Branched RAG**          | ⭐⭐⭐        | Research            | Multi-query parallel retrieval   |
-| **HyDe**                  | ⭐⭐⭐        | Ambiguous queries   | Hypothetical documents           |
-| **Adaptive RAG**          | ⭐⭐⭐⭐       | Mixed workloads     | Intelligent query routing        |
-| **Corrective RAG**        | ⭐⭐⭐⭐       | High accuracy       | Quality check + web fallback     |
-| **Self-RAG**              | ⭐⭐⭐⭐⭐      | Self-correcting     | Autonomous refinement            |
-| **Agentic RAG**           | ⭐⭐⭐⭐⭐      | Complex reasoning   | Multi-tool agent loops           |
-| **Contextual RAG** ✨      | ⭐⭐⭐        | Technical docs      | Context-augmented chunks         |
-| **Fusion RAG** ✨          | ⭐⭐⭐        | Best ranking        | Reciprocal Rank Fusion           |
-| **SQL RAG** ✨             | ⭐⭐⭐⭐       | Analytics/BI        | Natural Language to SQL          |
-| **GraphRAG** ✨            | ⭐⭐⭐⭐⭐      | Knowledge graphs    | Entity relationships + multi-hop |
-| **Multimodal RAG** 🆕     | ⭐⭐⭐⭐       | Images + text       | GPT-4 Vision + OCR               |
-| **Fine-tuning Guide** 🆕  | ⭐⭐⭐⭐       | Domain embeddings   | Custom embedding models          |
-| **RAGAS Evaluation**      | -          | Quality metrics     | Comprehensive RAG assessment     |
-
-[🔬 Explore Advanced Patterns →](notebooks/advanced_architectures/)
+[🔬 Advanced notebooks →](notebooks/advanced_architectures/)
 
 ## 📖 Documentation
 
-Comprehensive docs organized by topic:
-
-- 🚀 **[Getting Started](docs/GETTING_STARTED.md)** - 5-minute quick start
-- 🛠️ **[Installation](docs/INSTALLATION.md)** - Detailed setup guide
-- 📚 **[API Reference](docs/API_REFERENCE.md)** - Shared module documentation
-- 🏗️ **[Architecture](docs/ARCHITECTURE.md)** - Design decisions
-- 🐛 **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues & solutions
-- ⚡ **[Performance](docs/PERFORMANCE.md)** - Benchmarks & optimization
-- ❓ **[FAQ](docs/FAQ.md)** - Frequently asked questions
-- 🚀 **[Deployment](docs/DEPLOYMENT.md)** - Production deployment
-- 📝 **[Examples](docs/EXAMPLES.md)** - Usage patterns
-- 🤝 **[Contributing](docs/CONTRIBUTING.md)** - Contribution guidelines
-- 📜 **[Changelog](docs/CHANGELOG.md)** - Version history
+- 🚀 **[Getting Started](docs/GETTING_STARTED.md)** — setup and learning path
+- 🛠️ **[Installation](docs/INSTALLATION.md)** — detailed setup
+- 📚 **[API Reference](docs/API_REFERENCE.md)** — `shared/` helpers
+- 🏗️ **[Architecture](docs/ARCHITECTURE.md)** — how the tutorial is structured
+- 🐛 **[Troubleshooting](docs/TROUBLESHOOTING.md)** — common issues
+- ⚡ **[Performance](docs/PERFORMANCE.md)** — what to measure; illustrative cost/latency notes
+- ❓ **[FAQ](docs/FAQ.md)** — frequently asked questions
+- 🚀 **[Deployment](docs/DEPLOYMENT.md)** — starter templates and checklists
+- 📝 **[Examples](docs/EXAMPLES.md)** — usage snippets
+- 🤝 **[Contributing](docs/CONTRIBUTING.md)** — contribution guidelines
+- 📜 **[Changelog](docs/CHANGELOG.md)** — version history
 
 ## 🏗️ Project Structure
 
-```bash
-llm_rag/
-├── docs/                          # 📖 Modular documentation
-│   ├── GETTING_STARTED.md        # Quick start guide
-│   ├── INSTALLATION.md           # Setup instructions
-│   ├── API_REFERENCE.md          # Shared module API
-│   └── ... (8 more specialized docs)
+```text
+langchain-rag-tutorial/
+├── docs/                          # Modular documentation
 ├── notebooks/
-│   ├── 00_index.ipynb            # 🎯 START HERE - Navigation hub
-│   ├── fundamentals/             # Core RAG concepts (01-03)
-│   │   ├── 01_setup_and_basics.ipynb
-│   │   ├── 02_embeddings_comparison.ipynb
-│   │   └── 03_simple_rag.ipynb
-│   └── advanced_architectures/   # Advanced patterns (04-18)
-│       ├── 04_rag_with_memory.ipynb
-│       ├── 05_branched_rag.ipynb
-│       ├── 06_hyde.ipynb
-│       ├── 07_adaptive_rag.ipynb
-│       ├── 08_corrective_rag.ipynb
-│       ├── 09_self_rag.ipynb
-│       ├── 10_agentic_rag.ipynb
-│       ├── 11_comparison.ipynb           # All 12 architectures
-│       ├── 12_contextual_rag.ipynb ✨     # v1.1.0
-│       ├── 13_fusion_rag.ipynb ✨         # v1.1.0
-│       ├── 14_sql_rag.ipynb ✨            # v1.1.0
-│       ├── 15_graphrag.ipynb ✨           # v1.1.0
-│       ├── 16_evaluation_ragas.ipynb ✨   # v1.1.0 - Quality metrics
-│       ├── 17_multimodal_rag.ipynb 🆕    # v1.2.0 - Images + Text
-│       └── 18_finetuning_embeddings.ipynb 🆕  # v1.2.0 - Custom embeddings
-├── templates/                     # 🚀 Production deployment templates (NEW v1.2.0)
-│   ├── fastapi/                  # REST API template
-│   ├── streamlit/                # Web UI template
-│   └── lambda/                   # AWS Lambda serverless
-├── tests/                        # 🧪 Test suite (NEW v1.2.0)
-│   ├── conftest.py              # pytest fixtures
-│   ├── test_utils.py            # Utility tests
-│   └── test_config.py           # Config tests
-├── shared/                        # 🔧 Reusable utilities (1500+ lines)
-│   ├── config.py                 # Configuration management
-│   ├── utils.py                  # Utility functions
-│   ├── loaders.py                # Document loading
-│   └── prompts.py                # Prompt templates (30+ prompts)
-├── data/                         # 💾 Vector stores, Chinook DB (gitignored)
-├── Dockerfile                    # 🐳 Docker support (NEW v1.2.0)
-├── docker-compose.yml            # 🐳 Full stack orchestration (NEW v1.2.0)
-├── Makefile                      # 🛠️ Development commands (NEW v1.2.0)
-├── pytest.ini                    # 🧪 Test configuration (NEW v1.2.0)
-├── .pre-commit-config.yaml       # 🔍 Pre-commit hooks (NEW v1.2.0)
-├── requirements.txt              # Production dependencies
-├── requirements-dev.txt          # Development dependencies (NEW v1.2.0)
-├── .env.example                  # 🔑 API key template
-└── README.md                     # This file
+│   ├── 00_index.ipynb            # Navigation hub
+│   ├── fundamentals/             # Core RAG (01-03)
+│   └── advanced_architectures/   # Patterns 04-18
+├── templates/                     # Starter apps (FastAPI, Streamlit, Lambda)
+├── tests/                         # pytest for shared/ (plus optional integration)
+├── shared/                        # Config, loaders, prompts, utilities
+├── data/                          # Vector stores, Chinook DB (gitignored)
+├── monitoring/                    # Example Prometheus/Grafana config
+├── Dockerfile
+├── docker-compose.yml             # App + optional Redis/Prometheus/Grafana
+├── Makefile
+├── requirements.txt
+├── requirements-dev.txt
+└── README.md
 ```
 
-## ✨ Key Features
+## What this repo includes
 
-**Core Capabilities:**
+**Notebooks**
 
-- ✅ **12 RAG Architectures** - From simple to graph-based
-- ✅ **Multimodal RAG** 🆕 - GPT-4 Vision + OCR for images + text
-- ✅ **Fine-tuning Guide** 🆕 - Train custom domain-specific embeddings
-- ✅ **RAGAS Evaluation** - Comprehensive quality metrics
-- ✅ **SQL & Graph Support** - Structured data + relationships
-- ✅ **Modular Design** - Reusable shared utilities (DRY)
-- ✅ **Vector Store Persistence** - No re-embedding needed
-- ✅ **Comprehensive Benchmarks** - Performance & cost analysis
+- Fundamentals through GraphRAG, multimodal RAG, embedding fine-tuning, and RAGAS
+- Reusable helpers in `shared/` (config, loaders, prompts, FAISS save/load)
+- Vector-store persistence so later notebooks can reuse embeddings from notebook 02
 
-**Production-Ready Infrastructure:** 🆕
+**Starter infrastructure (educational)**
 
-- ✅ **Docker Support** - Multi-stage builds with Redis, Prometheus, Grafana
-- ✅ **3 Deployment Templates** - FastAPI, Streamlit, AWS Lambda
-- ✅ **Testing Suite** - pytest with 70%+ coverage target
-- ✅ **CI/CD Pipelines** - GitHub Actions (testing, linting, coverage)
-- ✅ **Development Tools** - Makefile, pre-commit hooks, linting
-- ✅ **Security Best Practices** - Non-root Docker, API key management
+- Docker Compose stack (app, optional Redis, Prometheus, Grafana)
+- FastAPI, Streamlit, and AWS Lambda starter templates
+- pytest for `shared/` plus GitHub Actions workflows already in the repo
+- Makefile and pre-commit config
 
-**Technical Stack:**
+**Stack used in the notebooks**
 
-- **LangChain** v1.0+ - Framework & LCEL
-- **OpenAI** GPT-4o-mini + GPT-4 Vision - Fast LLM + multimodal
-- **FAISS** - Vector similarity search
-- **Sentence Transformers** + **Accelerate** - Fine-tuning embeddings
-- **NetworkX** - Graph algorithms
-- **SQLAlchemy** - Database abstraction
-- **RAGAS** - RAG evaluation framework
-- **Tesseract OCR** + **Pillow** - Image processing
-- **FastAPI** + **Streamlit** - Production deployment
-- **Docker** + **Docker Compose** - Containerization
-- **pytest** + **GitHub Actions** - Testing & CI/CD
-- **Python** 3.9+ - Modern type hints
+- LangChain (see [Status](#status) and `requirements.txt`)
+- OpenAI chat + embeddings (GPT-4o-mini / GPT-4o vision in notebook 17)
+- FAISS, sentence-transformers, NetworkX, SQLAlchemy, RAGAS
+- Tesseract OCR + Pillow (notebook 17)
+- FastAPI / Streamlit / Docker in the templates
 
-[🔍 See Architecture Details →](docs/ARCHITECTURE.md)
+[🔍 Architecture notes →](docs/ARCHITECTURE.md)
 
-## 💡 Architecture Selection Guide
+## 💡 Choosing a notebook
 
-**Choose based on your needs:**
+| If you want to try… | Open |
+| ------------------- | ---- |
+| Fast, simple Q&A | [03_simple_rag.ipynb](notebooks/fundamentals/03_simple_rag.ipynb) |
+| Chat with follow-up questions | [04_rag_with_memory.ipynb](notebooks/advanced_architectures/04_rag_with_memory.ipynb) |
+| Multi-query retrieval | [05_branched_rag.ipynb](notebooks/advanced_architectures/05_branched_rag.ipynb) |
+| Ambiguous queries (HyDe) | [06_hyde.ipynb](notebooks/advanced_architectures/06_hyde.ipynb) |
+| Query routing | [07_adaptive_rag.ipynb](notebooks/advanced_architectures/07_adaptive_rag.ipynb) |
+| Relevance grading + web fallback | [08_corrective_rag.ipynb](notebooks/advanced_architectures/08_corrective_rag.ipynb) |
+| Self-critique loop | [09_self_rag.ipynb](notebooks/advanced_architectures/09_self_rag.ipynb) |
+| Tool-using agent | [10_agentic_rag.ipynb](notebooks/advanced_architectures/10_agentic_rag.ipynb) |
+| Context-augmented chunks | [12_contextual_rag.ipynb](notebooks/advanced_architectures/12_contextual_rag.ipynb) |
+| Reciprocal Rank Fusion | [13_fusion_rag.ipynb](notebooks/advanced_architectures/13_fusion_rag.ipynb) |
+| Natural language → SQL | [14_sql_rag.ipynb](notebooks/advanced_architectures/14_sql_rag.ipynb) |
+| Knowledge-graph style retrieval | [15_graphrag.ipynb](notebooks/advanced_architectures/15_graphrag.ipynb) |
+| Images + text | [17_multimodal_rag.ipynb](notebooks/advanced_architectures/17_multimodal_rag.ipynb) |
+| Fine-tune a local embedding model | [18_finetuning_embeddings.ipynb](notebooks/advanced_architectures/18_finetuning_embeddings.ipynb) |
+| RAGAS metrics | [16_evaluation_ragas.ipynb](notebooks/advanced_architectures/16_evaluation_ragas.ipynb) |
 
-| Your Need                     | Architecture      | Docs                                                                                            |
-| ----------------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| 🚀 **Fast & simple**           | Simple RAG        | [03_simple_rag.ipynb](notebooks/fundamentals/03_simple_rag.ipynb)                               |
-| 💬 **Chatbot with memory**     | Memory RAG        | [04_rag_with_memory.ipynb](notebooks/advanced_architectures/04_rag_with_memory.ipynb)           |
-| 📚 **Research tool**           | Fusion RAG        | [13_fusion_rag.ipynb](notebooks/advanced_architectures/13_fusion_rag.ipynb) ✨                   |
-| 🔍 **Ambiguous queries**       | Contextual RAG    | [12_contextual_rag.ipynb](notebooks/advanced_architectures/12_contextual_rag.ipynb) ✨           |
-| ⚖️ **Cost optimization**       | Adaptive RAG      | [07_adaptive_rag.ipynb](notebooks/advanced_architectures/07_adaptive_rag.ipynb)                 |
-| 🎯 **High accuracy**           | Fusion / CRAG     | [13_fusion_rag.ipynb](notebooks/advanced_architectures/13_fusion_rag.ipynb) ✨                   |
-| 🔄 **Self-correcting**         | Self-RAG          | [09_self_rag.ipynb](notebooks/advanced_architectures/09_self_rag.ipynb)                         |
-| 🤖 **Complex reasoning**       | Agentic RAG       | [10_agentic_rag.ipynb](notebooks/advanced_architectures/10_agentic_rag.ipynb)                   |
-| 📊 **Analytics/BI**            | SQL RAG           | [14_sql_rag.ipynb](notebooks/advanced_architectures/14_sql_rag.ipynb) ✨                         |
-| 🕸️ **Knowledge graphs**        | GraphRAG          | [15_graphrag.ipynb](notebooks/advanced_architectures/15_graphrag.ipynb) ✨                       |
-| 🖼️ **Images + text** 🆕        | Multimodal RAG    | [17_multimodal_rag.ipynb](notebooks/advanced_architectures/17_multimodal_rag.ipynb) 🆕          |
-| 🎯 **Custom embeddings** 🆕    | Fine-tuning Guide | [18_finetuning_embeddings.ipynb](notebooks/advanced_architectures/18_finetuning_embeddings.ipynb) 🆕 |
-| 📈 **Quality evaluation**      | RAGAS             | [16_evaluation_ragas.ipynb](notebooks/advanced_architectures/16_evaluation_ragas.ipynb) ✨       |
+Start with Simple RAG, then pick a pattern that matches the question you want to explore. Notebook 11 is a qualitative comparison, not a reproducible benchmark.
 
-**Rule of thumb:** Start with Simple RAG → Add Contextual for quality → Use specialized for specific needs.
+[❓ FAQ: which architecture? →](docs/FAQ.md#which-architecture-should-i-choose)
 
-**Performance tip:** For domain-specific content with <75% accuracy, consider fine-tuning embeddings (notebook 18) for +15-25% improvement.
+## 🚀 Starter deployment templates
 
-[❓ Need help choosing? See FAQ →](docs/FAQ.md#which-architecture-should-i-choose)
+These are teaching templates (auth, tenancy, SLOs, and load testing are out of scope).
 
-## 🚀 Production Deployment 🆕
-
-Ready to deploy? Choose from **3 production-ready templates**:
-
-### 🐳 Docker (Recommended)
+### Docker Compose
 
 ```bash
-# Quick start with Docker Compose
 docker-compose up -d
 
-# Or build custom image
+# Or build a single image
 docker build -t langchain-rag:latest .
 docker run -p 8000:8000 --env-file .env langchain-rag:latest
 ```
 
-**Features:** Multi-stage builds, Redis caching, Prometheus + Grafana monitoring, non-root security
+Compose can also start Redis plus example Prometheus/Grafana configs under `monitoring/`.
 
-### 🚂 FastAPI REST API
-
-Complete REST API with automatic documentation:
+### FastAPI starter
 
 ```bash
 cd templates/fastapi
 pip install -r requirements.txt
 uvicorn app:app --reload
-# Visit http://localhost:8000/docs for Swagger UI
+# http://localhost:8000/docs
 ```
 
-**Features:** Pydantic validation, CORS, health checks, error handling, async support
-
-### 🎨 Streamlit Web UI
-
-Interactive web application:
+### Streamlit starter
 
 ```bash
 cd templates/streamlit
@@ -244,142 +190,86 @@ pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
 
-**Features:** Real-time queries, source document display, architecture selection, metrics visualization
-
-### ⚡ AWS Lambda (Serverless)
-
-Deploy to AWS Lambda:
+### AWS Lambda starter
 
 ```bash
 cd templates/lambda
 zip -r function.zip .
-aws lambda create-function --function-name rag-api --zip-file fileb://function.zip
+# See templates/lambda/README.md for IAM, layers, and API Gateway steps
 ```
 
-**Features:** S3 vector store integration, cold start optimization, API Gateway ready
-
-**📖 Full guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-
-## 📊 Performance at a Glance
-
-| Architecture     | Latency  | Cost/Query | Accuracy    | Best For        |
-| ---------------- | -------- | ---------- | ----------- | --------------- |
-| Simple RAG       | ~2s      | $0.002     | Good        | General Q&A     |
-| Contextual RAG ✨ | ~2-3s    | $0.002     | Very Good   | Technical docs  |
-| Fusion RAG ✨     | ~5-8s    | $0.006     | Excellent   | Research        |
-| SQL RAG ✨        | ~2-5s    | $0.004     | Perfect*    | Analytics       |
-| GraphRAG ✨       | ~3-8s    | $0.010+    | Excellent** | Relationships   |
-| Adaptive RAG     | Variable | $0.003     | Very Good   | Mixed workloads |
-| Agentic RAG      | ~30s     | $0.012     | Excellent   | Complex tasks   |
-
-*For structured data | **For multi-hop queries
-
-**Full benchmarks:** [11_comparison.ipynb](notebooks/advanced_architectures/11_comparison.ipynb) | [RAGAS Evaluation](notebooks/advanced_architectures/16_evaluation_ragas.ipynb)
+**📖 Notes and checklists:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## 🚦 Prerequisites
 
 - **Python** 3.9+ (3.10+ recommended)
-- **OpenAI API Key** ([Get one here](https://platform.openai.com/api-keys))
-- **~2GB RAM** (4GB+ recommended for fine-tuning)
-- **~2GB disk space** (dependencies + models)
-- **System packages** (for multimodal): Tesseract OCR, Poppler (see [INSTALLATION.md](docs/INSTALLATION.md))
+- **OpenAI API key** ([create one](https://platform.openai.com/api-keys))
+- **~2GB RAM** (more if you run notebook 18 fine-tuning)
+- **~2GB disk** for dependencies and local models
+- **System packages** for notebook 17: Tesseract OCR, Poppler (see [INSTALLATION.md](docs/INSTALLATION.md))
 
 [📖 Detailed requirements →](docs/INSTALLATION.md#prerequisites)
 
-## 🎓 Learning Path
+## 🎓 Learning path
 
-**Recommended sequence:**
+1. **Setup:** [GETTING_STARTED.md](docs/GETTING_STARTED.md)
+2. **Hub:** [00_index.ipynb](notebooks/00_index.ipynb)
+3. **Fundamentals:** [notebooks 01–03](notebooks/fundamentals/)
+4. Then either:
+   - Simple RAG → one specialized notebook for your use case
+   - Work through 04–16 in order
+   - Skim [11_comparison.ipynb](notebooks/advanced_architectures/11_comparison.ipynb) then jump
+   - Run [16_evaluation_ragas.ipynb](notebooks/advanced_architectures/16_evaluation_ragas.ipynb) after you have a chain
 
-1. **Setup** (10 min): [GETTING_STARTED.md](docs/GETTING_STARTED.md)
-2. **Navigation Hub** (5 min): [00_index.ipynb](notebooks/00_index.ipynb)
-3. **Fundamentals** (30-40 min): [Notebooks 01-03](notebooks/fundamentals/)
-4. **Choose Your Path**:
-   - 🏃 **Fast track**: Simple RAG → Contextual RAG → Your use case
-   - 🔬 **Deep dive**: Complete all 12 architectures
-   - 📊 **Comparison**: Jump to [11_comparison.ipynb](notebooks/advanced_architectures/11_comparison.ipynb)
-   - 📈 **Evaluation**: Try [16_evaluation_ragas.ipynb](notebooks/advanced_architectures/16_evaluation_ragas.ipynb)
-
-**Total time:**
-
-- Fast track: ~1-2 hours
-- Complete tutorial: ~5-7 hours
-- With multimodal + evaluation: ~7-9 hours
-- Production deployment: +1-2 hours
+Times in the docs are rough teaching estimates, not measured wall-clock benchmarks.
 
 ## 🤝 Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
-**Ways to contribute:**
-
-- 🐛 Report bugs
-- ✨ Suggest features
-- 📝 Improve documentation
-- 💻 Submit pull requests
-
-## 🛠️ Development 🆕
-
-**Quick commands with Makefile:**
+## 🛠️ Development
 
 ```bash
-make install      # Install all dependencies
-make test         # Run test suite with coverage
-make lint         # Run code quality checks
-make format       # Auto-format code (black, isort)
-make docker-build # Build Docker image
-make docker-run   # Run full stack with Docker Compose
-make clean        # Clean cache and build files
+make install      # Install dependencies
+make test         # pytest with coverage
+make lint         # black, flake8, isort, mypy (as configured)
+make format       # Auto-format
+make docker-build
+make docker-run
+make clean
 ```
 
-**Testing:**
-
 ```bash
-# Run all tests with coverage
 pytest tests/ -v --cov=shared --cov-report=html
-
-# Run specific test file
 pytest tests/test_utils.py -v
-
-# Run with markers
-pytest -m "not slow"  # Skip slow tests
+pytest -m "not slow and not integration"  # no API key
 ```
 
-**Pre-commit hooks:**
-
 ```bash
-# Install hooks (runs on every commit)
 pre-commit install
-
-# Run manually
 pre-commit run --all-files
 ```
 
-**CI/CD:** Automated testing and linting on every push via GitHub Actions (Python 3.9, 3.10, 3.11)
-
-**📖 More details:** [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+**📖 More:** [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ## 📜 License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-**TL;DR:** Free to use commercially, modify, and distribute. Just include the license.
+MIT License — see [LICENSE](LICENSE).
 
 ## 🔗 Resources
 
-- 📖 **Documentation**: [docs/](docs/)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
-- 🌐 **LangChain Docs**: [python.langchain.com](https://python.langchain.com/)
+- 📖 **Docs:** [docs/](docs/)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
+- 💬 **Discussions:** [GitHub Discussions](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
+- 🌐 **LangChain:** [python.langchain.com](https://python.langchain.com/)
 
-## 💬 Getting Help
+## 💬 Getting help
 
-- 📖 Check [FAQ](docs/FAQ.md) first
-- 🔍 Search [existing issues](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
-- 🐛 [Open a new issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues/new)
-- 💬 Ask in [Discussions](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
+- [FAQ](docs/FAQ.md)
+- [Existing issues](https://github.com/gianlucamazza/langchain-rag-tutorial/issues)
+- [New issue](https://github.com/gianlucamazza/langchain-rag-tutorial/issues/new)
+- [Discussions](https://github.com/gianlucamazza/langchain-rag-tutorial/discussions)
 
 ---
 
-**⭐ If this helps you, please star the repo!**
-
-**Latest:** v1.2.1 - Critical import fixes, Python 3.9 compatibility, accelerate support | Made with ❤️ using Claude Code | [View Changelog](docs/CHANGELOG.md)
+Latest tagged notes: v1.2.1 — import and Python 3.9 fixes (see [Changelog](docs/CHANGELOG.md)).

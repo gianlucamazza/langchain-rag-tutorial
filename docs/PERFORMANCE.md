@@ -1,6 +1,6 @@
-# Performance Metrics
+# Performance notes
 
-Benchmarks and performance expectations for LangChain RAG Tutorial.
+Teaching estimates for this tutorial — **not** results from a checked-in, reproducible benchmark script. Latency, cost, and quality figures below are order-of-magnitude notes (token arithmetic + typical API wait) so you know what to measure on your own data. Notebook 11 prints the same kind of qualitative table; it does not time live chains.
 
 ## Execution Times
 
@@ -18,7 +18,7 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 | 08_corrective_rag | 10-15 min | 3 min | Relevance grading + web search |
 | 09_self_rag | 10-20 min | 4 min | Multiple iterations + self-critique |
 | 10_agentic_rag | 20-40 min | 8 min | Agent loop with multiple tool calls |
-| 11_comparison | 5-8 min | 2 min | Benchmark execution across 12 architectures |
+| 11_comparison | 5-8 min | 2 min | Prints qualitative comparison tables (no live timing harness) |
 | 12_contextual_rag ✨ | 8-12 min | 2 min | Context generation (one-time) + retrieval |
 | 13_fusion_rag ✨ | 5-8 min | 2 min | Multiple query perspectives + RRF ranking |
 | 14_sql_rag ✨ | 5-8 min | 1.5 min | Chinook DB setup + SQL generation |
@@ -27,9 +27,9 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 
 **Key Insight:** First run includes model downloads, vector store creation, and database setup. Subsequent runs use cached data.
 
-## Query Latency
+## Query latency (illustrative)
 
-### Per-Query Response Times
+### Per-query response times (teaching estimates, not measured here)
 
 | Architecture | Latency | API Calls | Token Usage |
 |---|---|---|---|
@@ -53,9 +53,11 @@ Benchmarks and performance expectations for LangChain RAG Tutorial.
 - LLM model speed
 - Number of iterations (Self-RAG, Agentic)
 
-## Cost Estimates
+## Cost notes (list-price arithmetic)
 
-### OpenAI API Costs (GPT-4o-mini)
+Assumed token counts × published OpenAI list prices at the time of writing. Recalculate with current prices and your traces.
+
+### OpenAI API (GPT-4o-mini list prices, illustrative)
 
 **Pricing:**
 
@@ -263,30 +265,9 @@ print(f"Embedding: ${embedding_cost:.4f} (one-time)")
 print(f"LLM: ${llm_cost:.6f} (per query)")
 ```
 
-## Benchmarking Results
+## How to compare architectures
 
-### Quality vs Speed Trade-off
-
-```
-Quality (1-10)  |                    * Agentic RAG (9.5, 30s)
-                |                  * Self-RAG (9.0, 15s)
-                |                * GraphRAG ✨ (8.8, 6s)
-                |                * CRAG (8.5, 12s)
-                |              * Fusion RAG ✨ (8.2, 7s)
-                |            * SQL RAG ✨ (8.0*, 4s)
-                |            * HyDe (7.5, 5s)
-                |          * Branched RAG (7.5, 6s)
-                |       * Adaptive RAG (7.0, variable)
-                |       * Contextual RAG ✨ (7.2, 2.5s)
-                |     * Memory RAG (6.5, 2.5s)
-                |   * Simple RAG (6.0, 2s)
-                |_________________________________
-                         Latency (seconds)
-```
-
-**Legend:** *SQL RAG quality is "Perfect" for structured data queries, "N/A" for unstructured
-
-**Key Insight:** 3x quality improvement costs 15x latency increase. New architectures (✨) offer better quality-speed trade-offs for specific use cases.
+This repo does not ship a measured quality-vs-latency plot. Use notebook 16 (RAGAS) on a labeled set, and time `chain.invoke` as shown below. Notebook 11 is a qualitative cheat-sheet, not a benchmark run.
 
 ## Performance Tips
 
@@ -308,6 +289,6 @@ Quality (1-10)  |                    * Agentic RAG (9.5, 30s)
 
 ## See Also
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Design decisions
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Design notes
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues
-- [FAQ.md](FAQ.md) - Performance FAQs
+- [FAQ.md](FAQ.md) - Performance questions

@@ -26,7 +26,7 @@ Common questions about LangChain RAG Tutorial.
 | Comprehensive research | Fusion RAG ✨ |
 | Handle ambiguous queries | HyDe |
 | Technical documentation | Contextual RAG ✨ |
-| Best ranking quality | Fusion RAG ✨ |
+| Rank fusion across query variants | Fusion RAG ✨ |
 | Mixed workload optimization | Adaptive RAG |
 | High accuracy + web fallback | Corrective RAG (CRAG) |
 | Self-correcting system | Self-RAG |
@@ -53,16 +53,9 @@ Common questions about LangChain RAG Tutorial.
 
 ### Can I use this in production?
 
-**Yes, but consider:**
+**Not as-is.** This repo is a hands-on tutorial. The notebooks show patterns you would typically need before production (evaluation in notebook 16, example Prometheus/Grafana config, starter FastAPI/Streamlit/Lambda apps). They are not a complete production system.
 
-- ✅ Cost monitoring and optimization
-- ✅ Rate limiting and error handling
-- ✅ Caching strategies
-- ✅ Security (API key management)
-- ⚠️ Scale testing
-- ⚠️ Latency requirements
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup.
+You would still need your own auth, tenancy, evaluation on *your* data, monitoring, rate limiting, and load testing. See [DEPLOYMENT.md](DEPLOYMENT.md) for the starter templates and a checklist of gaps.
 
 ## Installation & Setup
 
@@ -110,14 +103,14 @@ os.environ['OPENAI_API_KEY'] = userdata.get('OPENAI_API_KEY')
 
 - Embeddings: ~$0.02 (10,000 documents)
 
-**Per-query costs:**
+**Per-query costs (illustrative list-price arithmetic, not measured):**
 
-- Simple RAG: $0.00036 per query
-- Agentic RAG: $0.00360 per query
+- Simple RAG: on the order of fractions of a cent per query with GPT-4o-mini
+- Agentic RAG: several times that (more LLM calls)
 
-**Full tutorial:** $0.10-$0.50 total
+**Full tutorial:** often well under a dollar if you use the cheap chat model, but it depends on retries and how many cells you re-run.
 
-See [PERFORMANCE.md](PERFORMANCE.md) for detailed breakdown.
+See [PERFORMANCE.md](PERFORMANCE.md) for assumed token counts and how to measure.
 
 ### How long does it take to complete?
 
@@ -126,7 +119,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for detailed breakdown.
 | Setup | 10 min |
 | Fundamentals (01-03) | 30-40 min |
 | One advanced architecture | 12-30 min |
-| All 12 architectures | 3-4 hours |
+| Advanced notebooks (pick several) | 3-4 hours |
 | With evaluation (RAGAS) | +20 min |
 | **Total** | **4-6 hours** |
 
@@ -165,7 +158,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for optimization strategies.
 | **Latency** | 100-200ms (API) | 500-1000ms (CPU) |
 | **Offline** | ❌ No | ✅ Yes |
 
-**Recommendation:** OpenAI for production, HuggingFace for demos/development.
+**In this tutorial:** OpenAI is the default for quality-sensitive notebook cells; HuggingFace is the local/no-cost option in notebook 02.
 
 ### What is FAISS?
 
@@ -189,7 +182,7 @@ See [PERFORMANCE.md](PERFORMANCE.md) for optimization strategies.
 **GPU helps with:**
 
 - Faster local embeddings (HuggingFace)
-- Large-scale production deployments
+- Training or serving large local embedding models
 
 **Not needed for:**
 
@@ -230,10 +223,10 @@ Then create vector store as usual.
 ```
 Original: "The function returns a list of tokens."
 Contextualized: "Document: LangChain API | Section: Text Splitting | The function returns a list of tokens."
-→ Better semantic matching with 15-30% quality improvement
+→ The extra context can make isolated chunks easier to retrieve
 ```
 
-**Benefits:** ~15-30% better retrieval quality with minimal cost overhead.
+**Trade-off:** extra indexing-time LLM calls; query-time cost stays similar. This repo does not include a measured quality delta.
 
 ### When should I use Fusion RAG? ✨
 
@@ -242,7 +235,7 @@ Contextualized: "Document: LangChain API | Section: Text Splitting | The functio
 - Ranking quality is critical
 - Research and literature review
 - Complex multi-aspect queries
-- Need best-in-class result aggregation
+- Need to merge ranked lists from several query variants
 
 **How it works:**
 
@@ -251,7 +244,7 @@ Contextualized: "Document: LangChain API | Section: Text Splitting | The functio
 3. Combine results using Reciprocal Rank Fusion (RRF)
 4. Documents appearing in multiple result sets rank higher
 
-**Trade-off:** ~3x slower than Simple RAG, but best ranking quality.
+**Trade-off:** more LLM calls than Simple RAG (several query variants + one generation). Quality is not measured in this repo.
 
 ### When should I use SQL RAG? ✨
 
@@ -270,7 +263,7 @@ Contextualized: "Document: LangChain API | Section: Text Splitting | The functio
 4. Execute safely (read-only)
 5. Interpret results with LLM
 
-**Benefits:** Perfect accuracy for structured data queries. Includes Chinook sample database.
+**What the notebook shows:** generated SQL against the Chinook sample database, with a read-only SELECT guard. Accuracy depends on the schema and the generated SQL — there is no measured score here.
 
 ### When should I use GraphRAG? ✨
 
@@ -443,5 +436,5 @@ Still have questions?
 - [GETTING_STARTED.md](GETTING_STARTED.md) - Quick start
 - [INSTALLATION.md](INSTALLATION.md) - Detailed setup
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues
-- [PERFORMANCE.md](PERFORMANCE.md) - Benchmarks
+- [PERFORMANCE.md](PERFORMANCE.md) - What to measure (illustrative notes)
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Design decisions
