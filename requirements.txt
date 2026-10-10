@@ -52,7 +52,7 @@ python-louvain>=0.16               # Community detection in GraphRAG
 # Multimodal & Image Processing (v1.2.0)
 # ----------------------------------------------------------------------------
 pillow>=10.0.0                     # Image processing (notebook 17)
-pytesseract>=0.3.10                # OCR text extraction (notebook 17)
+pytesseract>=0.3.13                # OCR text extraction (notebook 17)
 pdf2image>=1.16.0                  # PDF image extraction (notebook 17)
 
 # ----------------------------------------------------------------------------
