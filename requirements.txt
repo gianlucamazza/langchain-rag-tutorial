@@ -39,13 +39,13 @@ tiktoken>=0.14.0
 # ----------------------------------------------------------------------------
 # Data Analysis & Visualization
 # ----------------------------------------------------------------------------
-pandas>=3.0.6                      # SQL RAG, RAGAS evaluation
-matplotlib>=3.11.2                  # GraphRAG visualization
+pandas>=2.3.3,<3                      # SQL RAG, RAGAS evaluation. 3.0 requires Python 3.11+
+matplotlib>=3.10.9,<3.11              # GraphRAG visualization. 3.11 requires Python 3.11+
 
 # ----------------------------------------------------------------------------
 # Graph & Knowledge Management
 # ----------------------------------------------------------------------------
-networkx>=3.7                      # GraphRAG (notebook 15)
+networkx>=3.4.2,<3.7                  # GraphRAG (notebook 15). 3.7 requires Python 3.12+
 python-louvain>=0.16               # Community detection in GraphRAG
 
 # ----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ boto3>=1.43.109                      # AWS SDK for Lambda template
 # ----------------------------------------------------------------------------
 # Agent Tools
 # ----------------------------------------------------------------------------
-numexpr>=2.14.2                    # Safe calculator tool (notebook 10)
+numexpr>=2.14.1,<2.14.2               # Safe calculator tool (notebook 10). 2.14.2 requires Python 3.11+
 
 # ----------------------------------------------------------------------------
 # Environment & Configuration
@@ -83,7 +83,7 @@ python-dotenv>=1.2.4
 # Jupyter Notebooks
 # ----------------------------------------------------------------------------
 jupyter>=1.1.1
-ipykernel>=7.4.0
+ipykernel>=7.3.0,<7.4                 # 7.4 requires Python 3.11+
 
 # ============================================================================
 # Installation Instructions
