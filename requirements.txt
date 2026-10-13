@@ -9,10 +9,10 @@
 # ----------------------------------------------------------------------------
 # Core LangChain Ecosystem
 # ----------------------------------------------------------------------------
-langchain>=1.4.3                  # create_agent, langchain.messages (notebooks 10, 12)
-langchain-core>=1.6.7
+langchain>=1.4.4                  # create_agent, langchain.messages (notebooks 10, 12)
+langchain-core>=1.6.9
 langchain-classic>=1.0.8         # EnsembleRetriever, ParentDocument/MultiVector, rerankers (12, 19, 20)
-langchain-openai>=1.6.7
+langchain-openai>=1.7.0
 langchain-community>=0.4.2,<0.4.3  # FAISS, WebBaseLoader. <0.4.2: ragas imports
                                     # chat_models.vertexai, removed in 0.4.2
                                     # (vibrantlabsai/ragas#2753) - drop bound once fixed
@@ -33,19 +33,19 @@ accelerate>=1.15.0                  # Required for fine-tuning with Trainer
 # Document Processing
 # ----------------------------------------------------------------------------
 beautifulsoup4>=4.15.0
-pypdf>=6.19.0
+pypdf>=6.20.0
 tiktoken>=0.14.0
 
 # ----------------------------------------------------------------------------
 # Data Analysis & Visualization
 # ----------------------------------------------------------------------------
-pandas>=2.3.3,<3                      # SQL RAG, RAGAS evaluation. 3.0 requires Python 3.11+
-matplotlib>=3.10.9,<3.11              # GraphRAG visualization. 3.11 requires Python 3.11+
+pandas>=3.0.6,<4                      # SQL RAG, RAGAS evaluation. 3.0 requires Python 3.11+
+matplotlib>=3.11.2,<3.12              # GraphRAG visualization. 3.11 requires Python 3.11+
 
 # ----------------------------------------------------------------------------
 # Graph & Knowledge Management
 # ----------------------------------------------------------------------------
-networkx>=3.4.2,<3.7                  # GraphRAG (notebook 15). 3.7 requires Python 3.12+
+networkx>=3.7,<3.8                  # GraphRAG (notebook 15). 3.7 requires Python 3.12+
 python-louvain>=0.16               # Community detection in GraphRAG
 
 # ----------------------------------------------------------------------------
@@ -64,15 +64,15 @@ datasets>=5.1.0                   # Dataset management for RAGAS
 # ----------------------------------------------------------------------------
 # Starter deployment templates (v1.2.0)
 # ----------------------------------------------------------------------------
-fastapi>=0.142.4                   # REST API template
+fastapi>=0.143.0                   # REST API template
 streamlit>=1.65.0                  # Web UI template
 uvicorn>=0.54.0                    # ASGI server for FastAPI
-boto3>=1.43.109                      # AWS SDK for Lambda template
+boto3>=1.43.111                      # AWS SDK for Lambda template
 
 # ----------------------------------------------------------------------------
 # Agent Tools
 # ----------------------------------------------------------------------------
-numexpr>=2.14.1,<2.14.2               # Safe calculator tool (notebook 10). 2.14.2 requires Python 3.11+
+numexpr>=2.14.2,<2.14.3               # Safe calculator tool (notebook 10). 2.14.2 requires Python 3.11+
 
 # ----------------------------------------------------------------------------
 # Environment & Configuration
@@ -83,7 +83,7 @@ python-dotenv>=1.2.4
 # Jupyter Notebooks
 # ----------------------------------------------------------------------------
 jupyter>=1.1.1
-ipykernel>=7.3.0,<7.4                 # 7.4 requires Python 3.11+
+ipykernel>=7.4.0,<7.5                 # 7.4 requires Python 3.11+
 
 # ============================================================================
 # Installation Instructions
