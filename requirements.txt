@@ -9,10 +9,10 @@
 # ----------------------------------------------------------------------------
 # Core LangChain Ecosystem
 # ----------------------------------------------------------------------------
-langchain>=1.4.3                  # create_agent, langchain.messages (notebooks 10, 12)
-langchain-core>=1.6.7
+langchain>=1.4.4                  # create_agent, langchain.messages (notebooks 10, 12)
+langchain-core>=1.6.9
 langchain-classic>=1.0.8         # EnsembleRetriever, ParentDocument/MultiVector, rerankers (12, 19, 20)
-langchain-openai>=1.6.7
+langchain-openai>=1.7.0
 langchain-community>=0.4.2,<0.4.3  # FAISS, WebBaseLoader. <0.4.2: ragas imports
                                     # chat_models.vertexai, removed in 0.4.2
                                     # (vibrantlabsai/ragas#2753) - drop bound once fixed
@@ -33,7 +33,7 @@ accelerate>=1.15.0                  # Required for fine-tuning with Trainer
 # Document Processing
 # ----------------------------------------------------------------------------
 beautifulsoup4>=4.15.0
-pypdf>=6.19.0
+pypdf>=6.20.0
 tiktoken>=0.14.0
 
 # ----------------------------------------------------------------------------
@@ -64,10 +64,10 @@ datasets>=5.1.0                   # Dataset management for RAGAS
 # ----------------------------------------------------------------------------
 # Starter deployment templates (v1.2.0)
 # ----------------------------------------------------------------------------
-fastapi>=0.142.4                   # REST API template
+fastapi>=0.143.0                   # REST API template
 streamlit>=1.65.0                  # Web UI template
 uvicorn>=0.54.0                    # ASGI server for FastAPI
-boto3>=1.43.109                      # AWS SDK for Lambda template
+boto3>=1.43.111                      # AWS SDK for Lambda template
 
 # ----------------------------------------------------------------------------
 # Agent Tools
