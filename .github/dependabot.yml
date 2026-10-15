@@ -9,6 +9,19 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # CI still tests Python 3.10-3.13. These releases drop interpreters in
+    # that matrix, so grouped version updates must not raise the lower bound.
+    ignore:
+      - dependency-name: pandas
+        versions: [">=3.0.0"]
+      - dependency-name: matplotlib
+        versions: [">=3.11.0"]
+      - dependency-name: networkx
+        versions: [">=3.7"]
+      - dependency-name: numexpr
+        versions: [">=2.14.2"]
+      - dependency-name: ipykernel
+        versions: [">=7.4.0"]
     groups:
       langchain:
         applies-to: security-updates
