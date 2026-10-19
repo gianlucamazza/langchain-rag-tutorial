@@ -11,6 +11,9 @@ updates:
     open-pull-requests-limit: 5
     # CI still tests Python 3.10-3.13. These releases drop interpreters in
     # that matrix, so grouped version updates must not raise the lower bound.
+    # networkx 3.5+ drops 3.10; requirements.txt uses environment markers so
+    # 3.11+ can take 3.6.x while 3.10 stays on 3.4.2. Still ignore 3.7+
+    # (requires Python 3.12+).
     ignore:
       - dependency-name: pandas
         versions: [">=3.0.0"]
