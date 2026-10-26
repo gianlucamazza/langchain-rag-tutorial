@@ -9,31 +9,31 @@
 # ----------------------------------------------------------------------------
 # Core LangChain Ecosystem
 # ----------------------------------------------------------------------------
-langchain>=1.4.4                  # create_agent, langchain.messages (notebooks 10, 12)
-langchain-core>=1.6.9
+langchain>=1.4.7                  # create_agent, langchain.messages (notebooks 10, 12)
+langchain-core>=1.7.0
 langchain-classic>=1.0.8         # EnsembleRetriever, ParentDocument/MultiVector, rerankers (12, 19, 20)
-langchain-openai>=1.7.0
+langchain-openai>=1.7.2
 langchain-community>=0.4.2,<0.4.3  # FAISS, WebBaseLoader. <0.4.2: ragas imports
                                     # chat_models.vertexai, removed in 0.4.2
                                     # (vibrantlabsai/ragas#2753) - drop bound once fixed
 langchain-huggingface>=1.2.3
 langchain-text-splitters>=1.1.3   # No longer pulled in by langchain 1.x
 langchain-tavily>=0.2.18           # Web search tool (notebooks 08, 10)
-langgraph>=1.2.14
+langgraph>=1.2.16
 
 # ----------------------------------------------------------------------------
 # Vector Stores & Embeddings
 # ----------------------------------------------------------------------------
 faiss-cpu>=1.15.1
 rank-bm25>=0.2.2                    # BM25 keyword retrieval (notebooks 12, 19)
-sentence-transformers>=6.1.0        # Cross-encoder reranking (12, 19), fine-tuning (18)
+sentence-transformers>=6.2.0        # Cross-encoder reranking (12, 19), fine-tuning (18)
 accelerate>=1.15.0                  # Required for fine-tuning with Trainer
 
 # ----------------------------------------------------------------------------
 # Document Processing
 # ----------------------------------------------------------------------------
 beautifulsoup4>=4.15.0
-pypdf>=6.20.0
+pypdf>=6.21.2
 tiktoken>=0.14.0
 
 # ----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ python-louvain>=0.16               # Community detection in GraphRAG
 # ----------------------------------------------------------------------------
 # Multimodal & Image Processing (v1.2.0)
 # ----------------------------------------------------------------------------
-pillow>=12.3.0                     # Image processing (notebook 17)
+pillow>=13.0.0                     # Image processing (notebook 17)
 pytesseract>=0.3.13                # OCR text extraction (notebook 17)
 pdf2image>=1.17.0                  # PDF image extraction (notebook 17)
 
@@ -66,10 +66,10 @@ datasets>=5.1.0                   # Dataset management for RAGAS
 # ----------------------------------------------------------------------------
 # Starter deployment templates (v1.2.0)
 # ----------------------------------------------------------------------------
-fastapi>=0.143.0                   # REST API template
-streamlit>=1.65.0                  # Web UI template
+fastapi>=0.161.1                   # REST API template
+streamlit>=1.66.1                  # Web UI template
 uvicorn>=0.54.0                    # ASGI server for FastAPI
-boto3>=1.43.111                      # AWS SDK for Lambda template
+boto3>=1.43.118                      # AWS SDK for Lambda template
 
 # ----------------------------------------------------------------------------
 # Agent Tools
